@@ -1,0 +1,135 @@
+---
+title: "Régression linéaire simple"
+author: "Timothée Flutre"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+---
+
+<!--
+Ce morceau de code R est utilisé pour vérifier que tout ce dont on a besoin est disponible.
+-->
+```{r setup, include=FALSE}
+R.v.maj <- as.numeric(R.version$major)
+R.v.min.1 <- as.numeric(strsplit(R.version$minor, "\\.")[[1]][1])
+if(R.v.maj < 2 || (R.v.maj == 2 && R.v.min.1 < 15))
+  stop("requires R >= 2.15", call.=FALSE)
+
+suppressPackageStartupMessages(library(knitr))
+opts_chunk$set(echo=TRUE, warning=TRUE, message=TRUE, cache=FALSE)
+
+suppressPackageStartupMessages(library(MASS))
+
+options(digits=3)
+seed <- 1859; set.seed(seed)
+```
+
+
+# Préambule
+
+Ce document a été généré à partir d'un fichier texte au format Rmd utilisé avec le logiciel libre [R](http://www.r-project.org/).
+Pour exporter un tel fichier vers les formats HTML et PDF, installez le paquet [rmarkdown](http://cran.r-project.org/web/packages/rmarkdown/index.html) disponible sur CRAN (il va vraisemblablement vous être demandé d'installer d'autres paquets), puis ouvrez R et entrez:
+```{r ex_rmd, eval=FALSE}
+library(rmarkdown)
+render("myanalysis.Rmd", "all")
+```
+
+Il est généralement plus simple d'utiliser le logiciel libre [RStudio](http://www.rstudio.com/), mais ce n'est pas obligatoire.
+
+Pour plus de détails, lisez [cette page](http://rmarkdown.rstudio.com/), et regardez les exemples ci-dessous.
+
+Exemple de liste non ordonnée:
+
+* aaa
+
+* bbb
+
+Exemple de liste ordonnée:
+
+1. ccc
+
+2. ddd
+
+Exemple de mot en **gras** ou *italique*.
+
+Exemple de graphique à partir de R:
+```{r plot_hist}
+hist(rnorm(10^4), breaks="FD")
+```
+
+Exemple de tableau à partir de R:
+```{r show_table, results='asis'}
+knitr::kable(mtcars[1:5,])
+```
+
+Exemple d'équation écrite en [LaTeX](http://www.latex-project.org/) ([livre en ligne](https://fr.wikibooks.org/wiki/LaTeX)): $y_i \sim \mathcal{N}(\mu, \sigma^2)$
+
+
+# Introduction
+
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2015 à Montpellier SupAgro dans le cadre du master APIMET.
+
+Ce document a pour but d'introduire les étudiants à la simulation en prenant comme exemple la régression linéaire simple.
+
+
+# Définir la question
+
+...
+
+
+# Ecrire le modèle
+
+## Notations
+
+* $n$: nombre d'individus
+
+* $i$: indice indiquant le $i$-ème individu, donc $i \in \{1,\ldots,n\}$
+
+* $y_i$: phénotype de l'individu $i$
+
+* $\mu$: moyenne globale du phénotypes des $n$ individus
+
+* $x_i$: génotype de l'individu $i$ au marqueur SNP d'intérêt ($\in \{0,1,2\}$)
+
+* $f$: fréquence de l'allèle minoritaire à ce SNP
+
+* $\beta$: effet additif de chaque copie de l'allèle minoritaire en unité du phénotype
+
+* $\epsilon_i$: erreur pour l'individu $i$
+
+* $\sigma^2$: variance des erreurs
+
+## Vraisemblance
+
+\[
+\forall i \; \; y_i = \mu + \beta x_i + \epsilon_i \text{ avec } \epsilon_i \sim \mathcal{N}(0, \sigma^2)
+\]
+
+
+# Simuler des données
+
+...
+
+
+# Réaliser l'inférence
+
+...
+
+
+# Explorer les simulations possibles
+
+...
+
+
+# Appendix
+
+```{r info}
+print(sessionInfo(), locale=FALSE)
+```

@@ -1,0 +1,16 @@
+Atelier de prédiction génomique
+===============================
+
+Ce répertoire contient le matériel utilisé lors de l'atelier de prédiction
+génomique organisé et animé par Jacques David et Timothée Flutre en 2015
+à Montpellier SupAgro dans le cadre du master APIMET:
+http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630
+
+Le copyright appartient à Montpellier SupAgro et à l'Institut National de
+la Recherche Agronomique. Le contenu du répertoire est sous license
+Creative Commons Attribution-ShareAlike 4.0 International:
+http://creativecommons.org/licenses/by-sa/4.0/
+
+Les versions du contenu sont gérées avec le logiciel git, et le dépôt central
+est hébergé sur GitHub:
+https://github.com/timflutre/atelier-prediction-genomique
