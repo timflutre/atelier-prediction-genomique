@@ -41,34 +41,8 @@ render("myanalysis.Rmd", "all")
 ```
 
 Il est généralement plus simple d'utiliser le logiciel libre [RStudio](http://www.rstudio.com/), mais ce n'est pas obligatoire.
-
-Pour plus de détails, lisez [cette page](http://rmarkdown.rstudio.com/), et regardez les exemples ci-dessous.
-
-Exemple de liste non ordonnée:
-
-* aaa
-
-* bbb
-
-Exemple de liste ordonnée:
-
-1. ccc
-
-2. ddd
-
-Exemple de mot en **gras** ou *italique*.
-
-Exemple de graphique à partir de R:
-```{r plot_hist}
-hist(rnorm(10^4), breaks="FD")
-```
-
-Exemple de tableau à partir de R:
-```{r show_table, results='asis'}
-knitr::kable(mtcars[1:5,])
-```
-
-Exemple d'équation écrite en [LaTeX](http://www.latex-project.org/) ([livre en ligne](https://fr.wikibooks.org/wiki/LaTeX)): $y_i \sim \mathcal{N}(\mu, \sigma^2)$
+Pour plus de détails, lisez [cette page](http://rmarkdown.rstudio.com/).
+Pour écrire des équations avec LaTeX, reportez-vous au [livre en ligne](https://fr.wikibooks.org/wiki/LaTeX).
 
 
 # Contexte
@@ -94,6 +68,26 @@ En particulier, il ne faut pas confondre les données avec des variables aléato
 
 # Ecrire le modèle
 
+## Rappel
+
+L'inférence avec un modèle statistique consiste généralement à estimer les paramètres, puis à s'en servir pour prédire de nouvelles données.
+
+Lorsque l'on propose un modèle pour répondre à une question donnée, on commence donc par expliquer les notations.
+Suivant les conventions, nous utilisons des lettres grecques pour dénoter les paramètres (non-observés), par exemple $\theta$, des lettres romaines pour dénoter les données observées, $y$, et un tilde pour les données prédites, $\tilde{y}$.
+L'ensemble des paramètres est généralement noté en majuscule, $\Theta$.
+De plus, s'il y a plusieurs paramètres ou données, on utilise des vecteurs notés en gras, ce qui donne $\boldsymbol{\theta}$ et $\boldsymbol{y}$.
+
+Une fois les notations établies, on écrit la vraisemblance (*likelihood*), souvent présentée comme étant la "probabilité des données sachant les paramètres".
+En fait, si les données sont des variables continues, c'est la densité de probabilité des données sachant les paramètres, notée $p(y | \theta)$, et si les données sont des variables discrètes, c'est la fonction de masse, notée $P(y | \theta)$.
+Mais le plus important est de réaliser que, dans la vraisemblance, ce ne sont pas les données qui varient, mais les paramètres: la vraisemblance est une fonction des paramètres, d'où le fait qu'on la note $\mathcal{L}(\theta)$.
+
+Tout naturellement, la méthode du maximum de vraisemblance cherche donc à identifier la valeur du paramètre, notée $\hat{\theta}$, qui maximise la vraisemblance.
+
+\[
+\hat{\theta} = \text{argmax}_\theta \, \mathcal{L} \; \; \Leftrightarrow \; \; \frac{\partial \mathcal{L}}{\partial \theta}(\hat{\theta}) = 0
+\]
+
+
 ## Notations
 
 * $n$: nombre d'individus (diploïdes, supposés non-apparentés)
@@ -102,11 +96,11 @@ En particulier, il ne faut pas confondre les données avec des variables aléato
 
 * $y_i$: phénotype de l'individu $i$ pour la caractère d'intérêt
 
-* $\mu$: moyenne globale du phénotypes des $n$ individus
+* $\mu$: moyenne globale du phénotype des $n$ individus
 
-* $f$: fréquence de l'allèle minoritaire à ce SNP (sur un autosome)
+* $f$: fréquence de l'allèle minoritaire au marqueur SNP d'intérêt (situé sur un autosome)
 
-* $x_i$: génotype de l'individu $i$ au marqueur SNP d'intérêt, codé comme le nombre de copie(s) de l'allèle minoritaire à ce SNP chez cet individu ($\forall i \; x_i \in \{0,1,2\}$)
+* $x_i$: génotype de l'individu $i$ à ce SNP, codé comme le nombre de copie(s) de l'allèle minoritaire à ce SNP chez cet individu ($\forall i \; x_i \in \{0,1,2\}$)
 
 * $\beta$: effet additif de chaque copie de l'allèle minoritaire en unité du phénotype
 
@@ -118,9 +112,27 @@ En particulier, il ne faut pas confondre les données avec des variables aléato
 
 ## Vraisemblance
 
+Dans notre cas, nous supposons que le génotype au SNP d'intérêt a un effet additif sur la moyenne du phénotype, ce qui s'écrit généralement:
 \[
-\forall i \; \; y_i = \mu + \beta x_i + \epsilon_i \text{ avec } \epsilon_i \sim \mathcal{N}(0, \sigma^2)
+\forall i \; \; y_i = \mu + \beta x_i + \epsilon_i \text{ avec } \epsilon_i \overset{\text{i.i.d}}{\sim} \mathcal{N}(0, \sigma^2)
 \]
+
+Une autre façon, mais équivalente, de l'écrire est:
+\[
+\forall i \; \; y_i | x_i, \mu, \beta, \sigma \; \overset{\text{i.i.d}}{\sim} \mathcal{N}(\mu + \beta x_i, \sigma^2)
+\]
+
+A partir de cela, il devient maintenant facile de *simuler des données*: si vous choisissez des valeurs pour les $x_i$, ainsi que pour les paramètres, vous pouvez facilement générer des valeurs pour les $y_i$.
+
+De plus, on peut écrire la vraisemblance sous forme plus explicite de fonction des paramètres $\Theta = \{ \mu, \beta, \sigma\}$:
+
+\begin{align*}
+\mathcal{L}(\Theta) &= p(\boldsymbol{y} | \boldsymbol{x}, \Theta) = p(y_1,\ldots,y_n | x_1,\ldots,x_n, \mu, \beta, \sigma) \\
+&= \prod_{i=1}^n p(y_i | x_i, \mu, \beta, \sigma) \\
+&= \prod_{i=1}^n \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y_i - \mu - \beta x_i)^2}{2 \sigma^2} \right)
+\end{align*}
+
+Pour trouver les valeurs des paramètres qui maximisent la vraisemblance, on travaille généralement avec la log-vraisemblance, $l(\Theta) = \log \mathcal{L}(\Theta)$, puis on utilise les [règles d'analyse](https://en.wikipedia.org/wiki/Differentiation_rules) pour calculer $\frac{\partial l}{\partial \beta}$, etc.
 
 
 # Simuler des données
@@ -148,7 +160,7 @@ Pour simuler les génotypes, nous allons supposer que la population est à l'éq
 ##' Calculate the genotype frequencies (AA, Aa, aa) at Hardy-Weinberg equilibrium.
 ##'
 ##' https://en.wikipedia.org/wiki/Hardy%E2%80%93Weinberg_principle
-##' @param maf frequency of the minor allele (a)
+##' @param maf frequency of the minor allele, a
 ##' @return vector of genotype frequencies
 ##' @author Timothée Flutre
 calc.geno.freq <- function(maf){
@@ -169,7 +181,7 @@ Le morceau de code ci-dessus vous montre aussi les bonnes pratiques de programma
 
 * documenter le code;
 
-* citer des référence si nécessaire.s
+* citer des référence si nécessaire.
 
 Regardons à quoi ressemblent les génotypes que nous venons de simuler:
 ```{r look_geno}
@@ -215,7 +227,7 @@ summary(dat)
 
 ## Dérivation mathématique
 
-...
+TODO
 
 ## Implémentation (R stats)
 
@@ -244,7 +256,9 @@ c(mu, beta, sigma)
 
 ## Implémentation (R base)
 
-Il est bon, surtout dans ce cas simple, d'implémenter par nous même cette méthode, histoire de mieux la comprendre.
+Il peut être intéressant, surtout dans ce cas simple, d'implémenter cette méthode par soi-même, histoire de mieux la comprendre.
+Pour cela, il faut d'abord écrire une fonction R à qui on donne les données et les valeurs de paramètres et qui renvoie la valeur de la log-vraisemblance.
+Puis on peut utiliser la fonction [mle](http://stat.ethz.ch/R-manual/R-devel/library/stats4/html/mle.html) du paquet stats4.
 
 TODO
 
@@ -261,10 +275,13 @@ Maintenant, c'est à vous: que voudriez-vous explorer en premier?
 Naturellement, l'activité de modélisation statistique ne se limite pas à simuler des données sur ordinateur.
 Bien au contraire, elle est au coeur de l'activité de recherche en ce qu'elle vise à identifier les caractéristiques saillantes d'un phénomène naturel afin d'en réaliser l'inférence.
 
-Concernant le thème de l'atelier, la prédiction génomique, quelles sont les limites du modèle exploré ci-dessus? Que proposez-vous pour y remédier?
+Concernant le thème de l'atelier, la prédiction génomique, quelles sont les limites du modèle exploré ci-dessus?
+Que proposez-vous pour y remédier?
 
 
-# Appendix
+
+
+# Annexe
 
 ```{r info}
 print(sessionInfo(), locale=FALSE)
