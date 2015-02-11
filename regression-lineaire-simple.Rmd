@@ -55,6 +55,8 @@ Il prend comme exemple la régression linéaire simple, historiquement développ
 
 # Introduction
 
+## A propos de la modélisation
+
 "Essentially, all models are wrong, but some are useful." (Box, 1987).
 Cette célèbre citation illustre parfaitement le fait qu'un modèle est une simplification du phénomène étudié, mais qu'après tout, si cette simplification nous apporte des enseignements et nous permet de prendre de bonnes décisions, cela importe tout autant.
 
@@ -66,11 +68,9 @@ Il est également utile, pour mieux comprendre le processus de modélisation sta
 En particulier, il ne faut pas confondre les données avec des variables aléatoires, même si on fait souvent le raccourci: "In both approaches [frequentist and Bayesian], a statistical model is introduced and we may say that the inference is based on what *would* happen if the data *were* to be random variables distributed according to the statistical model. This modeling assumption would be reasonable if the model *were* to describe accurately the variation in the data." ([Kass, 2011](http://dx.doi.org/10.1214/10-sts337)).
 
 
-# Ecrire le modèle
+## Notations et vocabulaire
 
-## Rappel
-
-L'inférence avec un modèle statistique consiste généralement à estimer les paramètres, puis à s'en servir pour prédire de nouvelles données.
+L'inférence avec un modèle statistique consiste généralement à *estimer* les paramètres, puis à s'en servir pour *prédire* de nouvelles données.
 
 Lorsque l'on propose un modèle pour répondre à une question donnée, on commence donc par expliquer les notations.
 Suivant les conventions, nous utilisons des lettres grecques pour dénoter les paramètres (non-observés), par exemple $\theta$, des lettres romaines pour dénoter les données observées, $y$, et un tilde pour les données prédites, $\tilde{y}$.
@@ -86,6 +86,157 @@ Tout naturellement, la méthode du maximum de vraisemblance cherche donc à iden
 \[
 \hat{\theta} = \text{argmax}_\theta \, \mathcal{L} \; \; \Leftrightarrow \; \; \frac{\partial \mathcal{L}}{\partial \theta}(\hat{\theta}) = 0
 \]
+
+## Comprendre par l'exemple
+
+Le vocabulaire esquissé au paragraphe précédent n'est pas forcément très intuitif...
+Par exemple, supposons que l'on étudie une quantité physique dont la valeur résulte de la somme d'une très grande quantité de facteurs indépendants, chacun ayant un faible impact sur la valeur finale.
+Prenons trois mesures de cette quantité d'intérêt.
+Comme il y a de la variation, on choisit d'introduire une *variable aléatoire* $Y$ correspondant à la quantité d'intérêt, et dénotons par $y_1$, $y_2$ et $y_3$ les trois observations, vues comme des réalisations de la variable aléatoire $Y$.
+
+```{r echo=FALSE}
+set.seed(1)
+y <- rnorm(n=3, mean=5, sd=1)
+```
+Par exemple, supposons les valeurs suivantes:
+
+- $y_1$=`r y[1]`
+
+- $y_2$=`r y[2]`
+
+- $y_3$=`r y[3]`
+
+Etant donné les caractéristiques du phénomène ("somme d'une très grande quantité de facteurs indépendants, chacun ayant un faible impact"), il est raisonnable de supposer que la variable $Y$ suit une *loi Normale* (*c.f.* théorème central limite).
+Cette distribution de probabilité est caractérisée par deux paramètres, sa *moyenne* que l'on note généralement $\mu$, et sa *variance* que l'on note généralement $\sigma^2$ ($\sigma$ étant l'écart-type).
+En terme de notation, on écrit $Y \sim \mathcal{N}(\mu, \sigma^2)$, et la densité de probabilité de la réalisation $y$ de $Y$ s'écrit:
+\[
+p(y | \mu, \sigma) = \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y - \mu)^2}{2 \sigma^2} \right)
+\]
+
+L'intérêt de ce modèle paramétrique est de pouvoir *résumer* les données, par exemple un million de mesures, par seulement deux valeurs, les paramètres.
+Mais bien entendu, nous ne connaissons pas les valeurs de paramètres!
+La moyenne $\mu$ peut prendre toutes les valeurs entre $-\infty$ et $+\infty$, et la variance $\sigma^2$ n'a pour seul restriction que d'être positive.
+Or comme le montrent les graphiques ci-dessous, la loi Normale peut être assez différente selon les valeurs de ces paramètres:
+
+```{r effect_mu, echo=FALSE}
+x <- seq(from=-3, to=10, length.out=500)
+plot(x=x, y=dnorm(x=x, mean=2, sd=1), type="l", col="blue",
+     main="Comparaison de deux lois Normale (sigma=1)",
+     xlab="quantile", ylab="densité de probabilité")
+points(x=x, y=dnorm(x=x, mean=5, sd=1), type="l", col="red")
+abline(v=0, lty=2)
+legend("topright", legend=c("mu=2", "mu=5"), col=c("blue", "red"), lty=1, bty="n")
+```
+
+```{r effect_sigma, echo=FALSE}
+x <- seq(from=-7, to=13, length.out=500)
+plot(x=x, y=dnorm(x=x, mean=3, sd=1), type="l", col="blue",
+     main="Comparaison de deux lois Normale (mu=3)",
+     xlab="quantiles", ylab="densité de probabilité")
+points(x=x, y=dnorm(x=x, mean=3, sd=3), type="l", col="red")
+abline(v=0, lty=2)
+legend("topright", legend=c("sigma=1", "sigma=3"), col=c("blue", "red"), lty=1, bty="n")
+```
+
+Revenons à nos trois mesures: `r y`.
+Parmi toutes les valeurs possibles des paramètres, le défi consiste donc à trouver celles pour lesquelles la loi Normale est une bonne description du mécanisme qui a généré nos données.
+On parle donc de trouver les valeurs des paramètres de telle sorte que la *vraisemblance* d'obtenir ces données soit la plus élevée possible pour ces valeurs des paramètres.
+
+Pour rendre les choses plus facile, supposons que l'on sache déjà que la variance vaut 1.
+Il ne nous reste plus qu'à trouver la moyenne.
+Regardons cela de plus près pour la première observation, $y_1$=`r y[1]`:
+
+```{r ex_lik_y1, echo=FALSE}
+x <- seq(from=-3, to=10, length.out=500)
+plot(x=x, y=dnorm(x=x, mean=2, sd=1), type="l", col="blue",
+     main="",
+     xlab="quantiles", ylab="densité de probabilité")
+points(x=x, y=dnorm(x=x, mean=5, sd=1), type="l", col="red")
+abline(v=0, lty=2)
+legend("topright", legend=c("mu=2", "mu=5"), col=c("blue", "red"), lty=1, bty="n")
+segments(x0=y[1], y0=0, x1=y[1], y1=dnorm(x=y[1], mean=2, sd=1))
+segments(x0=y[1], y0=0, x1=y[1], y1=dnorm(x=y[1], mean=5, sd=1))
+segments(x0=y[1], y0=dnorm(x=y[1], mean=2, sd=1),
+         x1=-5, y1=dnorm(x=y[1], mean=2, sd=1), col="blue")
+segments(x0=y[1], y0=dnorm(x=y[1], mean=5, sd=1),
+         x1=-5, y1=dnorm(x=y[1], mean=5, sd=1), col="red")
+```
+
+D'après le graphique, la densité de probabilité $p(y_1 | \mu=5, \sigma=1)$ est strictement supérieur à $p(y_1 | \mu=2, \sigma=1)$.
+Cela se vérifie si l'on fait le calcul avec la formule ci-dessus: $p(y_1 | \mu=5, \sigma=1)$=`r dnorm(x=y[1], mean=5, sd=1)` et $p(y_1 | \mu=2, \sigma=1)$=`r dnorm(x=y[1], mean=2, sd=1)`.
+Comme les deux densité ont la même valeur pour $\sigma$, la différence vient bien du terme $(y - \mu)^2$ dans l'exponentielle, qui représente l'éacrt à la moyenne.
+Au final, nous pouvons donc dire qu'en ce qui concerne la première observation, la vraisemblance $\mathcal{L}(\mu=5,\sigma=1)$ est plus grande que $\mathcal{L}(\mu=2,\sigma=1)$.
+
+<!--
+Comme nous avons trois observations au total, nous pouvons faire de même:
+
+```{r ex_lik_y, echo=FALSE}
+x <- seq(from=-3, to=10, length.out=500)
+plot(x=x, y=dnorm(x=x, mean=2, sd=1), type="l", col="blue",
+     main="",
+     xlab="quantiles", ylab="densité de probabilité")
+points(x=x, y=dnorm(x=x, mean=5, sd=1), type="l", col="red")
+abline(v=0, lty=2)
+legend("topright", legend=c("mu=2", "mu=5"), col=c("blue", "red"), lty=1, bty="n")
+for(i in 1:length(y)){
+  segments(x0=y[i], y0=0, x1=y[i], y1=dnorm(x=y[i], mean=2, sd=1))
+  segments(x0=y[i], y0=0, x1=y[i], y1=dnorm(x=y[i], mean=5, sd=1))
+  segments(x0=y[i], y0=dnorm(x=y[i], mean=2, sd=1),
+           x1=-5, y1=dnorm(x=y[i], mean=2, sd=1), col="blue")
+  segments(x0=y[i], y0=dnorm(x=y[i], mean=5, sd=1),
+           x1=-5, y1=dnorm(x=y[i], mean=5, sd=1), col="red")
+}
+```
+
+Ceci semble nous conforter dans notre choix de $\mu=5$.
+-->
+
+Comme l'on dispose de plusieurs observations et que l'on suppose qu'elles sont toutes des réalisations de la même variable aléatoire, il est pertinent de calculer la vraisemblance de toutes ces observations conjointement plutôt que séparément:
+\[
+\mathcal{L}(\mu, \sigma) = p(y_1,y_2,y_3 | \mu, \sigma)
+\]
+
+Si l'on fait aussi l'hypothèse que les observations sont indépendantes, cela se simplifie en:
+\begin{align*}
+\mathcal{L}(\mu, \sigma) &= p(y_1 | \mu, \sigma) \times p(y_2 | \mu, \sigma) \times p(y_3 | \mu, \sigma) \\
+&= \prod_{i=1}^3 p(y_i | \mu, \sigma)
+\end{align*}
+
+Il n'est pas très pratique de maximiser la vraisemblance directement, on préfère donc passer au log (qui est monotone, donc le maximum de l'un est le maximum de l'autre):
+\begin{align*}
+l(\mu,\sigma) &= \log \mathcal{L}(\mu, \sigma) \\
+&= \sum_{i=1}^3 \log p(y_i | \mu, \sigma) \\
+&= \sum_{i=1}^3 \log \left[ \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y_i - \mu)^2}{2 \sigma^2} \right) \right] \\
+&= - 3 \log \sigma \; - \frac{3}{2} \log (2\pi) \; - \sum_{i=1}^3 \frac{(y_i - \mu)^2}{2 \sigma^2}
+\end{align*}
+
+Lorsque le nombre d'observations augmente, un simple examen graphique n'est pas très pratique ni suffisant.
+D'où le fait, qu'en pratique, (i) l'on écrive une fonction qui calcule la log-vraisemblance, et (ii) l'on cherche le maximum de cette fonction:
+
+```{r compute_lik}
+compute.log.likelihood <- function(parameters, data){
+  mu <- parameters[1]
+  sigma <- parameters[2]
+  y <- data
+  n <- length(y)
+  log.lik <- - n * log(sigma) - (n/2) * log(2 * pi) - sum(((y - mu)^2) / (2 * sigma^2))
+  return(log.lik)
+}
+
+compute.log.likelihood(c(5,1), y)
+compute.log.likelihood(c(2,1), y)
+```
+
+Dans le cas de la loi Normale, il existe déjà dans R des fonctions implémentant la densité de probablité, ce qui nous permet de vérifier que nous n'avons pas fait d'erreur:
+```{r check_compute_lik}
+sum(dnorm(x=y, mean=5, sd=1, log=TRUE))
+sum(dnorm(x=y, mean=2, sd=1, log=TRUE))
+```
+
+Cette section devrait vous avoir donné les bases du raisonnement ainsi que des techniques que nous allons utiliser dans la suite de l'atelier, commençant dès maintenant avec la régression linéaire simple.
+
+
+# Ecrire le modèle
 
 
 ## Notations
@@ -195,7 +346,7 @@ Tirons une valeur pour l'effet du génotype sur le phénotype:
 (beta <- rnorm(n=1, mean=1, sd=1))
 ```
 
-Simulons des erreurs:
+Simulons des erreurs (par simplicité, fixons $\sigma$ à 1):
 ```{r simul_errors}
 sigma <- 1
 errors <- rnorm(n=n, mean=0, sd=sigma)
@@ -252,6 +403,8 @@ c(mu, beta, sigma)
 (beta.hat <- coefficients(fit)[2])
 (sigma.hat <- sqrt((1/(n-2) * sum(fit$residuals^2))))
 ```
+
+parler du R2
 
 
 ## Implémentation (R base)
