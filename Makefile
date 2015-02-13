@@ -1,13 +1,19 @@
-regression-lineaire-simple.pdf: regression-lineaire-simple.Rmd
-	echo 'library(rmarkdown); render("regression-lineaire-simple.Rmd", "pdf_document")' | R --vanilla --quiet
+premiers-pas.pdf: premiers-pas.Rmd
+	echo 'library(rmarkdown); render("premiers-pas.Rmd", "pdf_document")' | R --vanilla --quiet
 
-regression-lineaire-simple.html: regression-lineaire-simple.Rmd
-	echo 'library(rmarkdown); render("regression-lineaire-simple.Rmd", "html_document")' | R --vanilla --quiet
+premiers-pas.html: premiers-pas.Rmd
+	echo 'library(rmarkdown); render("premiers-pas.Rmd", "html_document")' | R --vanilla --quiet
+
+prediction-genomique.pdf: prediction-genomique.Rmd
+	echo 'library(rmarkdown); render("prediction-genomique.Rmd", "pdf_document")' | R --vanilla --quiet
+
+prediction-genomique.html: prediction-genomique.Rmd
+	echo 'library(rmarkdown); render("prediction-genomique.Rmd", "html_document")' | R --vanilla --quiet
 
 clean:
-	rm -f regression-lineaire-simple.md \
-		regression-lineaire-simple.html \
-		regression-lineaire-simple.pdf \
+	rm -f premiers-pas.md \
+		premiers-pas.html \
+		premiers-pas.pdf \
 		*~
-	rm -rf regression-lineaire-simple_cache/
-	rm -rf regression-lineaire-simple_files/
+	rm -rf premiers-pas_cache/
+	rm -rf premiers-pas_files/

@@ -1,5 +1,5 @@
 ---
-title: "Régression linéaire simple"
+title: "Premiers pas"
 author: "Timothée Flutre"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
 output:
@@ -77,15 +77,23 @@ Suivant les conventions, nous utilisons des lettres grecques pour dénoter les p
 L'ensemble des paramètres est généralement noté en majuscule, $\Theta$.
 De plus, s'il y a plusieurs paramètres ou données, on utilise des vecteurs notés en gras, ce qui donne $\boldsymbol{\theta}$ et $\boldsymbol{y}$.
 
-Une fois les notations établies, on écrit la vraisemblance (*likelihood*), souvent présentée comme étant la "probabilité des données sachant les paramètres".
+Une fois les notations établies, on écrit la *vraisemblance* (likelihood en anglais), souvent présentée comme étant la "probabilité des données sachant les paramètres".
 En fait, si les données sont des variables continues, c'est la densité de probabilité des données sachant les paramètres, notée $p(y | \theta)$, et si les données sont des variables discrètes, c'est la fonction de masse, notée $P(y | \theta)$.
 Mais le plus important est de réaliser que, dans la vraisemblance, ce ne sont pas les données qui varient, mais les paramètres: la vraisemblance est une fonction des paramètres, d'où le fait qu'on la note $\mathcal{L}(\theta)$.
 
-Tout naturellement, la méthode du maximum de vraisemblance cherche donc à identifier la valeur du paramètre, notée $\hat{\theta}$, qui maximise la vraisemblance.
+Tout naturellement, la méthode du *maximum de vraisemblance* cherche donc à identifier la valeur du paramètre, notée $\hat{\theta}$ par convention, qui maximise la vraisemblance:
 
 \[
 \hat{\theta} = \text{argmax}_\theta \, \mathcal{L} \; \; \Leftrightarrow \; \; \frac{\partial \mathcal{L}}{\partial \theta}(\hat{\theta}) = 0
 \]
+
+Mais ceci n'est que le tout début de la démarche!
+En effet, certaines personnes décrivent les statistiques comme étant la *science de l'incertitude* ([Lindley, 2000](http://dx.doi.org/10.1111/1467-9884.00238)).
+Or pour l'instant, nous n'avons parlé que de la façon d'obtenir *une* valeur par paramètre, celle qui maximise la vraisemblance des données.
+Il est donc primordial ensuite de *quantifier l'incertitude* que nous avons concernant le fait que cette valeur soit "raisonnable".
+C'est sur ce point que différentes approches diffèrent (*fréquentiste*, *bayésienne*).
+Mais, quelle que soit l'approche, on peut s'attendre au fait que, plus le nombre d'échantillons augmente (s'ils sont "représentatifs), plus l'incertitude sur la valeur du paramètre diminue.
+
 
 ## Comprendre par l'exemple
 
@@ -283,8 +291,6 @@ De plus, on peut écrire la vraisemblance sous forme plus explicite de fonction 
 &= \prod_{i=1}^n \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y_i - \mu - \beta x_i)^2}{2 \sigma^2} \right)
 \end{align*}
 
-Pour trouver les valeurs des paramètres qui maximisent la vraisemblance, on travaille généralement avec la log-vraisemblance, $l(\Theta) = \log \mathcal{L}(\Theta)$, puis on utilise les [règles d'analyse](https://en.wikipedia.org/wiki/Differentiation_rules) pour calculer $\frac{\partial l}{\partial \beta}$, etc.
-
 
 # Simuler des données
 
@@ -378,6 +384,8 @@ summary(dat)
 
 ## Dérivation mathématique
 
+Pour trouver les valeurs des paramètres qui maximisent la vraisemblance, on travaille généralement avec la log-vraisemblance, $l(\Theta) = \log \mathcal{L}(\Theta)$, puis on utilise les [règles d'analyse](https://en.wikipedia.org/wiki/Differentiation_rules) pour calculer $\frac{\partial l}{\partial \beta}$, etc.
+
 TODO
 
 ## Implémentation (R stats)
@@ -425,13 +433,42 @@ Maintenant, c'est à vous: que voudriez-vous explorer en premier?
 
 # Perspectives
 
+## Améliorer le modèle
+
 Naturellement, l'activité de modélisation statistique ne se limite pas à simuler des données sur ordinateur.
 Bien au contraire, elle est au coeur de l'activité de recherche en ce qu'elle vise à identifier les caractéristiques saillantes d'un phénomène naturel afin d'en réaliser l'inférence.
 
 Concernant le thème de l'atelier, la prédiction génomique, quelles sont les limites du modèle exploré ci-dessus?
 Que proposez-vous pour y remédier?
 
+## Ré-écriture du modèle
 
+Dans une section précédente, nous avons vu que la vraisemblance pouvait s'écrire de la manière suivante:
+
+\[
+\forall i \; \; y_i | x_i, \mu, \beta, \sigma \; \overset{\text{i.i.d}}{\sim} \mathcal{N}(\mu + \beta x_i, \sigma^2)
+\]
+
+La loi Normale ci-dessus est utilisée sous sa forme *univariée*, c'est-à-dire qu'on s'en sert pour tirer aléatoirement *une* réalisation de la variable aléatoire d'intérêt.
+
+Or la même loi existe aussi sous forme *multivariée*, ce qui permet, à chaque fois qu'on "tire" dedans, d'obtenir *plusieurs* réalisations de la variable aléatoire d'intérêt, celles-ci étant arrangées dans un vecteur.
+Sous cette forme, la vraisemblance s'écrit maintenant:
+
+\[
+\boldsymbol{y} | \boldsymbol{x}, \mu, \beta, \sigma \; \sim \mathcal{N}_n(\mu \boldsymbol{1} + \beta \boldsymbol{x}, \sigma^2 I_n)
+\]
+
+où $\boldsymbol{y}$ est le vecteur de dimension $n$ contenant les phénotypes, $\boldsymbol{x}$ est le vecteur de dimension $n$ contenant les génotypes, $\boldsymbol{1}$ est le vecteur de dimension $n$ ne contenant que des $1$, et $I_n$ est la matrice identité également de dimension $n$.
+
+D'ailleurs, on écrit souvent ce type de vraisemblance de manière encore plus concise:
+
+\[
+\boldsymbol{y} | X, \boldsymbol{\beta}, \sigma \; \sim \mathcal{N}_n(X \boldsymbol{\beta}, \Sigma)
+\]
+
+où $X$ est une matrice à deux colonnes ($\boldsymbol{1}$ et $\boldsymbol{x}$), $\boldsymbol{\beta}$ est un vecteur à deux élements ($\mu$ et $\beta$) et $\Sigma$ est une matrice $n \times n$ égale à $\sigma^2 I_n$.
+
+Sous cette forme, ne devient-il pas "facile" d'inclure dans le modèle les élements proposés en perspective ci-dessus?
 
 
 # Annexe
