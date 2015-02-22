@@ -73,34 +73,34 @@ En particulier, il ne faut pas confondre les données avec des variables aléato
 L'inférence avec un modèle statistique consiste généralement à *estimer* les paramètres, puis à s'en servir pour *prédire* de nouvelles données.
 
 Lorsque l'on propose un modèle pour répondre à une question donnée, on commence donc par expliquer les notations.
-Suivant les conventions, nous utilisons des lettres grecques pour dénoter les paramètres (non-observés), par exemple $\theta$, des lettres romaines pour dénoter les données observées, $y$, et un tilde pour les données prédites, $\tilde{y}$.
-L'ensemble des paramètres est généralement noté en majuscule, $\Theta$.
-De plus, s'il y a plusieurs paramètres ou données, on utilise des vecteurs notés en gras, ce qui donne $\boldsymbol{\theta}$ et $\boldsymbol{y}$.
+Suivant les conventions, nous utilisons des lettres grecques pour dénoter les paramètres (non-observés), par exemple $\theta$, des lettres romaines pour les données observées, par exemple $y$, et des lettres romaines surmontées d'un tilde pour les données prédites, $\tilde{y}$.
+L'ensemble des paramètres est généralement noté en majuscule, par exemple $\Theta = \{ \theta_1, \theta_2 \}$.
+De plus, s'il y a plusieurs paramètres ou données, ils se retrouvent mathématiquement dans des vecteurs, en gras, ce qui donne $\boldsymbol{\theta}$ et $\boldsymbol{y}$.
 
 Une fois les notations établies, on écrit la *vraisemblance* (likelihood en anglais), souvent présentée comme étant la "probabilité des données sachant les paramètres".
 En fait, si les données sont des variables continues, c'est la densité de probabilité des données sachant les paramètres, notée $p(y | \theta)$, et si les données sont des variables discrètes, c'est la fonction de masse, notée $P(y | \theta)$.
-Mais le plus important est de réaliser que, dans la vraisemblance, ce ne sont pas les données qui varient, mais les paramètres: la vraisemblance est une fonction des paramètres, d'où le fait qu'on la note $\mathcal{L}(\theta)$.
+Mais le plus important est de réaliser que, dans la vraisemblance, ce ne sont pas les données qui varient, mais les paramètres: la vraisemblance est une fonction des paramètres, d'où le fait qu'on la note $\mathcal{L}(\theta)$ ou $\mathcal{L}(\theta | y)$.
 
-Tout naturellement, la méthode du *maximum de vraisemblance* cherche donc à identifier la valeur du paramètre, notée $\hat{\theta}$ par convention, qui maximise la vraisemblance:
+Tout naturellement, la méthode du *maximum de vraisemblance* cherche à identifier la valeur du paramètre, notée $\hat{\theta}$ par convention, qui maximise la vraisemblance:
 
-\[
+\begin{align}
 \hat{\theta} = \text{argmax}_\theta \, \mathcal{L} \; \; \Leftrightarrow \; \; \frac{\partial \mathcal{L}}{\partial \theta}(\hat{\theta}) = 0
-\]
+\end{align}
 
 Mais ceci n'est que le tout début de la démarche!
-En effet, certaines personnes décrivent les statistiques comme étant la *science de l'incertitude* ([Lindley, 2000](http://dx.doi.org/10.1111/1467-9884.00238)).
-Or pour l'instant, nous n'avons parlé que de la façon d'obtenir *une* valeur par paramètre, celle qui maximise la vraisemblance des données.
-Il est donc primordial ensuite de *quantifier l'incertitude* que nous avons concernant le fait que cette valeur soit "raisonnable".
-C'est sur ce point que différentes approches diffèrent (*fréquentiste*, *bayésienne*).
-Mais, quelle que soit l'approche, on peut s'attendre au fait que, plus le nombre d'échantillons augmente (s'ils sont "représentatifs), plus l'incertitude sur la valeur du paramètre diminue.
+En effet, certains décrivent les statistiques comme étant la *science de l'incertitude* ([Lindley, 2000](http://dx.doi.org/10.1111/1467-9884.00238)).
+Or pour l'instant, nous n'avons parlé que de la façon d'obtenir *une* valeur par paramètre, celle qui maximise la vraisemblance.
+Il est donc primordial ensuite de *quantifier l'incertitude* que nous avons quant à cette valeur.
+C'est sur ce point que différentes approches sont possibles (*fréquentiste*, *bayésienne*).
+Mais quelle que soit l'approche, on peut généralement s'attendre au fait que, plus le nombre d'échantillons augmente (s'ils sont "représentatifs), plus l'incertitude sur la valeur du paramètre diminue.
 
 
 ## Comprendre par l'exemple
 
-Le vocabulaire esquissé au paragraphe précédent n'est pas forcément très intuitif...
+Le vocabulaire esquissé au paragraphe précédent n'est pas forcément très intuitif.
 Par exemple, supposons que l'on étudie une quantité physique dont la valeur résulte de la somme d'une très grande quantité de facteurs indépendants, chacun ayant un faible impact sur la valeur finale.
 Prenons trois mesures de cette quantité d'intérêt.
-Comme il y a de la variation, on choisit d'introduire une *variable aléatoire* $Y$ correspondant à la quantité d'intérêt, et dénotons par $y_1$, $y_2$ et $y_3$ les trois observations, vues comme des réalisations de la variable aléatoire $Y$.
+Comme il y a de la variation, on choisit d'introduire une *variable aléatoire* $Y$ correspondant à la quantité d'intérêt, et dénotons par $y_1$, $y_2$ et $y_3$ les trois observations, vues comme des réalisations de cette variable aléatoire.
 
 ```{r echo=FALSE}
 set.seed(1)
@@ -114,16 +114,16 @@ Par exemple, supposons les valeurs suivantes:
 
 - $y_3$=`r y[3]`
 
-Etant donné les caractéristiques du phénomène ("somme d'une très grande quantité de facteurs indépendants, chacun ayant un faible impact"), il est raisonnable de supposer que la variable $Y$ suit une *loi Normale* (*c.f.* théorème central limite).
+Etant donné les caractéristiques du phénomène ("somme d'une très grande quantité de facteurs indépendants, chacun ayant un faible impact"), il est raisonnable de supposer que la variable $Y$ suit une *loi Normale* (c.f. le théorème central limite).
 Cette distribution de probabilité est caractérisée par deux paramètres, sa *moyenne* que l'on note généralement $\mu$, et sa *variance* que l'on note généralement $\sigma^2$ ($\sigma$ étant l'écart-type).
 En terme de notation, on écrit $Y \sim \mathcal{N}(\mu, \sigma^2)$, et la densité de probabilité de la réalisation $y$ de $Y$ s'écrit:
-\[
-p(y | \mu, \sigma) = \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y - \mu)^2}{2 \sigma^2} \right)
-\]
+\begin{align}
+Y \sim \mathcal{N}(\mu, \sigma^2) \; \; \Leftrightarrow \; \; p(Y=y | \mu, \sigma) = \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y - \mu)^2}{2 \sigma^2} \right)
+\end{align}
 
 L'intérêt de ce modèle paramétrique est de pouvoir *résumer* les données, par exemple un million de mesures, par seulement deux valeurs, les paramètres.
 Mais bien entendu, nous ne connaissons pas les valeurs de paramètres!
-La moyenne $\mu$ peut prendre toutes les valeurs entre $-\infty$ et $+\infty$, et la variance $\sigma^2$ n'a pour seul restriction que d'être positive.
+La moyenne $\mu$ peut prendre toutes les valeurs entre $-\infty$ et $+\infty$, et la variance $\sigma^2$ n'a pour seule restriction que d'être positive.
 Or comme le montrent les graphiques ci-dessous, la loi Normale peut être assez différente selon les valeurs de ces paramètres:
 
 ```{r effect_mu, echo=FALSE}
@@ -147,11 +147,11 @@ legend("topright", legend=c("sigma=1", "sigma=3"), col=c("blue", "red"), lty=1, 
 ```
 
 Revenons à nos trois mesures: `r y`.
-Parmi toutes les valeurs possibles des paramètres, le défi consiste donc à trouver celles pour lesquelles la loi Normale est une bonne description du mécanisme qui a généré nos données.
+Parmi toutes les valeurs possibles des paramètres, le défi consiste donc à trouver celles pour lesquelles la loi Normale est une bonne description du mécanisme qui a généré ces données.
 On parle donc de trouver les valeurs des paramètres de telle sorte que la *vraisemblance* d'obtenir ces données soit la plus élevée possible pour ces valeurs des paramètres.
 
-Pour rendre les choses plus facile, supposons que l'on sache déjà que la variance vaut 1.
-Il ne nous reste plus qu'à trouver la moyenne.
+Pour rendre les choses plus facile, supposons que l'on connaisse déjà la variance: $\sigma^2 = 1$.
+Il ne nous reste plus qu'à trouver la moyenne, $\mu$.
 Regardons cela de plus près pour la première observation, $y_1$=`r y[1]`:
 
 ```{r ex_lik_y1, echo=FALSE}
@@ -170,41 +170,17 @@ segments(x0=y[1], y0=dnorm(x=y[1], mean=5, sd=1),
          x1=-5, y1=dnorm(x=y[1], mean=5, sd=1), col="red")
 ```
 
-D'après le graphique, la densité de probabilité $p(y_1 | \mu=5, \sigma=1)$ est strictement supérieur à $p(y_1 | \mu=2, \sigma=1)$.
+D'après le graphique, la densité de probabilité $p(y_1 | \mu=5, \sigma=1)$ est strictement supérieure à $p(y_1 | \mu=2, \sigma=1)$.
 Cela se vérifie si l'on fait le calcul avec la formule ci-dessus: $p(y_1 | \mu=5, \sigma=1)$=`r dnorm(x=y[1], mean=5, sd=1)` et $p(y_1 | \mu=2, \sigma=1)$=`r dnorm(x=y[1], mean=2, sd=1)`.
-Comme les deux densité ont la même valeur pour $\sigma$, la différence vient bien du terme $(y - \mu)^2$ dans l'exponentielle, qui représente l'éacrt à la moyenne.
+Comme les deux densités ont la même valeur pour $\sigma$, la différence vient bien du terme $(y - \mu)^2$ dans l'exponentielle, terme qui représente l'écart à la moyenne.
 Au final, nous pouvons donc dire qu'en ce qui concerne la première observation, la vraisemblance $\mathcal{L}(\mu=5,\sigma=1)$ est plus grande que $\mathcal{L}(\mu=2,\sigma=1)$.
-
-<!--
-Comme nous avons trois observations au total, nous pouvons faire de même:
-
-```{r ex_lik_y, echo=FALSE}
-x <- seq(from=-3, to=10, length.out=500)
-plot(x=x, y=dnorm(x=x, mean=2, sd=1), type="l", col="blue",
-     main="",
-     xlab="quantiles", ylab="densité de probabilité")
-points(x=x, y=dnorm(x=x, mean=5, sd=1), type="l", col="red")
-abline(v=0, lty=2)
-legend("topright", legend=c("mu=2", "mu=5"), col=c("blue", "red"), lty=1, bty="n")
-for(i in 1:length(y)){
-  segments(x0=y[i], y0=0, x1=y[i], y1=dnorm(x=y[i], mean=2, sd=1))
-  segments(x0=y[i], y0=0, x1=y[i], y1=dnorm(x=y[i], mean=5, sd=1))
-  segments(x0=y[i], y0=dnorm(x=y[i], mean=2, sd=1),
-           x1=-5, y1=dnorm(x=y[i], mean=2, sd=1), col="blue")
-  segments(x0=y[i], y0=dnorm(x=y[i], mean=5, sd=1),
-           x1=-5, y1=dnorm(x=y[i], mean=5, sd=1), col="red")
-}
-```
-
-Ceci semble nous conforter dans notre choix de $\mu=5$.
--->
 
 Comme l'on dispose de plusieurs observations et que l'on suppose qu'elles sont toutes des réalisations de la même variable aléatoire, il est pertinent de calculer la vraisemblance de toutes ces observations conjointement plutôt que séparément:
 \[
 \mathcal{L}(\mu, \sigma) = p(y_1,y_2,y_3 | \mu, \sigma)
 \]
 
-Si l'on fait aussi l'hypothèse que les observations sont indépendantes, cela se simplifie en:
+Si l'on fait aussi l'hypothèse que ces observations sont indépendantes, cela se simplifie en:
 \begin{align*}
 \mathcal{L}(\mu, \sigma) &= p(y_1 | \mu, \sigma) \times p(y_2 | \mu, \sigma) \times p(y_3 | \mu, \sigma) \\
 &= \prod_{i=1}^3 p(y_i | \mu, \sigma)
@@ -215,7 +191,7 @@ Il n'est pas très pratique de maximiser la vraisemblance directement, on préf�
 l(\mu,\sigma) &= \log \mathcal{L}(\mu, \sigma) \\
 &= \sum_{i=1}^3 \log p(y_i | \mu, \sigma) \\
 &= \sum_{i=1}^3 \log \left[ \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y_i - \mu)^2}{2 \sigma^2} \right) \right] \\
-&= - 3 \log \sigma \; - \frac{3}{2} \log (2\pi) \; - \sum_{i=1}^3 \frac{(y_i - \mu)^2}{2 \sigma^2}
+&= - 3 \log \sigma \; - \frac{3}{2} \log (2\pi) \; - \frac{1}{2 \sigma^2} \sum_{i=1}^3 (y_i - \mu)^2
 \end{align*}
 
 Lorsque le nombre d'observations augmente, un simple examen graphique n'est pas très pratique ni suffisant.
@@ -235,7 +211,7 @@ compute.log.likelihood(c(5,1), y)
 compute.log.likelihood(c(2,1), y)
 ```
 
-Dans le cas de la loi Normale, il existe déjà dans R des fonctions implémentant la densité de probablité, ce qui nous permet de vérifier que nous n'avons pas fait d'erreur:
+Dans le cas de la loi Normale, il existe déjà dans R des fonctions implémentant la densité de probabilité, ce qui nous permet de vérifier que nous n'avons pas fait d'erreur:
 ```{r check_compute_lik}
 sum(dnorm(x=y, mean=5, sd=1, log=TRUE))
 sum(dnorm(x=y, mean=2, sd=1, log=TRUE))
@@ -267,7 +243,6 @@ Cette section devrait vous avoir donné les bases du raisonnement ainsi que des 
 
 * $\sigma^2$: variance des erreurs
 
-* $\mathcal{N}(\mu,\sigma^2)$: distribution Normale univariée de moyenne $\mu$ et variance $\sigma^2$
 
 ## Vraisemblance
 
@@ -281,9 +256,9 @@ Une autre façon, mais équivalente, de l'écrire est:
 \forall i \; \; y_i | x_i, \mu, \beta, \sigma \; \overset{\text{i.i.d}}{\sim} \mathcal{N}(\mu + \beta x_i, \sigma^2)
 \]
 
-A partir de cela, il devient maintenant facile de *simuler des données*: si vous choisissez des valeurs pour les $x_i$, ainsi que pour les paramètres, vous pouvez facilement générer des valeurs pour les $y_i$.
+Cette deuxième formulation montre bien que, de manière générale, si l'on connaît les valeurs des variables explicatives ainsi que celles des paramètres, alors on est capable de *simuler* des valeurs de réponse.
 
-De plus, on peut écrire la vraisemblance sous forme plus explicite de fonction des paramètres $\Theta = \{ \mu, \beta, \sigma\}$:
+De plus, on peut écrire la vraisemblance sous forme plus explicite comme une fonction des paramètres $\Theta = \{ \mu, \beta, \sigma \}$:
 
 \begin{align*}
 \mathcal{L}(\Theta) &= p(\boldsymbol{y} | \boldsymbol{x}, \Theta) = p(y_1,\ldots,y_n | x_1,\ldots,x_n, \mu, \beta, \sigma) \\
@@ -343,8 +318,8 @@ Le morceau de code ci-dessus vous montre aussi les bonnes pratiques de programma
 Regardons à quoi ressemblent les génotypes que nous venons de simuler:
 ```{r look_geno}
 table(genotypes)
-sum(genotypes) / (2 * n)
-var(genotypes)
+sum(genotypes) / (2 * n) # estimate of the MAF
+var(genotypes) # important for the estimate of beta
 ```
 
 Tirons une valeur pour l'effet du génotype sur le phénotype:
@@ -365,13 +340,17 @@ phenotypes <- mu + beta * genotypes + errors
 
 Regardons à quoi ils ressemblent:
 ```{r look_pheno}
-hist(phenotypes, breaks="FD")
+hist(phenotypes, breaks="FD", las=1, main="",
+     xlab="Phenotypes", ylab="Number of individuals")
 ```
 
 Comme ce qui nous intéresse ici, ce ne sont pas uniquement les phénotypes, mais bien la relation entre les génotypes et les phénotypes, un autre type de graphique semble plus approprié:
 ```{r look_geno_pheno}
-boxplot(phenotypes ~ genotypes, xlab="genotypes", ylab="phenotypes")
+boxplot(phenotypes ~ genotypes, xlab="Genotypes", ylab="Phenotypes", las=1)
 ```
+
+Remarquez l'importance de faire des graphiques les plus clairs et intelligibles possible.
+Ce ne sont souvent que les graphiques que l'on montre à la place des tableaus de résultats, ceux-ci étant plus difficiles à lire ([Gelman *et al.*, 2002](http://dx.doi.org/10.1198/000313002317572790)).
 
 Pour la suite, il est habituel dans R d'organiser les données dans un tableau:
 ```{r org_data}
@@ -384,9 +363,21 @@ summary(dat)
 
 ## Dérivation mathématique
 
-Pour trouver les valeurs des paramètres qui maximisent la vraisemblance, on travaille généralement avec la log-vraisemblance, $l(\Theta) = \log \mathcal{L}(\Theta)$, puis on utilise les [règles d'analyse](https://en.wikipedia.org/wiki/Differentiation_rules) pour calculer $\frac{\partial l}{\partial \beta}$, etc.
+Pour trouver les valeurs des paramètres qui maximisent la vraisemblance, on travaille généralement avec la log-vraisemblance, $l(\Theta) = \log \mathcal{L}(\Theta)$, puis on utilise les [règles d'analyse](https://en.wikipedia.org/wiki/Differentiation_rules):
 
-TODO
+* $\frac{\partial l}{\partial \beta}(\hat{\beta}) = 0 \; \Leftrightarrow \; \hat{\beta} = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}$
+
+* $\frac{\partial l}{\partial \mu}(\hat{\mu}) = 0 \; \Leftrightarrow \; \hat{\mu} = \bar{y} - \hat{\beta} \bar{x}$
+
+* $\frac{\partial l}{\partial \sigma}(\hat{\sigma}) = 0 \; \Leftrightarrow \; \hat{\sigma} = \frac{1}{n} \sum_i (y_i - (\hat{\mu} + \hat{\beta} x_i))^2$
+
+où $\bar{x} = \frac{1}{n} \sum_i x_i$ et $\bar{y} = \frac{1}{n} \sum_i y_i$.
+
+En plus de ces estimations, il est fréquent d'évaluer la qualité du modèle en calculant la proportion de la variance des $\{y_i\}$ expliquée par les $\{x_i\}$:
+
+$R^2 = \frac{\sum_i ((\hat{\mu} + \hat{\beta} x_i) - \bar{y})^2}{\sum_i (y_i - \bar{y})^2}$
+
+
 
 ## Implémentation (R stats)
 
@@ -401,24 +392,29 @@ par(mfrow=c(2,2))
 plot(fit)
 ```
 
-Ceci semble être bien le cas (évidemment puisque nous avons simulé nous-même les données...).
+Ceci semble être bien le cas (évidemment puisque nous avons simulé nous-même les données!).
 
-Nous pouvons donc extraire de l'objet les quantités qui nous intéresse et les comparer aux vraies valeurs utilisées pour simuler les données:
+Nous pouvons donc extraire de l'objet renvoyé par la fonction lm() les quantités qui nous intéressent et les comparer aux vraies valeurs utilisées pour simuler les données:
 ```{r get_results}
 summary(fit)
+c(coefficients(fit)[1], coefficients(fit)[2], summary(fit)$sigma)
 c(mu, beta, sigma)
-(mu.hat <- coefficients(fit)[1])
-(beta.hat <- coefficients(fit)[2])
-(sigma.hat <- sqrt((1/(n-2) * sum(fit$residuals^2))))
+summary(fit)$r.squared
 ```
 
-parler du R2
+On peut aussi ajouter la droite de régression au graphique des données:
+```{r look_geno_pheno_reg}
+plot(phenotypes ~ jitter(genotypes, factor=0.5), las=1,
+     xlab="Genotypes", ylab="Phenotypes")
+abline(a=coefficients(fit)[1], b=coefficients(fit)[2], col="red")
+legend("bottomright", legend="MLE line", col="red", lty=1, bty="n")
+```
 
 
 ## Implémentation (R base)
 
-Il peut être intéressant, surtout dans ce cas simple, d'implémenter cette méthode par soi-même, histoire de mieux la comprendre.
-Pour cela, il faut d'abord écrire une fonction R à qui on donne les données et les valeurs de paramètres et qui renvoie la valeur de la log-vraisemblance.
+Il peut être intéressant, surtout dans ce cas simple, d'implémenter cette méthode par soi-même pour mieux la comprendre.
+Pour cela, il faut d'abord écrire une fonction à qui on fournit les données et les paramètres et qui renvoie la log-vraisemblance.
 Puis on peut utiliser la fonction [mle](http://stat.ethz.ch/R-manual/R-devel/library/stats4/html/mle.html) du paquet stats4.
 
 TODO
@@ -426,7 +422,7 @@ TODO
 
 # Explorer les simulations possibles
 
-La simulation est un outil particulièrement utile pour explorer comment un modèle répond à des changements dans les données.
+La simulation est un outil particulièrement utile pour explorer comment un modèle répond à des changements dans les données et les paramètres.
 
 Maintenant, c'est à vous: que voudriez-vous explorer en premier?
 
@@ -449,9 +445,9 @@ Dans une section précédente, nous avons vu que la vraisemblance pouvait s'écr
 \forall i \; \; y_i | x_i, \mu, \beta, \sigma \; \overset{\text{i.i.d}}{\sim} \mathcal{N}(\mu + \beta x_i, \sigma^2)
 \]
 
-La loi Normale ci-dessus est utilisée sous sa forme *univariée*, c'est-à-dire qu'on s'en sert pour tirer aléatoirement *une* réalisation de la variable aléatoire d'intérêt.
+La loi Normale ci-dessus est utilisée sous sa forme *univariée*, c'est-à-dire qu'on s'en sert pour tirer aléatoirement un seul nombre correspondant à une réalisation de la variable aléatoire d'intérêt.
 
-Or la même loi existe aussi sous forme *multivariée*, ce qui permet, à chaque fois qu'on "tire" dedans, d'obtenir *plusieurs* réalisations de la variable aléatoire d'intérêt, celles-ci étant arrangées dans un vecteur.
+Or la même loi existe aussi sous forme *multivariée*, ce qui permet, à chaque fois qu'on "tire" dedans, d'obtenir *plusieurs* nombres, ceux-ci étant arrangés dans un vecteur.
 Sous cette forme, la vraisemblance s'écrit maintenant:
 
 \[
@@ -468,7 +464,7 @@ D'ailleurs, on écrit souvent ce type de vraisemblance de manière encore plus c
 
 où $X$ est une matrice à deux colonnes ($\boldsymbol{1}$ et $\boldsymbol{x}$), $\boldsymbol{\beta}$ est un vecteur à deux élements ($\mu$ et $\beta$) et $\Sigma$ est une matrice $n \times n$ égale à $\sigma^2 I_n$.
 
-Sous cette forme, ne devient-il pas "facile" d'inclure dans le modèle les élements proposés en perspective ci-dessus?
+Sous cette forme, ne devient-il pas "facile" d'inclure dans le modèle certains élements proposés en perspective?
 
 
 # Annexe
