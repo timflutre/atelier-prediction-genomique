@@ -74,7 +74,8 @@ L'inférence avec un modèle statistique consiste généralement à *estimer* le
 
 Lorsque l'on propose un modèle pour répondre à une question donnée, on commence donc par expliquer les notations.
 Suivant les conventions, nous utilisons des lettres grecques pour dénoter les paramètres (non-observés), par exemple $\theta$, des lettres romaines pour les données observées, par exemple $y$, et des lettres romaines surmontées d'un tilde pour les données prédites, $\tilde{y}$.
-L'ensemble des paramètres est généralement noté en majuscule, par exemple $\Theta = \{ \theta_1, \theta_2 \}$.
+L'ensemble des données est généralement noté en majuscule, par exemple $\mathcal{D} = \{ y_1, y_2, y_3 \}$.
+De même, l'ensemble des paramètres est généralement noté en majuscule, par exemple $\Theta = \{ \theta_1, \theta_2 \}$.
 De plus, s'il y a plusieurs paramètres ou données, ils se retrouvent mathématiquement dans des vecteurs, en gras, ce qui donne $\boldsymbol{\theta}$ et $\boldsymbol{y}$.
 
 Une fois les notations établies, on écrit la *vraisemblance* (likelihood en anglais), souvent présentée comme étant la "probabilité des données sachant les paramètres".
@@ -243,6 +244,10 @@ Cette section devrait vous avoir donné les bases du raisonnement ainsi que des 
 
 * $\sigma^2$: variance des erreurs
 
+Données: $\mathcal{D} = \{ (y_1 | x_1), \ldots, (y_n | x_n) \}$
+
+Paramètres: $\Theta = \{ \mu, \beta, \sigma \}$
+
 
 ## Vraisemblance
 
@@ -261,7 +266,7 @@ Cette deuxième formulation montre bien que, de manière générale, si l'on con
 De plus, on peut écrire la vraisemblance sous forme plus explicite comme une fonction des paramètres $\Theta = \{ \mu, \beta, \sigma \}$:
 
 \begin{align*}
-\mathcal{L}(\Theta) &= p(\boldsymbol{y} | \boldsymbol{x}, \Theta) = p(y_1,\ldots,y_n | x_1,\ldots,x_n, \mu, \beta, \sigma) \\
+\mathcal{L}(\Theta | \mathcal{D} ) &= p(\boldsymbol{y} | \boldsymbol{x}, \Theta) = p(y_1,\ldots,y_n | x_1,\ldots,x_n, \mu, \beta, \sigma) \\
 &= \prod_{i=1}^n p(y_i | x_i, \mu, \beta, \sigma) \\
 &= \prod_{i=1}^n \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y_i - \mu - \beta x_i)^2}{2 \sigma^2} \right)
 \end{align*}
@@ -373,10 +378,25 @@ Pour trouver les valeurs des paramètres qui maximisent la vraisemblance, on tra
 
 où $\bar{x} = \frac{1}{n} \sum_i x_i$ et $\bar{y} = \frac{1}{n} \sum_i y_i$.
 
-En plus de ces estimations, il est fréquent d'évaluer la qualité du modèle en calculant la proportion de la variance des $\{y_i\}$ expliquée par les $\{x_i\}$:
+Une fois ces estimations obtenues, on veut généralement faire deux choses.
+La première est d'évaluer la qualité du modèle, c'est-à-dire son ajustement aux données.
+Dans le cas de la régression linéaire, ceci peut se faire à l'aide du coefficient de détermination, interprété comme la proportion de la variance phénotypique expliquée par le modèle:
 
-$R^2 = \frac{\sum_i ((\hat{\mu} + \hat{\beta} x_i) - \bar{y})^2}{\sum_i (y_i - \bar{y})^2}$
+\begin{align*}
+R^2 = \frac{Var(\hat{\mu} + \hat{\beta} \boldsymbol{x})}{Var(\boldsymbol{y})} = \frac{\hat{\beta}^2 \; Var(\boldsymbol{x})}{\hat{\beta}^2 \; Var(\boldsymbol{x}) + \hat{\sigma}^2} \; \; \Leftrightarrow \; \; R^2 = \frac{\sum_i ((\hat{\mu} + \hat{\beta} x_i) - \bar{y})^2}{\sum_i (y_i - \bar{y})^2}
+\end{align*}
 
+La deuxième est de quantifier l'incertitude autour de ces estimations.
+Dans la démarche fréquentiste, on considère que les estimations sont des réalisations de variables aléatoires appelées "estimateurs".
+Dans le cas de la régression linéaire, ces estimateurs, $M$ pour $\mu$, $B$ pour $\beta$ et $S$ pour $\sigma$, sont des combinaisons linéaires des $\{Y_i\}$, variables indépendantes et suivant une loi Normale, donc les estimateurs suivent eux aussi une loi Normale.
+Par exemple, pour l'estimateur $B$ du paramètre $\beta$:
+
+\[
+B = \frac{\sum_i (x_i - \bar{x})(Y_i - \bar{Y})}{\sum_i (x_i - \bar{x})^2} \; \; \text{ et } \; \; B \sim \mathcal{N}(E_B, V_B)
+\]
+
+Il reste alors à calculer l'espérance et la variance de la loi Normale pour chaque estimateur, et c'est notamment à partir de la variance de l'estimateur que l'on obtient l'erreur standard de l'estimation, celle-ci permettant de quantifier l'incertitude autour de l'estimation.
+Pour en savoir plus, reportez-vous par exemple au livre "Statistique inférentielle" de Daudin, Robin et Vuillet.
 
 
 ## Implémentation (R stats)
@@ -399,7 +419,11 @@ Nous pouvons donc extraire de l'objet renvoyé par la fonction lm() les quantit�
 summary(fit)
 c(coefficients(fit)[1], coefficients(fit)[2], summary(fit)$sigma)
 c(mu, beta, sigma)
+(se.mu.hat <- summary(fit)$coef[1,2])
+(se.beta.hat <- summary(fit)$coef[2,2])
 summary(fit)$r.squared
+(coefficients(fit)[2]^2 * var(dat$x)) /
+  (coefficients(fit)[2]^2 * var(dat$x) + summary(fit)$sigma^2)
 ```
 
 On peut aussi ajouter la droite de régression au graphique des données:
