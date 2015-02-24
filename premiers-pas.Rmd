@@ -461,7 +461,7 @@ Bien au contraire, elle est au coeur de l'activité de recherche en ce qu'elle v
 Concernant le thème de l'atelier, la prédiction génomique, quelles sont les limites du modèle exploré ci-dessus?
 Que proposez-vous pour y remédier?
 
-## Ré-écriture du modèle
+## Ré-écrire le modèle
 
 Dans une section précédente, nous avons vu que la vraisemblance pouvait s'écrire de la manière suivante:
 
@@ -478,17 +478,17 @@ Sous cette forme, la vraisemblance s'écrit maintenant:
 \boldsymbol{y} | \boldsymbol{x}, \mu, \beta, \sigma \; \sim \mathcal{N}_n(\mu \boldsymbol{1} + \beta \boldsymbol{x}, \sigma^2 I_n)
 \]
 
-où $\boldsymbol{y}$ est le vecteur de dimension $n$ contenant les phénotypes, $\boldsymbol{x}$ est le vecteur de dimension $n$ contenant les génotypes, $\boldsymbol{1}$ est le vecteur de dimension $n$ ne contenant que des $1$, et $I_n$ est la matrice identité également de dimension $n$.
+où $\boldsymbol{y}$ est le vecteur de dimension $n$ contenant les phénotypes, $\boldsymbol{x}$ est le vecteur de dimension $n$ contenant les génotypes, $\boldsymbol{1}$ est le vecteur de dimension $n$ ne contenant que des $1$, et $I_n$ est la matrice identité de dimension $n \times n$.
 
 D'ailleurs, on écrit souvent ce type de vraisemblance de manière encore plus concise:
 
 \[
-\boldsymbol{y} | X, \boldsymbol{\beta}, \sigma \; \sim \mathcal{N}_n(X \boldsymbol{\beta}, \Sigma)
+\boldsymbol{y} | W, X, \boldsymbol{\alpha}, \boldsymbol{\beta}, \sigma \; \sim \mathcal{N}_n(W \boldsymbol{\alpha} + X \boldsymbol{\beta}, \Sigma) \text{ avec } \Sigma = \sigma I_n
 \]
 
-où $X$ est une matrice à deux colonnes ($\boldsymbol{1}$ et $\boldsymbol{x}$), $\boldsymbol{\beta}$ est un vecteur à deux élements ($\mu$ et $\beta$) et $\Sigma$ est une matrice $n \times n$ égale à $\sigma^2 I_n$.
+où $W$ est la matrice qui contient la colonne de 1 ainsi que potentiellement d'autres colonnes (si besoin est), $\boldsymbol{\alpha}$ est le vecteur contenant la moyenne globale $\mu$ ainsi que d'autres effets (si besoin est) considérés comme "fixes", $X$ est une matrice potentiellement à plusieurs colonnes, ici contenant les génotypes, $\boldsymbol{\beta}$ est un vecteur contenant des effets associés aux colonnes de $X$ et considérés comme "aléatoires", et $\Sigma$ est la matrice de variance-covariance.
 
-Sous cette forme, ne devient-il pas "facile" d'inclure dans le modèle certains élements proposés en perspective?
+Sous cette forme, ne devient-il pas "facile" d'inclure dans notre modèle initial, la régression linéaire simple, certains élements proposés en perspective?
 
 
 # Annexe
