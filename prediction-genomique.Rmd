@@ -216,7 +216,6 @@ A[1:3,1:3]
 
 ##' Plot a matrix as an image in the right orientation.
 ##'
-##' 
 ##' @param M matrix to plot
 ##' @return none
 image.mat <- function(M, ...){
@@ -227,11 +226,41 @@ image.mat(A)
 
 beta <- rep(0, P)
 nb.qtls <- P # all markers have an effect
-beta[sample.int(P, nb.qtls)] <- rnorm(n=nb.qtls, mean=0, sd=1)
-var(beta)
-(sigma.beta2 <- var(X %*% beta)[1,1])
+sigma.beta2 <- 1
+beta[sample.int(P, nb.qtls)] <- rnorm(n=nb.qtls, mean=0, sd=sigma.beta2)
+
+##' Estimate the minor allele frequency of a SNP whose genotypes are coded in allele dose.
+##'
+##' @param x vector of {0,1,2}
+##' @return numeric
+estim.maf.1SNP <- function(x){
+  stopifnot(is.vector(x))
+  N <- length(x)
+  f.hat <- sum(x) / (2 * N)
+  if(f.hat > 0.5)
+    f.hat <- 1 - f.hat
+  return(f.hat)
+}
+
+##' Estimate the minor allele frequencies of many SNPs whose genotyped are coded in allele dose.
+##'
+##' @param X matrix with individuals in rows and SNPs in columns
+##' @return vector of numeric
+estim.maf.allSNPs <- function(X){
+  stopifnot(is.matrix(X))
+  P <- ncol(X)
+  out <- rep(NA, P)
+  names(out) <- colnames(X)
+  for(j in 1:P)
+    out[j] <- estim.maf.1SNP(X[,j])
+  return(out)
+}
+
+mafs <- estim.maf.allSNPs(X)
+(sigma.a2 <- var(X %*% beta)[1,1]) # var of additive relationships
+(sigma.beta2 * 2 * sum(mafs * (1 - mafs)))
 h2 <- 0.60
-(sigma.epsilon2 <- ((1 - h2) / h2) * sigma.beta2)
+(sigma.epsilon2 <- ((1 - h2) / h2) * sigma.a2)
 epsilon <- matrix(mvrnorm(n=1, mu=rep(0, N), Sigma=sigma.epsilon2 * diag(N)))
 y <- matrix(1, nrow=N) * mu + W %*% alpha + X %*% beta + epsilon
 summary(y)
@@ -254,7 +283,7 @@ system.time(
 cbind(c(mu, alpha), fit.rrBLUP$beta)
 fit.rrBLUP$beta.SE
 c(sigma.epsilon2, fit.rrBLUP$Ve)
-c(var(beta), fit.rrBLUP$Vu)
+c(sigma.beta2, fit.rrBLUP$Vu)
 cor(beta, fit.rrBLUP$u)
 ```
 
@@ -284,7 +313,7 @@ c(alpha, fit.BGLR$ETA[[1]]$b)
 fit.BGLR$ETA[[1]]$SD.b
 c(sigma.epsilon2, fit.BGLR$varE)
 fit.BGLR$SD.varE
-c(var(beta), fit.BGLR$ETA[[2]]$varB)
+c(sigma.beta2, fit.BGLR$ETA[[2]]$varB)
 cor(beta, fit.BGLR$ETA[[2]]$b)
 ```
 
@@ -308,7 +337,7 @@ abline(h=fit.BGLR$ETA[[2]]$varB, col="red")
 hist(scan("ETA_2_varB.dat"), breaks="FD", main="", las=1,
      xlab=expression(sigma[beta]^2), ylab="Number of samples")
 abline(v=fit.BGLR$ETA[[2]]$varB, col="red")
-abline(v=var(beta), col="red", lty=2)
+abline(v=sigma.beta2, col="red", lty=2)
 legend("topleft", legend=c("posterior mean","true value"),
        col="red", lty=c(1,2), bty="n")
 
@@ -357,7 +386,7 @@ CommenÃ§ons par charger le fichier au format CSV avec les noms des SNP en premiÃ
 ##                   colClasses=c("character", rep("integer", 62220)))
 ## )
 system.time(tmp <- as.data.frame(fread("true_genotypes.csv")))
-X <- tmp[,-1]
+X <- as.matrix(tmp[,-1])
 rownames(X) <- tmp[,1]
 dim(X)
 X[1:3,1:5]
