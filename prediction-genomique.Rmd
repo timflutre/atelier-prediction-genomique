@@ -87,16 +87,18 @@ Si maintenant l'on dispose des génotypes $\{\boldsymbol{x}_i\}$ à un ensemble 
 \begin{align}
 y_i = g(\boldsymbol{x}_i, \boldsymbol{\beta}) + \epsilon_i
 \end{align}
-On peut n'utiliser les marqueurs que pour estimer $G$ ($A$) plus précisément, mais on peut aussi inclure directement les marqueurs comme variables explicatives dans le modèle.
+où l'erreur est différente du modèle précédent, mais gardons la même notation par simplicité.
+
+On peut n'utiliser les marqueurs que pour estimer $G$ (généralement uniquement $A$ en pratique) plus précisément, mais on peut aussi inclure directement les marqueurs comme variables explicatives dans le modèle.
 Les marqueurs sont souvent des SNP dont le génotype est codé en terme de dosage allélique ($x_{ij} \in \{0,1,2\}$).
-Comme précédemment, seuls les effets additifs sont généralement pris en compte et la valeur génotypique s'écrit alors $g(\boldsymbol{x}_i, \boldsymbol{\beta}) = \sum_{j=1}^P x_{ij} \beta_j$.
+Comme précédemment, seuls les effets additifs sont généralement pris en compte et la valeur génotypique s'écrit alors $g_i \approx g(\boldsymbol{x}_i, \boldsymbol{\beta}) = \sum_{j=1}^P x_{ij} \beta_j$.
 
 Avec le toujours plus grand débit des technologies des séquençage, il est très fréquent qu'il y ait beaucoup plus de marqueurs que d'individus: $P >> N$.
 Dans ce tels cas, la méthode traditionnelle du maximum de vraisemblance présentée dans le document "Premiers pas" ne donne plus de bonnes estimations des effets des marqueurs, les $\{\beta_j\}$, et doit être "pénalisée" (on dit aussi "régularisée").
 On parle encore de "rétrécir" les estimations des effets (shrinkage en anglais).
 Dans l'approche bayésienne, que $P >> N$ ou non, c'est simplement le prior sur les $\{\beta_j\}$ qui change.
 
-Explicitement incorporer les effets de dominance et d'épistatie entre marqueurs semble infaisable étant donné l'explosion combinatoire qui en résulte.
+Explicitement incorporer les effets de dominance, et surtout d'épistasie, semble infaisable étant donné l'explosion combinatoire qui en résulte.
 Certains auteurs ont donc proposé des modèles semi-paramétriques (espace de Hilbert à noyau reproduisant, RKHS en anglais; réseaux neuronaux).
 
 Quoi qu'il en soit, une abondance d'articles existe sur ces sujets (voir les revues listées en fin de document) et, pour se familiariser avec ces questions à moindre coût, rien de mieux que de faire des simulations!
@@ -106,7 +108,7 @@ Quoi qu'il en soit, une abondance d'articles existe sur ces sujets (voir les rev
 
 ## Modèle
 
-L'un des modèles les plus utilisés est la régression d'arête (ridge regression en anglais):
+L'un des modèles le plus utilisé est la régression d'arête (ridge regression en anglais):
 \[
 \boldsymbol{y} = \boldsymbol{1} \mu + X \boldsymbol{\beta} + \boldsymbol{\epsilon} \; \; \text{ avec } \boldsymbol{\beta}, \boldsymbol{\epsilon} | \sigma_\beta^2, \sigma_\epsilon^2 \; \sim \; \mathcal{N}_N(\boldsymbol{0}, \sigma_\beta^2 I) \mathcal{N}_N(\boldsymbol{0}, \sigma_\epsilon^2 I)
 \]
@@ -117,9 +119,9 @@ On parle de "modèle additif infinitésimal".
 
 Il est d'ailleurs possible de montrer qu'il est équivalent au modèle dit "animal" de l'ère pré-marqueurs:
 \[
-\boldsymbol{y} = \boldsymbol{1} \mu' + Z \boldsymbol{u} + \boldsymbol{\epsilon} \; \; \text{ avec } \boldsymbol{u}, \boldsymbol{\epsilon} | \sigma_a^2, \sigma_\epsilon^2 \; \sim \; \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 A) \mathcal{N}_N(\boldsymbol{0}, \sigma_\epsilon^2 I)
+\boldsymbol{y} = \boldsymbol{1} \mu' + Z \boldsymbol{u} + \boldsymbol{\epsilon}' \; \; \text{ avec } \boldsymbol{u}, \boldsymbol{\epsilon}' | \sigma_a^2, \sigma_{\epsilon'}^2 \; \sim \; \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 A) \mathcal{N}_N(\boldsymbol{0}, \sigma_{\epsilon'}^2 I)
 \]
-où $Z$ n'est qu'une matrice d'incidence (ici l'identité), le vecteur $\boldsymbol{u}$ contient les valeurs génotypiques additives, aussi appelées valeurs en croisement (breeding values en anglais), et $Var(\boldsymbol{y}) = \sigma_a^2 A + \sigma_\epsilon^2 I$.
+où $Z$ n'est qu'une matrice d'incidence (ici l'identité), le vecteur $\boldsymbol{u}$ contient les valeurs génotypiques additives, aussi appelées valeurs en croisement (breeding values en anglais), et $Var(\boldsymbol{y}) = \sigma_a^2 A + \sigma_{\epsilon'}^2 I$.
 Avec quelques hypothèses et en supposant un nombre infini de marqueurs, la matrice $A$ est égale à $X X' / [2 \sum_{j=1}^P p_j (1 - p_j)]$ où $p_j$ est la fréquence de l'allèle minoritaire au SNP $j$.
 
 Dans cette section, choisissons donc le modèle de régression d'arête avec les notations suivantes:
