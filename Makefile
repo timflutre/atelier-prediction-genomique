@@ -10,6 +10,12 @@ prediction-genomique.pdf: prediction-genomique.Rmd
 prediction-genomique.html: prediction-genomique.Rmd
 	echo 'library(rmarkdown); render("prediction-genomique.Rmd", "html_document")' | R --vanilla --quiet
 
+programme-selection.pdf: programme-selection.Rmd
+	echo 'library(rmarkdown); render("programme-selection.Rmd", "pdf_document")' | R --vanilla --quiet
+
+programme-selection.html: programme-selection.Rmd
+	echo 'library(rmarkdown); render("programme-selection.Rmd", "html_document")' | R --vanilla --quiet
+
 clean:
 	rm -f premiers-pas.md \
 		premiers-pas.html \

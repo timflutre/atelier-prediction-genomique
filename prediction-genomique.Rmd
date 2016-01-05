@@ -25,21 +25,25 @@ if(R.v.maj < 2 || (R.v.maj == 2 && R.v.min.1 < 15))
 suppressPackageStartupMessages(library(knitr))
 opts_chunk$set(echo=TRUE, warning=TRUE, message=TRUE, cache=FALSE)
 
-suppressPackageStartupMessages(library(MASS))
-suppressPackageStartupMessages(library(rrBLUP))
-suppressPackageStartupMessages(library(BGLR))
-suppressPackageStartupMessages(library(data.table))
-
 options(digits=3)
 ```
 
 
 # Contexte
 
-Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2015 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
 
 Ce document a pour but d'explorer par simulation l'intérêt de la prédiction génomique en sélection artificielle pour la création variétale.
 Il est recommandé d'avoir déjà lu et suivi le document "Premiers pas" de l'atelier.
+
+De plus, ce document nécessite de charger des paquets additionnels (ceux-ci doivent être installés au préalable sur votre machine, via \verb+install.packages("pkg")+):
+
+```{r load_pkg}
+suppressPackageStartupMessages(library(MASS))
+suppressPackageStartupMessages(library(rrBLUP))
+suppressPackageStartupMessages(library(BGLR))
+suppressPackageStartupMessages(library(data.table))
+```
 
 
 # Introduction
@@ -81,7 +85,7 @@ Si l'on suppose que $\boldsymbol{g} \sim \mathcal{N}_N(\boldsymbol{0}, G)$ et $\
 
 Or il faut bien remarquer que la généalogie ne permet que de calculer la matrice d'apparentement *attendue*, celle-ci pouvant donc différer de la matrice d'apparentement *réalisée*.
 En effet, bien qu'en moyenne le coefficient d'apparentement (identité par descendance) entre un allèle d'un parent et un allèle de son enfant soit de 1/4, cette proportion varie le long du génome, à cause, entre autres, de l'échantillonage mendélien des chromosomes et de la variation du taux de recombinaison le long des chromosomes.
-De plus, la généalogie seule ne permet pas d'identifier quelles régions du génomes ont une variation génotypique plus ou moins associée à la variation phénotypique, les fameux locus influençant les traits quantitatifs (Quantitative Trait Locus, QTL).
+De plus, la généalogie seule ne permet pas d'identifier quelles régions du génome ont une variation génotypique plus ou moins associée à la variation phénotypique, les fameux locus influençant les traits quantitatifs (Quantitative Trait Locus, QTL).
 
 Si maintenant l'on dispose des génotypes $\{\boldsymbol{x}_i\}$ à un ensemble de $P$ marqueurs génétiques, le modèle devient:
 \begin{align}
@@ -94,7 +98,7 @@ Les marqueurs sont souvent des SNP dont le génotype est codé en terme de dosag
 Comme précédemment, seuls les effets additifs sont généralement pris en compte et la valeur génotypique s'écrit alors $g_i \approx g(\boldsymbol{x}_i, \boldsymbol{\beta}) = \sum_{j=1}^P x_{ij} \beta_j$.
 
 Avec le toujours plus grand débit des technologies des séquençage, il est très fréquent qu'il y ait beaucoup plus de marqueurs que d'individus: $P >> N$.
-Dans ce tels cas, la méthode traditionnelle du maximum de vraisemblance présentée dans le document "Premiers pas" ne donne plus de bonnes estimations des effets des marqueurs, les $\{\beta_j\}$, et doit être "pénalisée" (on dit aussi "régularisée").
+Dans de tels cas, la méthode traditionnelle du maximum de vraisemblance présentée dans le document "Premiers pas" ne donne plus de bonnes estimations des effets des marqueurs, les $\{\beta_j\}$, et doit être "pénalisée" (on dit aussi "régularisée").
 On parle encore de "rétrécir" les estimations des effets (shrinkage en anglais).
 Dans l'approche bayésienne, que $P >> N$ ou non, c'est simplement le prior sur les $\{\beta_j\}$ qui change.
 
@@ -309,6 +313,24 @@ system.time(
                               list(X=X, model="BRR")),
                      verbose=FALSE, nIter=7000, burnIn=1000, thin=5)
 )
+```
+
+Lorsque l'on utilise un algorithme MCMC, il est toujours important de vérifier qu'il a convergé, au moins visuellement (renseignez-vous plus en détails sur cette étape importante !):
+
+```{r fit_ridge-reg_BGLR_conv}
+plot(scan("varE.dat"), las=1,
+     xlab="Iterations (after burn-in and thinning)",
+     ylab=expression(paste("Samples of ", sigma[epsilon]^2)))
+abline(h=fit.BGLR$varE, col="red")
+plot(scan("ETA_2_varB.dat"), las=1,
+     xlab="Iterations (after burn-in and thinning)",
+     ylab=expression(paste("Samples of ", sigma[beta]^2)))
+abline(h=fit.BGLR$ETA[[2]]$varB, col="red")
+```
+
+Si l'on considère que l'algorithme a convergé, nous pouvons alors réaliser l'inférence en regardant la distribution a posteriori des paramètres:
+
+```{r fit_ridge-reg_BGLR_res}
 c(mu, fit.BGLR$mu)
 fit.BGLR$SD.mu
 c(alpha, fit.BGLR$ETA[[1]]$b)
@@ -319,12 +341,9 @@ c(sigma.beta2, fit.BGLR$ETA[[2]]$varB)
 cor(beta, fit.BGLR$ETA[[2]]$b)
 ```
 
-Lorsque l'on utilise un algorithme MCMC, il est toujours important de vérifier qu'il a convergé, au moins visuellement:
+Des graphiques sont souvent utiles:
+
 ```{r fit_simple_BGLR_short_plots}
-plot(scan("varE.dat"), las=1,
-     xlab="Iterations (after burn-in and thinning)",
-     ylab=expression(paste("Samples of ", sigma[epsilon]^2)))
-abline(h=fit.BGLR$varE, col="red")
 hist(scan("varE.dat"), breaks="FD", main="", las=1,
      xlab=expression(sigma[epsilon]^2), ylab="Number of samples")
 abline(v=fit.BGLR$varE, col="red")
@@ -332,10 +351,6 @@ abline(v=sigma.epsilon2, col="red", lty=2)
 legend("topright", legend=c("posterior mean","true value"),
        col="red", lty=c(1,2), bty="n")
 
-plot(scan("ETA_2_varB.dat"), las=1,
-     xlab="Iterations (after burn-in and thinning)",
-     ylab=expression(paste("Samples of ", sigma[beta]^2)))
-abline(h=fit.BGLR$ETA[[2]]$varB, col="red")
 hist(scan("ETA_2_varB.dat"), breaks="FD", main="", las=1,
      xlab=expression(sigma[beta]^2), ylab="Number of samples")
 abline(v=fit.BGLR$ETA[[2]]$varB, col="red")
@@ -395,8 +410,6 @@ X[1:3,1:5]
 str(X[1:3,1:5])
 ```
 
-TODO: tracer la distribution des fréquences alléliques
-
 Calculer les relations génétiques additives et les visualiser:
 ```{r plot_add-rel, eval=TRUE}
 A <- A.mat(X - 1)
@@ -410,6 +423,22 @@ TODO: définir différents sous-ensembles de marqueurs
 # Prédire grâce au génome
 
 Inspirez-vous du [tutoriel](http://pbgworks.org/node/1440) d'Amy Jacobson (Univ. Minnesota); le pdf est [ici](http://pbgworks.org/sites/pbgworks.org/files/Introduction%20to%20Genomic%20Selection%20in%20R.pdf).
+
+TODO: apprendre à faire un cycle (1) simulation de phénotypes à partir de génotypes, (2) inférence des paramètres en n'utilisant qu'un sous ensemble des individus (jeu d'entraînement); (3) prédiction des phénotypes des autres individus (jeu de test)
+
+Voici certaines questions que vous pouvez vous poser:
+
+* quel est l'impact de la fréquence allélique sur l'inférence des paramètres et la précision de la prédiction ?
+
+* quel est l'impact de la taille du jeu d'entraînement sur l'inférence et la prédiction ?
+
+* quel est l'impact du déséquilibre de liaison entre SNPs ?
+
+* quel est l'impact de l'apparentement entre individus du jeu d'entraînement et individus du jeu de test ?
+
+* etc
+
+C'est à vous !
 
 
 # Explorer des jeux de données réels librement disponibles

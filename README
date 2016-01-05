@@ -1,8 +1,8 @@
 Atelier de prédiction génomique
 ===============================
 
-Ce répertoire contient le matériel utilisé lors de l'atelier de prédiction
-génomique organisé et animé par Jacques David et Timothée Flutre en 2015
+Ce répertoire contient le matériel pédagogique utilisé lors de l'atelier de
+prédiction génomique organisé et animé par Jacques David et Timothée Flutre
 à Montpellier SupAgro dans le cadre de l'option APIMET couplée à la
 spécialité SEPMET du Master 3A (Agronomie et Agroalimentaire):
 http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630
@@ -16,6 +16,10 @@ Les versions du contenu sont gérées avec le logiciel git, et le dépôt centra
 est hébergé sur GitHub:
 https://github.com/timflutre/atelier-prediction-genomique
 
+Le contenu du dépôt évolue d'une année sur l'autre, mais on peut récupérer le
+contenu d'une année donnée via les étiquettes (tags):
+https://github.com/timflutre/atelier-prediction-genomique/tags
+
 
 Mode opératoire
 ===============
@@ -23,20 +27,22 @@ Mode opératoire
 * téléchargez une version récente de R (>= 3.0):
 http://cran.univ-lyon1.fr/
 
-* téléchargez le paquet "MASS" via la commande suivante dans R:
-install.packages("MASS")
-
 * téléchargez une version récente de RStudio:
 http://www.rstudio.com/products/rstudio/download/
 
-* téléchargez le fichier "premiers-pas.Rmd" en cliquant dessus, puis en
-cliquant sur "Raw" en haut à droite, puis en faisant "clic droit" et
-"Enregistrez-sous" pour le sauvez dans le dossier "Mes Documents"
+* téléchargez le paquet "MASS" via la commande suivante dans R:
+install.packages("MASS")
+
+* téléchargez le fichier "premiers-pas.Rmd":
+https://github.com/timflutre/atelier-prediction-genomique/blob/master/premiers-pas.Rmd
+Cliquez sur "Raw" en haut à droite, puis faites "clic droit" et
+"Enregistrez-sous" pour le sauver dans votre dossier de travail
 
 * ouvrez RStudio, faites "File" > "Open file..." et sélectionnez le fichier
-Rmd que vous venez de sauvez. Si les accents s'affichent mal, cliquez à
-nouveau sur "File" > "Reopen with encoding..." et choisissez UTF-8
+Rmd que vous venez de sauver. Si les accents s'affichent mal, cliquez à
+nouveau sur "File" > "Reopen with encoding..." et choisissez UTF-8.
 
 * cliquez sur "Knit HTML" et installez les paquets requis s'il vous l'est
 demandé; RStudio va mouliner pour convertir le fichier au format Rmd en un
-fichier au format HTML, et ce dernier devrait ensuite apparaître à l'écran
+fichier au format HTML, et ce dernier devrait ensuite apparaître à l'écran.
+Comme tout fichier HTML, vous pouvez aussi l'ouvrir avec votre navigateur web.

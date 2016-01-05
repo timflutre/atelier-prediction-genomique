@@ -25,8 +25,6 @@ if(R.v.maj < 2 || (R.v.maj == 2 && R.v.min.1 < 15))
 suppressPackageStartupMessages(library(knitr))
 opts_chunk$set(echo=TRUE, warning=TRUE, message=TRUE, cache=FALSE)
 
-suppressPackageStartupMessages(library(MASS))
-
 options(digits=3)
 ```
 
@@ -44,10 +42,16 @@ Il est généralement plus simple d'utiliser le logiciel libre [RStudio](http://
 Pour plus de détails, lisez [cette page](http://rmarkdown.rstudio.com/).
 Pour écrire des équations avec LaTeX, reportez-vous au [livre en ligne](https://fr.wikibooks.org/wiki/LaTeX).
 
+De plus, ce document nécessite de charger des paquets additionnels (ceux-ci doivent être installés au préalable sur votre machine, via \verb+install.packages("pkg")+):
+
+```{r load_pkg}
+suppressPackageStartupMessages(library(MASS))
+```
+
 
 # Contexte
 
-Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2015 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
 
 Ce document a pour but d'introduire concrètement les étudiants à l'un des aspects de la modélisation statistique, la simulation.
 Il prend comme exemple la régression linéaire simple, historiquement développée par [Galton (1886)](http://dx.doi.org/10.2307/2841583) pour étudier l'hérédité de la taille dans l'espèce humaine.
@@ -396,7 +400,9 @@ B = \frac{\sum_i (x_i - \bar{x})(Y_i - \bar{Y})}{\sum_i (x_i - \bar{x})^2} \; \;
 \]
 
 Il reste alors à calculer l'espérance et la variance de la loi Normale pour chaque estimateur, et c'est notamment à partir de la variance de l'estimateur que l'on obtient l'erreur standard de l'estimation, celle-ci permettant de quantifier l'incertitude autour de l'estimation.
-Pour en savoir plus, reportez-vous par exemple au livre "Statistique inférentielle" de Daudin, Robin et Vuillet.
+
+Pour en savoir plus, reportez-vous par exemple au livre "Statistique inférentielle" de Daudin, Robin et Vuillet (Presses Universitaires de Rennes, 2001).
+Du matériel pédagogique sur le modèle linéaire est aussi disponible en accès libre sur le site internet de la Société Française de Statistique ([ici](http://www.sfds.asso.fr/370-Ressources_pour_lenseignement_par_filieres)).
 
 
 ## Implémentation (R stats)
