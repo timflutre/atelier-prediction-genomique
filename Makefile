@@ -15,3 +15,9 @@ programme-selection.pdf: programme-selection.Rmd
 
 programme-selection.html: programme-selection.Rmd
 	echo 'library(rmarkdown); render("programme-selection.Rmd", "html_document")' | R --vanilla --quiet
+
+emploi-du-temps-atelier-2016.pdf: emploi-du-temps-atelier-2016.Rmd
+	echo 'library(rmarkdown); render("emploi-du-temps-atelier-2016.Rmd", "pdf_document")' | R --vanilla --quiet
+
+emploi-du-temps-atelier-2016.html: emploi-du-temps-atelier-2016.Rmd
+	echo 'library(rmarkdown); render("emploi-du-temps-atelier-2016.Rmd", "html_document")' | R --vanilla --quiet
