@@ -15,11 +15,3 @@ programme-selection.pdf: programme-selection.Rmd
 
 programme-selection.html: programme-selection.Rmd
 	echo 'library(rmarkdown); render("programme-selection.Rmd", "html_document")' | R --vanilla --quiet
-
-clean:
-	rm -f premiers-pas.md \
-		premiers-pas.html \
-		premiers-pas.pdf \
-		*~
-	rm -rf premiers-pas_cache/
-	rm -rf premiers-pas_files/
