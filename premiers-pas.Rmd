@@ -285,7 +285,7 @@ De plus, on peut écrire la vraisemblance sous forme plus explicite comme une fo
 # Simuler des données
 
 Afin de simuler des données, nous allons utiliser un générateur de nombres pseudo-aléatoires.
-Le mot "pseudo" est là pour rappeler que les générateurs informatiques sont déterministes et peuvent donc être initialisés avec une graine (*seed*), très utile pour la reproducibilité des analyses:
+Le mot "pseudo" est là pour rappeler que les générateurs informatiques sont déterministes et peuvent donc être initialisés avec une graine (*seed*), très utile pour la reproductibilité des analyses:
 
 ```{r set_seed}
 seed <- 1859
@@ -310,7 +310,7 @@ Pour simuler les génotypes, nous allons supposer que la population est à l'éq
 ##' @param maf frequency of the minor allele, a
 ##' @return vector of genotype frequencies
 ##' @author Timothée Flutre
-calc.geno.freq <- function(maf){
+calcGenoFreq <- function(maf){
   geno.freq <- c((1 - maf)^2,
                 2 * (1 - maf) * maf,
                 maf^2)
@@ -319,7 +319,7 @@ calc.geno.freq <- function(maf){
 }
 
 f <- 0.3
-genotypes <- sample(x=c(0,1,2), size=n, replace=TRUE, prob=calc.geno.freq(f))
+genotypes <- sample(x=c(0,1,2), size=n, replace=TRUE, prob=calcGenoFreq(f))
 ```
 
 Le morceau de code ci-dessus vous montre aussi les bonnes pratiques de programmation:
@@ -390,7 +390,7 @@ où $\bar{x} = \frac{1}{n} \sum_i x_i$ et $\bar{y} = \frac{1}{n} \sum_i y_i$.
 
 Une fois ces estimations obtenues, on veut généralement faire deux choses.
 La première est d'évaluer la qualité du modèle, c'est-à-dire son ajustement aux données.
-Dans le cas de la régression linéaire, ceci peut se faire à l'aide du coefficient de détermination, interprété comme la proportion de la variance phénotypique expliquée par le modèle:
+Dans le cas de la régression linéaire, ceci peut se faire à l'aide du coefficient de détermination, interprété comme la proportion de la variance phénotypique expliquée par les prédicteurs:
 
 \begin{align*}
 R^2 = \frac{Var(\hat{\mu} + \hat{\beta} \boldsymbol{x})}{Var(\boldsymbol{y})} = \frac{\hat{\beta}^2 \; Var(\boldsymbol{x})}{\hat{\beta}^2 \; Var(\boldsymbol{x}) + \hat{\sigma}^2} \; \; \Leftrightarrow \; \; R^2 = \frac{\sum_i ((\hat{\mu} + \hat{\beta} x_i) - \bar{y})^2}{\sum_i (y_i - \bar{y})^2}
@@ -414,7 +414,7 @@ Du matériel pédagogique sur le modèle linéaire est aussi disponible en accè
 ## Implémentation (R stats)
 
 Bien entendu, R a nativement une fonction implémentant l'estimation par maximum de vraisemblance d'un modèle linéaire:
-```{r fit}
+```{r fit_lm}
 fit <- lm(y ~ x, data=dat)
 ```
 
@@ -450,10 +450,18 @@ legend("bottomright", legend="MLE line", col="red", lty=1, bty="n")
 ## Implémentation (R base)
 
 Il peut être intéressant, surtout dans ce cas simple, d'implémenter cette méthode par soi-même pour mieux la comprendre.
-Pour cela, il faut d'abord écrire une fonction à qui on fournit les données et les paramètres et qui renvoie la log-vraisemblance.
-Puis on peut utiliser la fonction [mle](http://stat.ethz.ch/R-manual/R-devel/library/stats4/html/mle.html) du paquet stats4.
+Pour cela, on peut utiliser la fonction [mle](http://stat.ethz.ch/R-manual/R-devel/library/stats4/html/mle.html) du paquet stats4.
 
-TODO
+```{r fit_mle}
+negLogLik <- function(mu, beta, sigma){
+  - sum(dnorm(x=dat$y, mean=mu + beta * dat$x, sd=sigma, log=TRUE))
+}
+library(stats4)
+fit2 <- mle(negLogLik, start=list(mu=mean(dat$y), beta=0, sigma=1),
+            method="L-BFGS-B", nobs=nrow(dat),
+            lower=c(-Inf,-Inf,10^(-6)), upper=c(+Inf,+Inf,+Inf))
+summary(fit2)
+```
 
 
 # Explorer les simulations possibles
