@@ -11,6 +11,9 @@ output:
     toc: true
     toc_depth: 3
     number_sections: TRUE
+mode: selfcontained
+abstract: |
+  Ce document a pour but d'explorer par simulation l'intérêt de la prédiction génomique en sélection artificielle pour la création variétale.
 ---
 
 <!--
@@ -29,11 +32,8 @@ options(digits=3)
 ```
 
 
-# Contexte
+# Préambule
 
-Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
-
-Ce document a pour but d'explorer par simulation l'intérêt de la prédiction génomique en sélection artificielle pour la création variétale.
 Il est recommandé d'avoir déjà lu et suivi le document "Premiers pas" de l'atelier.
 
 De plus, ce document nécessite de charger des paquets additionnels (ceux-ci doivent être installés au préalable sur votre machine, via \verb+install.packages("pkg")+):
@@ -44,6 +44,17 @@ suppressPackageStartupMessages(library(rrBLUP))
 suppressPackageStartupMessages(library(BGLR))
 suppressPackageStartupMessages(library(data.table))
 ```
+
+
+# Contexte
+
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
+
+Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
+Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
+Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en cas de doute).
+
+Les versions du contenu sont gérées avec le logiciel git, et le dépôt central est hébergé sur [GitHub](https://github.com/timflutre/atelier-prediction-genomique).
 
 
 # Introduction
@@ -364,7 +375,6 @@ plot(beta, fit.BGLR$ETA[[2]]$b, asp=1, las=1,
 abline(lm(fit.BGLR$ETA[[2]]$b ~ beta), col="red")
 ```
 
-
 ### Comparaison
 
 Les deux approches donnent des résultats très similaires concernant les effets des marqueurs:
@@ -373,6 +383,10 @@ plot(fit.rrBLUP$u, fit.BGLR$ETA[[2]]$b, asp=1, las=1,
      xlab=expression(paste("Estimated values of ", beta[j], " by rrBLUP")),
      ylab=expression(paste("Estimated values of ", beta[j], " by BGLR")))
 abline(lm(fit.BGLR$ETA[[2]]$b ~ fit.rrBLUP$u), col="red")
+```
+
+```{r rm_files, echo=FALSE, eval=TRUE}
+tmp <- file.remove(c("ETA_1_b.dat", "ETA_2_varB.dat", "mu.dat", "varE.dat"))
 ```
 
 
@@ -390,12 +404,12 @@ Par ailleurs, certains caractères ne sont pas toujours bien capturés par la lo
 
 Quoi qu'il en soit, afin de se rapprocher de cas réels, commençons par utiliser de vrais génotypes.
 
-
+<!--
 # Simuler des phénotypes à partir de vrais génotypes
 
 Commençons par charger le fichier au format CSV avec les noms des SNP en première ligne, les noms des individus en première colonne, et le dosage alléliques dans le reste:
 
-```{r load_true_genos, eval=TRUE}
+```{r load_true_genos, eval=FALSE}
 ## system.time(X <- read.csv("true_genotypes.csv", header=TRUE, nrows=381))
 ## system.time(
 ##     X <- read.csv(unz("true_genotypes.csv.zip", "true_genotypes.csv"),
@@ -409,15 +423,7 @@ dim(X)
 X[1:3,1:5]
 str(X[1:3,1:5])
 ```
-
-Calculer les relations génétiques additives et les visualiser:
-```{r plot_add-rel, eval=TRUE}
-A <- A.mat(X - 1)
-A[1:3,1:3]
-image.mat(A, xlab="Individuals", ylab="Individuals")
-```
-
-TODO: définir différents sous-ensembles de marqueurs
+-->
 
 
 # Prédire grâce au génome

@@ -11,6 +11,9 @@ output:
     toc: true
     toc_depth: 3
     number_sections: TRUE
+mode: selfcontained
+abstract: |
+  Ce document a pour but d'introduire concrètement les étudiants à l'un des aspects de la modélisation statistique, la simulation. Il prend comme exemple la régression linéaire simple, historiquement développée par [Galton (1886)](http://dx.doi.org/10.2307/2841583) pour étudier l'hérédité de la taille dans l'espèce humaine.
 ---
 
 <!--
@@ -32,10 +35,10 @@ options(digits=3)
 # Préambule
 
 Ce document a été généré à partir d'un fichier texte au format Rmd utilisé avec le logiciel libre [R](http://www.r-project.org/).
-Pour exporter un tel fichier vers les formats HTML et PDF, installez le paquet [rmarkdown](http://cran.r-project.org/web/packages/rmarkdown/index.html) disponible sur CRAN (il va vraisemblablement vous être demandé d'installer d'autres paquets), puis ouvrez R et entrez:
+Pour exporter un tel fichier vers les formats HTML et PDF, installez le paquet [rmarkdown](http://cran.r-project.org/web/packages/rmarkdown/index.html) (il va vraisemblablement vous être demandé d'installer d'autres paquets), puis ouvrez R et entrez:
 ```{r ex_rmd, eval=FALSE}
 library(rmarkdown)
-render("myanalysis.Rmd", "all")
+render("premiers-pas.Rmd", "all")
 ```
 
 Il est généralement plus simple d'utiliser le logiciel libre [RStudio](http://www.rstudio.com/), mais ce n'est pas obligatoire.
@@ -50,9 +53,6 @@ suppressPackageStartupMessages(library(MASS))
 
 
 # Contexte
-
-Ce document a pour but d'introduire concrètement les étudiants à l'un des aspects de la modélisation statistique, la simulation.
-Il prend comme exemple la régression linéaire simple, historiquement développée par [Galton (1886)](http://dx.doi.org/10.2307/2841583) pour étudier l'hérédité de la taille dans l'espèce humaine.
 
 Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
 
