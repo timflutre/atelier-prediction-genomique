@@ -13,7 +13,7 @@ output:
     number_sections: TRUE
 mode: selfcontained
 abstract: |
-  Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique. Cet atelier est destiné aux étudiants en spécialisation APIMET de Montpellier SupAgro. Il accueille en 2016 des étudiants de la spécialisation PIST d'Agro Paris Tech.
+  Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique. Cet atelier est destiné aux étudiants en spécialisation APIMET de Montpellier SupAgro. Il accueille en 2016 des étudiants de la spécialisation PIST d'AgroParisTech.
 ---
 
 
@@ -30,65 +30,48 @@ abstract: |
 
 # Date, lieu et contacts
 
-* Du 15 au 19 février 2016.
+* Du lundi 15 au vendredi 19 février 2016.
 
-* Montpellier SupAgro, bâtiment 18, annexe de Mandon
+* Montpellier SupAgro, [bâtiment 18](http://www.supagro.fr/web/UserFiles/Flash/plan-campus.html) (annexe de Mandon).
 
-* [Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/)) et [Timothée Flutre](mailto:timothee.flutre@supagro.inra.fr) ([INRA](http://www.inra.fr/), [UMR AGAP](http://umr-agap.cirad.fr/))
-
-<!--
-[![le logo SupAgro][logoSA]][lienSA]
-
-[logoSA]: logo_MtpSupAgro.jpg
-[lienSA]: http://www.supagro.fr/
-
-[![le logo INRA][logoI]][lienI]
-
-[logoI]: logo_INRA_RVB_100x41-72.jpg
-[lienI]: http://www.inra.fr/
-
-[![le logo AGAP][logoA]][lienA]
-
-[logoA]: logo_UMR-AGAP_100-72.png
-[lienA]: http://umr-agap.cirad.fr/
--->
+* [Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte)) et [Timothée Flutre](mailto:timothee.flutre@supagro.inra.fr) ([INRA](http://www.inra.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](http://umr-agap.cirad.fr/equipes-scientifiques/diversite-adaptation-et-amelioration-de-la-vigne/contexte-et-objectifs)).
 
 
 # Objectifs de l'atelier
 
-Il vise à familiariser les étudiants avec la prédiction génomique des caractères quantitatifs et son utilisation dans les programmes de sélection.
+Il vise à familiariser les étudiants avec la prédiction génomique de caractères quantitatifs et son utilisation dans les programmes de sélection.
 Il se déroule en trois étapes. 
 
 1. Les bases de la prédiction génomique
-+ 1.1. Simulation de données génétiques et phénotypiques selon différentes architectures de traits
++ 1.1. Simulation de données phénotypiques selon différentes architectures génétiques
 + 1.2. Présentation des principales méthodes d'inférence des effets génétiques
-+ 1.3. Exploration de la qualité des prédictions en fonction de paramètres tels que la structure du matériel, la densité du marquage, la qualité des jeux de données, etc..
++ 1.3. Exploration de la qualité des prédictions en fonction de paramètres tels que la structure du matériel végétal, la densité de génotypage, etc.
 
-2. Un Journal Club
-+ 2.1. Des articles sont distribués en début d'atelier 
-+ 2.2. Lecture personnelle & préparation des présentations 
-+ 2.3. Présentation & discussions partagées
+2. Le *journal club*
++ 2.1. Distribuion d'articles en début d'atelier 
++ 2.2. Lecture personnelle & préparation de présentations
++ 2.3. Présentation & discussion collective
 
-3. Simulation d'un cycle de sélection
+3. La simulation d'un cycle de sélection
 + 3.1. Constitution d'équipes de sélection 
 + 3.2. Elaboration d'une stratégie de sélection mêlant essais et génotypage
 + 3.3. Réalisation du schéma de sélection sur une succession de 8 périodes simulant la temporalité d'un véritable programme de sélection
-+ 3.4. Mise en commun et examen des résultats. Comparaison des stratégies
++ 3.4. Mise en commun, examen des résultats et comparaison des stratégies
 
 
 # Pré-requis
 
-Les étudiants doivent avoir révisé assez sérieusement.
+Les étudiants doivent avoir révisé assez sérieusement les notions suivantes.
 
 1. Les bases de la génétique quantitative
-+ 1.1. Notions d'héritabilité 
-+ 1.2. Décomposition de la variance 
++ 1.1. Notion d'héritabilité
++ 1.2. Décomposition de la variance
 + 1.3. Effets additifs d'un allèle, modèle biallélique de Fisher
-+ 1.4. Prédiction de l'effet additif par la régression du nombre d'allèles favorable 
-+ 1.5. Covariances entre apparentés et construction d'une matrice de simple apparentement
++ 1.4. Prédiction de l'effet additif par la régression du nombre d'allèles favorables
++ 1.5. Covariance entre apparentés et construction d'une matrice de simple apparentement
 
 2. Les outils statistiques suivants
-+ 2.1 Le modèle à effet aléatoire
++ 2.1 Modèle linéaire mixte (à effets fixes et aléatoires)
 + 2.2 Estimation des composantes de la variance par le modèle mixte
 + 2.3 Utilisation des matrices d'apparentement dans le modèle mixte
 
@@ -97,11 +80,11 @@ Les étudiants doivent avoir révisé assez sérieusement.
 + 3.2 Génétique d'association
 + 3.3 Prédiction génomique
 
-4. R
+4. Logiciel R
 + 4.1 Bases de la programmation en R
 + 4.2 Ecriture d'une fonction
 + 4.3 Boucles & stockage de valeurs dans un objet
-+ 4.4 Ecriture de Rmd
++ 4.4 Ecriture de rapports au format Rmd
 
 Afin de vérifier que ces pré-requis ont été révisés, un petit QCM sera distribué en début d'atelier.
 Il servira pour une partie de la note de l'atelier.
@@ -109,18 +92,18 @@ Il servira pour une partie de la note de l'atelier.
 
 # Equipement et configuration
 
-Les étudiants doivent venir chacun avec leur ordinateur avec la configuration suivante :
+Les étudiants doivent venir chacun avec leur ordinateur avec la configuration suivante:
 
 1. système d'exploitation Windows, Mac ou Linux
 
-2. R
-
-A détailler
+2. logiciel R (version $\geq$ 3) et au moins les paquets suivants:
++ [knitr](https://cran.r-project.org/web/packages/knitr/) et [rmarkdown](https://cran.r-project.org/web/packages/rmarkdown/index.html)
++ [MASS](https://cran.r-project.org/web/packages/MASS/), [rrBLUP](https://cran.r-project.org/web/packages/rrBLUP/) et [BGLR](https://cran.r-project.org/web/packages/BGLR/)
 
 
 # Ressources en ligne
 
-Ce document ainsi que les autres documents nécessaires à la réalisation des travaux se trouve à l'adresse suivante : https://github.com/timflutre/atelier-prediction-genomique.
+Ce document, ainsi que les autres nécessaires à la réalisation de l'atelier, se trouve à l'adresse suivante: https://github.com/timflutre/atelier-prediction-genomique.
 
 
 # Programme de la semaine
@@ -143,20 +126,19 @@ Les articles sont les suivants
 1. Visscher et al, Commentary.
 
 2. Un article sur la manière d'optimiser la répartition des ressources pour un progrès maximal par unité de temps
- + Riedelsheimer C & Melchinger AE (2013) Optimizing the allocation of resources for genomic selection in one breeding cycle. TAG. Theoretical and applied genetics. Theoretische und angewandte Genetik 126(11):2835-2848.  
+ + Riedelsheimer C & Melchinger AE (2013) Optimizing the allocation of resources for genomic selection in one breeding cycle. TAG. Theoretical and applied genetics. Theoretische und angewandte Genetik 126(11):2835-2848.
 
-Des réferences pouvant être utile dans les réflexions stratégiques pour l'élaboration du schéma de sélection  
+Des réferences pouvant être utile dans les réflexions stratégiques pour l'élaboration du schéma de sélection
 
-4. Une présentation des différentes méthodes d'inférence des paramètres  
+4. Une présentation des différentes méthodes d'inférence des paramètres
 + Heslot N, Yang H-P, Sorrells ME, & Jannink J-L (2012) Genomic Selection in Plant Breeding: A Comparison of Models. Crop Science 52(1).
 
-5. Une revue  
+5. Une revue
 + Xu Y, et al. (2012) Whole-genome strategies for marker-assisted plant breeding. Molecular Breeding 29(4):833-854.
 
 6. Les bonnes pratiques et les bons paramètres à suivre dans un programme de GS  
 + Daetwyler HD, Calus MP, Pong-Wong R, de Los Campos G, & Hickey JM (2013) Genomic prediction in animals and plants: simulation of data, validation, reporting, and benchmarking. Genetics 193(2):347-365.
 http://www.genetics.org/lens/genetics/193/2/347#toc
-
 
 Il est encouragé que tous les étudiants aient lu au moins le résumé des deux articles qu'ils n'ont pas à étudier
 
@@ -181,7 +163,5 @@ Le processus de sélection continue avec un pas horaire
 - Les animateurs délivrent les résultats : meilleure variété & meilleur matériel 
 - Discussions croisées sur les différentes stratégies suivies
 
-
-# Fin de l'atelier 
-
+### 16h00 - 17h00
 Discussion sur les acquis réalisés durant l'atelier et sur les améliorations à apporter.
