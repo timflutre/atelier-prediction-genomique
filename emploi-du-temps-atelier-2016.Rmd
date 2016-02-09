@@ -92,13 +92,15 @@ Il servira pour une partie de la note de l'atelier.
 
 # Equipement et configuration
 
-Les étudiants doivent venir chacun avec leur ordinateur avec la configuration suivante:
+Les étudiants doivent venir chacun avec leur ordinateur portable avec la configuration suivante:
 
-1. système d'exploitation Windows, Mac ou Linux
+1. système d'exploitation Windows, Mac ou Linux;
 
 2. logiciel R (version $\geq$ 3) et au moins les paquets suivants:
-+ [knitr](https://cran.r-project.org/web/packages/knitr/) et [rmarkdown](https://cran.r-project.org/web/packages/rmarkdown/index.html)
-+ [MASS](https://cran.r-project.org/web/packages/MASS/), [rrBLUP](https://cran.r-project.org/web/packages/rrBLUP/) et [BGLR](https://cran.r-project.org/web/packages/BGLR/)
++ [knitr](https://cran.r-project.org/web/packages/knitr/), [rmarkdown](https://cran.r-project.org/web/packages/rmarkdown/): pour les rapports;
++ [MASS](https://cran.r-project.org/web/packages/MASS/): pour les simulations;
++ [QTLRel](https://cran.r-project.org/web/packages/QTLRel/), [qqman](https://cran.r-project.org/web/packages/qqman/): pour la génétique d'association;
++ [rrBLUP](https://cran.r-project.org/web/packages/rrBLUP/), [BGLR](https://cran.r-project.org/web/packages/BGLR/): pour la prédiction génomique.
 
 
 # Ressources en ligne
