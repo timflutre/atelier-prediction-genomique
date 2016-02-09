@@ -43,7 +43,8 @@ render("premiers-pas.Rmd", "all")
 
 Il est généralement plus simple d'utiliser le logiciel libre [RStudio](http://www.rstudio.com/), mais ce n'est pas obligatoire.
 Pour plus de détails, lisez [cette page](http://rmarkdown.rstudio.com/).
-Pour écrire des équations avec LaTeX, reportez-vous au [livre en ligne](https://fr.wikibooks.org/wiki/LaTeX).
+
+Le format Rmd permet également d'utiliser le language LaTeX pour écrire des équations. Pour en savoir plus, reportez-vous au [livre en ligne](https://fr.wikibooks.org/wiki/LaTeX).
 
 De plus, ce document nécessite de charger des paquets additionnels (ceux-ci doivent être installés au préalable sur votre machine, via \verb+install.packages("pkg")+):
 
@@ -103,7 +104,7 @@ En effet, certains décrivent les statistiques comme étant la *science de l'inc
 Or pour l'instant, nous n'avons parlé que de la façon d'obtenir *une* valeur par paramètre, celle qui maximise la vraisemblance.
 Il est donc primordial ensuite de *quantifier l'incertitude* que nous avons quant à cette valeur.
 C'est sur ce point que différentes approches sont possibles (*fréquentiste*, *bayésienne*).
-Mais quelle que soit l'approche, on peut généralement s'attendre au fait que, plus le nombre d'échantillons augmente (s'ils sont "représentatifs), plus l'incertitude sur la valeur du paramètre diminue.
+Mais quelle que soit l'approche, si les échantillons sont "représentatifs" et le modèle n'est pas trop mauvais, on peut généralement s'attendre au fait que plus le nombre d'échantillons augmente, plus l'incertitude sur la valeur du paramètre diminue.
 
 
 ## Comprendre par l'exemple
@@ -304,13 +305,15 @@ mu <- 50
 
 Pour simuler les génotypes, nous allons supposer que la population est à l'équilibre d'Hardy-Weinberg:
 ```{r simul_geno}
-##' Calculate the genotype frequencies (AA, Aa, aa) at Hardy-Weinberg equilibrium.
+##' Genotype frequencies
 ##'
-##' https://en.wikipedia.org/wiki/Hardy%E2%80%93Weinberg_principle
+##' Calculate the genotype frequencies at a locus assuming the Hardy-Weinberg equilibrium
+##' (https://en.wikipedia.org/wiki/Hardy%E2%80%93Weinberg_principle).
 ##' @param maf frequency of the minor allele, a
 ##' @return vector of genotype frequencies
 ##' @author Timothée Flutre
 calcGenoFreq <- function(maf){
+  stopifnot(is.numeric(maf), length(maf) == 1, maf >= 0, maf <= 0.5)
   geno.freq <- c((1 - maf)^2,
                 2 * (1 - maf) * maf,
                 maf^2)
@@ -328,7 +331,9 @@ Le morceau de code ci-dessus vous montre aussi les bonnes pratiques de programma
 
 * documenter le code;
 
-* citer des référence si nécessaire.
+* citer des référence si nécessaire;
+
+* vérifier la validité des arguments au début d'une fonction.
 
 Regardons à quoi ressemblent les génotypes que nous venons de simuler:
 ```{r look_geno}
@@ -413,7 +418,7 @@ Du matériel pédagogique sur le modèle linéaire est aussi disponible en accè
 
 ## Implémentation (R stats)
 
-Bien entendu, R a nativement une fonction implémentant l'estimation par maximum de vraisemblance d'un modèle linéaire:
+Bien entendu, R a nativement une fonction implémentant l'estimation par maximum de vraisemblance d'un modèle linéaire, [lm](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html):
 ```{r fit_lm}
 fit <- lm(y ~ x, data=dat)
 ```
@@ -424,11 +429,18 @@ par(mfrow=c(2,2))
 plot(fit)
 ```
 
-Ceci semble être bien le cas (évidemment puisque nous avons simulé nous-même les données!).
+Ceci semble être bien le cas (évidemment puisque nous avons simulé nous-même les données !).
 
-Nous pouvons donc extraire de l'objet renvoyé par la fonction lm() les quantités qui nous intéressent et les comparer aux vraies valeurs utilisées pour simuler les données:
-```{r get_results}
+Regardons donc les résultats:
+```{r get_results_summary}
 summary(fit)
+```
+
+Nous retrouvons les valeurs utilisées pour simuler les données.
+C'est là l'intérêt de la simulation par rapport à des vraies données: on connaît les valeurs que l'on est censé retrouver.
+
+Nous pouvons aussi extraire une à une de l'objet renvoyé par la fonction \verb+lm()+ les quantités qui nous intéressent et vérifier avec les formules:
+```{r get_results}
 c(coefficients(fit)[1], coefficients(fit)[2], summary(fit)$sigma)
 c(mu, beta, sigma)
 (se.mu.hat <- summary(fit)$coef[1,2])
@@ -503,7 +515,7 @@ où $\boldsymbol{y}$ est le vecteur de dimension $n$ contenant les phénotypes, 
 D'ailleurs, on écrit souvent ce type de vraisemblance de manière encore plus concise:
 
 \[
-\boldsymbol{y} | W, X, \boldsymbol{\alpha}, \boldsymbol{\beta}, \sigma \; \sim \mathcal{N}_n(W \boldsymbol{\alpha} + X \boldsymbol{\beta}, \Sigma) \text{ avec } \Sigma = \sigma I_n
+\boldsymbol{y} | W, X, \boldsymbol{\alpha}, \boldsymbol{\beta}, \sigma \; \sim \mathcal{N}_n(W \boldsymbol{\alpha} + X \boldsymbol{\beta}, \Sigma) \text{ avec } \Sigma = \sigma^2 I_n
 \]
 
 où $W$ est la matrice qui contient la colonne de 1 ainsi que potentiellement d'autres colonnes (si besoin est), $\boldsymbol{\alpha}$ est le vecteur contenant la moyenne globale $\mu$ ainsi que d'autres effets (si besoin est) considérés comme "fixes", $X$ est une matrice potentiellement à plusieurs colonnes, ici contenant les génotypes, $\boldsymbol{\beta}$ est un vecteur contenant des effets associés aux colonnes de $X$ et considérés comme "aléatoires", et $\Sigma$ est la matrice de variance-covariance.
