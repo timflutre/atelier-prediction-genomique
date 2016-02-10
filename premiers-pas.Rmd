@@ -289,13 +289,12 @@ Afin de simuler des données, nous allons utiliser un générateur de nombres ps
 Le mot "pseudo" est là pour rappeler que les générateurs informatiques sont déterministes et peuvent donc être initialisés avec une graine (*seed*), très utile pour la reproductibilité des analyses:
 
 ```{r set_seed}
-seed <- 1859
-set.seed(seed)
+set.seed(1866) # année de parution de l'article de Mendel fondant la génétique
 ```
 
 Commençons par fixer le nombre d'individus:
 ```{r set_sample_size}
-n <- 500
+n <- 200
 ```
 
 Puis la moyenne globale (de manière arbitraire, ce n'est pas très important car on peut toujours centrer les phénotypes en début d'analyse):
@@ -344,7 +343,7 @@ var(genotypes) # important for the estimate of beta
 
 Tirons une valeur pour l'effet du génotype sur le phénotype:
 ```{r simul_geno_effect}
-(beta <- rnorm(n=1, mean=1, sd=1))
+(beta <- rnorm(n=1, mean=2, sd=1))
 ```
 
 Simulons des erreurs (par simplicité, fixons $\sigma$ à 1):
@@ -358,20 +357,6 @@ Nous avons maintenant tout ce qu'il faut pour simuler les phénotypes:
 phenotypes <- mu + beta * genotypes + errors
 ```
 
-Regardons à quoi ils ressemblent:
-```{r look_pheno}
-hist(phenotypes, breaks="FD", las=1, main="",
-     xlab="Phenotypes", ylab="Number of individuals")
-```
-
-Comme ce qui nous intéresse ici, ce ne sont pas uniquement les phénotypes, mais bien la relation entre les génotypes et les phénotypes, un autre type de graphique semble plus approprié:
-```{r look_geno_pheno}
-boxplot(phenotypes ~ genotypes, xlab="Genotypes", ylab="Phenotypes", las=1)
-```
-
-Remarquez l'importance de faire des graphiques les plus clairs et intelligibles possible.
-Ce ne sont souvent que les graphiques que l'on montre à la place des tableaus de résultats, ceux-ci étant plus difficiles à lire ([Gelman *et al.*, 2002](http://dx.doi.org/10.1198/000313002317572790)).
-
 Pour la suite, il est habituel dans R d'organiser les données dans un tableau:
 ```{r org_data}
 dat <- data.frame(x=genotypes, y=phenotypes)
@@ -380,6 +365,24 @@ summary(dat)
 
 
 # Réaliser l'inférence
+
+## Représentation graphique
+
+Avant toute autre chose, regardons à quoi ressemblent les données:
+```{r look_pheno}
+hist(phenotypes, breaks="FD", las=1, main="",
+     xlab="Phenotypes", ylab="Number of individuals")
+```
+
+Comme ce qui nous intéresse ici, ce ne sont pas uniquement les phénotypes, mais bien la relation entre les génotypes et les phénotypes, un autre type de graphique semble plus approprié:
+```{r look_geno_pheno}
+boxplot(phenotypes ~ genotypes, varwidth=TRUE, notch=TRUE,
+        xlab="Genotypes", ylab="Phenotypes", las=1)
+```
+
+Remarquez l'importance de faire des graphiques les plus clairs et intelligibles possible.
+Ce ne sont souvent que les graphiques que l'on montre à la place des tableaus de résultats, ceux-ci étant connus pour être plus difficiles à lire ([Gelman *et al.*, 2002](http://dx.doi.org/10.1198/000313002317572790)).
+
 
 ## Dérivation mathématique
 
@@ -416,7 +419,7 @@ Pour en savoir plus, reportez-vous par exemple au livre "Statistique inférentie
 Du matériel pédagogique sur le modèle linéaire est aussi disponible en accès libre sur le site internet de la Société Française de Statistique ([ici](http://www.sfds.asso.fr/370-Ressources_pour_lenseignement_par_filieres)).
 
 
-## Implémentation (R stats)
+## Implémentation (facile)
 
 Bien entendu, R a nativement une fonction implémentant l'estimation par maximum de vraisemblance d'un modèle linéaire, [lm](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html):
 ```{r fit_lm}
@@ -436,21 +439,7 @@ Regardons donc les résultats:
 summary(fit)
 ```
 
-Nous retrouvons les valeurs utilisées pour simuler les données.
-C'est là l'intérêt de la simulation par rapport à des vraies données: on connaît les valeurs que l'on est censé retrouver.
-
-Nous pouvons aussi extraire une à une de l'objet renvoyé par la fonction \verb+lm()+ les quantités qui nous intéressent et vérifier avec les formules:
-```{r get_results}
-c(coefficients(fit)[1], coefficients(fit)[2], summary(fit)$sigma)
-c(mu, beta, sigma)
-(se.mu.hat <- summary(fit)$coef[1,2])
-(se.beta.hat <- summary(fit)$coef[2,2])
-summary(fit)$r.squared
-(coefficients(fit)[2]^2 * var(dat$x)) /
-  (coefficients(fit)[2]^2 * var(dat$x) + summary(fit)$sigma^2)
-```
-
-On peut aussi ajouter la droite de régression au graphique des données:
+Rajoutons la droite de régression au graphique des données:
 ```{r look_geno_pheno_reg}
 plot(phenotypes ~ jitter(genotypes, factor=0.5), las=1,
      xlab="Genotypes", ylab="Phenotypes")
@@ -459,15 +448,20 @@ legend("bottomright", legend="MLE line", col="red", lty=1, bty="n")
 ```
 
 
-## Implémentation (R base)
+## Implémentation (plus dure)
 
 Il peut être intéressant, surtout dans ce cas simple, d'implémenter cette méthode par soi-même pour mieux la comprendre.
 Pour cela, on peut utiliser la fonction [mle](http://stat.ethz.ch/R-manual/R-devel/library/stats4/html/mle.html) du paquet stats4.
 
-```{r fit_mle}
+Il faut d'abord écrire une fonction calculant l'opposé de la log-vraisemblance:
+```{r neg_log_lik}
 negLogLik <- function(mu, beta, sigma){
   - sum(dnorm(x=dat$y, mean=mu + beta * dat$x, sd=sigma, log=TRUE))
 }
+```
+
+Puis demander à la fonction \verb+mle+ de la maximiser (en spécifiant que le paramètre $\sigma$ ne peut pas être négatif ou nul):
+```{r fit_mle}
 library(stats4)
 fit2 <- mle(negLogLik, start=list(mu=mean(dat$y), beta=0, sigma=1),
             method="L-BFGS-B", nobs=nrow(dat),
@@ -476,11 +470,102 @@ summary(fit2)
 ```
 
 
+# Evaluer les résultats
+
+## Sélection de modèles
+
+Cette première étape a à voir avec l'ajustement du modèle aux données.
+Dans notre cas de régression linéaire simple, on peut utiliser le coefficient de détermination:
+```{r adjust}
+summary(fit)$r.squared
+```
+
+On peut facilement vérifier que cette valeur renvoyée par la fonction \verb+lm+ correspond à la formule écrite ci-dessus:
+```{r calc_adjust}
+(coefficients(fit)[2]^2 * var(dat$x)) /
+  (coefficients(fit)[2]^2 * var(dat$x) + summary(fit)$sigma^2)
+```
+
+Dans le cas où plusieurs modèles sont intéressants, on peut essayer de vouloir en sélectionner un s'il paraît "meilleur" que les autres.
+Cette étape ne sera pas discutée plus avant ici, mais pour en savoir plus, lisez ce que vous trouverez sur internet en cherchant les termes "AIC", "BIC" et "validation croisée" (*cross validation*).
+
+
+## Estimation de paramètres
+
+Prenons l'exemple du paramètre $\beta$, de son estimateur du maximum de vraisemblance $B$ et de son estimation $\hat{\beta}$.
+Comme nous avons simulé les données, nous connaissons la vraie valeur du paramètre:
+```{r true_beta}
+beta
+```
+
+Après avoir ajusté le modèle avec la fonction \verb+lm()+, nous pouvons récupérer l'estimation de ce paramètre:
+```{r estim_beta}
+(beta.hat <- coefficients(fit)[2])
+```
+
+Pour comparer les deux, on définit une fonction de perte (*loss function*) reliant le paramètre, $\beta$, et son estimateur, $B$.
+On utilise communément une fonction quadratique, dont on prend l'espérance, ce qui donne l'erreur quadratique moyenne (*mean squared error*):
+\[
+MSE = E \left( (B - \beta)^2 \right)
+\]
+Calculons sa racine carrée afin que le résultat soit dans la même unité que le paramètre:
+```{r rmse_beta}
+(rmse.beta <- sqrt((beta.hat - beta)^2))
+```
+
+
+## Prédiction de données
+
+Nous pouvons aussi calculer l'erreur quadratique moyenne avec les phénotypes déjà observés:
+```{r calc_rmse_y}
+y <- phenotypes
+y.hat <- (coefficients(fit)[1] + coefficients(fit)[2] * genotypes)
+errors <- y - y.hat
+(rmse.y <- sqrt(mean(errors^2)))
+```
+
+Plus facilement, on peut aussi utiliser la fonction \verb+predict+:
+```{r rmse_y}
+errors <- phenotypes - predict(fit)
+(rmse.y <- sqrt(mean(errors^2)))
+```
+
+Mais, de façon plus intéressante, nous voudrions évaluer les prédictions de nouveaux phénotypes.
+Pour cela, commençons par simuler de nouvelles données, toujours avec les mêmes "vraies" valeurs des paramètres:
+```{r simul_new_data}
+set.seed(1944) # année de découverte de l'ADN comme support des gènes
+n.tilde <- 500
+x.new <- sample(x=c(0,1,2), size=n.tilde, replace=TRUE, prob=calcGenoFreq(f))
+y.new <- mu + beta * x.new + rnorm(n=n.tilde, mean=0, sd=sigma)
+```
+
+Puis utilisons nos estimations obtenues précédemment pour prédire ces nouveaux phénotypes à partir de ces nouveaux génotypes:
+```{r predict_ytilde}
+y.tilde <- (coefficients(fit)[1] + coefficients(fit)[2] * x.new)
+```
+
+Enfin, calculons l'erreur quadratique de prédiction:
+```{r rmspe}
+errors <- y.new - y.tilde
+(rmspe <- sqrt(mean(errors^2)))
+```
+
+Regardons visuellement ce que ça donne:
+
+```{r ynew_vs_ytilde}
+plot(x=y.new, y=y.tilde, xlab="New phenotypes", ylab="Predicted phenotypes", las=1)
+abline(a=0, b=1, lty=2)
+```
+
+
 # Explorer les simulations possibles
 
 La simulation est un outil particulièrement utile pour explorer comment un modèle répond à des changements dans les données et les paramètres.
 
-Maintenant, c'est à vous: que voudriez-vous explorer en premier?
+On pourrait par exemple avoir envie de savoir ce qui se passe si la taille de l'échantillon, $n$, varie.
+Idem, que se passe-t-il si, à $n$ et $\sigma$ fixés, on modifie $\beta$ ?
+
+C'est à vous !
 
 
 # Perspectives
