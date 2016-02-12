@@ -1,0 +1,338 @@
+---
+title: "Programme de Sélection"
+author: "Jacques David et Timothée Flutre"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+---
+
+<!--
+Ce morceau de code R est utilisé pour vérifier que tout ce dont on a besoin est disponible.
+-->
+```{r setup, include=FALSE}
+R.v.maj <- as.numeric(R.version$major)
+R.v.min.1 <- as.numeric(strsplit(R.version$minor, "\\.")[[1]][1])
+if(R.v.maj < 2 || (R.v.maj == 2 && R.v.min.1 < 15))
+  stop("requires R >= 2.15", call.=FALSE)
+
+suppressPackageStartupMessages(library(knitr))
+opts_chunk$set(echo=TRUE, warning=TRUE, message=TRUE, cache=FALSE)
+
+options(digits=3)
+```
+
+
+# Contexte
+
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
+
+Ce document a pour but d'explorer par simulation les stratégies possibles d'un sélectionneur en prenant un cas *très simplifié* de plante annuelle de type "blé".
+Il est recommandé d'avoir déjà lu et suivi les documents "Premiers pas" et "Prédiction génomique" de l'atelier.
+
+Concrètement, cela prend la forme d'un "jeu sérieux" (*serious game*) qui implique plusieurs équipes.
+L'objectif de chacune est de parvenir à réaliser du progrès génétique aboutissant à l'inscription d'une nouvelle variété qui satisfait aux critères usuels de DHS et VATE.
+L'évaluation des variétés proposées à l'inscription par chaque équipe aura lieu à la fin d'une période de sélection s'étalant sur plusieurs générations.
+
+
+# Informations biologiques
+
+## *Apimeta simulans*, une espèce pleine d'avenir
+
+Découverte récemment aux confins de la vallée supérieure de l'Aghromonpe, *Apimeta simulans* appartient au genre des *Statisticeae*.
+Elle produit des fleurs qui contiennent un composé alcaloïde, la *sepmetine*, consommée par les étudiants pour éviter les maux de tête lors des efforts intellectuels trop intenses.
+Le marché est donc très important et se développe rapidement. 
+*Apimeta* peut être sensible à quelques maladies, dont la redoutable rouille fluorescente, *Putrida psychedelica*.
+Les producteurs sont payés à la quantité produite (les rendements sont de l'ordre de 40 kg fleur par ha), mais les transformateurs ont réussi à exiger que la teneur moyenne en sepmetine des lots commerciaux soit au dessus de 15 pour mille. 
+
+## Biologie de l'espèce
+
+*Apimeta simulans* est hermaphrodite et autogame.
+Elle est produite sous forme de lignées pures, et se croise facilement.
+On peut produire en serre jusqu'à deux générations par an pour accélerer la fixation et le retour à l'homozygotie.
+Il est également possible de produire des haploides doublés.
+Le taux de multiplication de l'espèce est très élevé, chaque plante étant capable de produire plus de 1000 graines.
+
+## Génome et ressources génomiques
+
+L'espèce est diploïde.
+Elle possède 10 chromosomes, tous de même taille.
+Une carte physique est d'ailleurs disponible.
+Deux puces ont été construites à partir du séquençage *de novo* de 20 individus:
+une puce à haute densité de 10 000 marqueurs SNPs, le génotypage coûtant 150 Mendels par individu, et une puce basse densité de 5000 marqueurs dont le génotypage coûte 10 Mendels.
+Un génotypage de type KASPar peut également être développé pour des SNPs uniques, au prix d'1 Mendel par point.
+
+## Ressources génétiques et donnnées disponibles
+
+Environ 800 lignées sont disponibles.
+Le lieu d'expérimentation est composé de 300 parcelles.
+Chaque année pendant dix ans, 150 lignées ont été plantées, en deux répétitions chacune (sans bloc).
+De plus, chaque lignée a été expérimentée deux années successives.
+Chaque année, l'essai comporte donc 75 lignées déjà expérimentées l'année précédente, et 75 nouvelles lignées.
+
+Les données relevées sont la production de fleurs (kg/ha), la teneur en sepmetine (g/kg) et la présence de symptômes causés par *Putrida psychedelica*.
+Pour les 150 lignées expérimentées la dernière année, les données génotypiques sur la puce à haute densité sont déjà disponibles. 
+
+
+# Moyens expérimentaux
+
+Chaque équipe dispose d'un capital maximum de 10 000 Mendels.
+
+
+## Réseau d'expérimentation
+
+Il y a un site expérimental possible, Agrom-sur-Lez (AZ), qui a 300 parcelles.
+L'implantation d'une parcelle nécessite environ 500 graines.
+Le coût unitaire d'une parcelle expérimentale (semis, phénotypage des trois caractères et récolte), 1 PE, est de `r (cost.PE <- 50)` Mendels.
+
+
+## Serre
+
+La serre peut servir à effectuer les croisements et les générations accélerées.
+Il est possible de faire 2 générations par an.
+Le cout d'un croisement (quelques semences F1 par croisement) est de 1/2 PE, soit `r cost.PE / 2` Mendels.
+La culture et récolte d'une plante individuelle est de 1/100 PE, soit `r cost.PE / 100` Mendels.
+
+## Laboratoire de biotechnologie
+
+La production d'une graine haploide fonctionne comme sur le maïs, la pollinisation de la plante donneuse se fait par le pollen d'un génotype inducteur de gynogénèse.
+Les graines haploïdes se repèrent facilement.
+Le doublement du stock chromosomique de la plante haploïde prend une génération également. 
+Au final, l'obtention de la récolte de 1000 graines d'un haploide doublé prend un an et coûte 1/25 PE, soit `r cost.PE / 25` Mendels.
+
+## Récapitulatif des coûts
+
+| Prestation      | Coût (Mendel)   | Coût (PE)
+|-----------------|:---------------:|:-------:|
+parcelle                  | `r cost.PE`           | 1 
+croisement                | `r cost.PE/2`         | 1/2
+autofécondation serre     | `r cost.PE/100`       | 1/100
+haploide doublé serre     | `r cost.PE/25`        | 1/25
+génotypage haute densité  | `r cost.PE * 3`       | 3
+génotypage basse densité  | `r cost.PE / 5`       | 1/5
+génotypage simple-SNP     | `r cost.PE/50`        | 1/50
+
+
+
+# Epreuve finale
+
+Chaque groupe devra proposer à l'inscription une ou plusieurs variétés à la fin du programme (vendredi midi).
+Le coût de dépôt à l'inscription est de 200 Mendels par variété.
+
+Elles devront satisfaire aux critères DHS qui seront évalués essentiellement sur le taux d'hétérozygotie de la variété proposée: $\le$ 3 %.
+
+Elles devront aussi satisfaire aux critères VATE correspondant à un minimum de 105 % de la productivité brute des 5 meilleurs lignées disponibles pour tous en début de programme.
+Les variétés en-dessous du seuil de 14 % de sepmetine seront éliminées.
+Les variétés résistantes auront un bonus.
+
+La disponibilité en semence devra être suffisante.
+La variété proposée devra donc avoir été expérimentée au moins une fois en parcelle pour disposer de suffisamment de semences à envoyer aux évaluateurs.
+
+
+
+# Déroulement d'une campagne
+
+Une campagne se déroule sur une année, ce qui équivaut à une heure pleine.
+
+## Implantation des essais
+
+Ces implantations ne sont possibles que toutes les heures pleines.
+Vous devez envoyer aux formateurs un fichier de type "phénotypage".
+Ce fichier contient la liste des individus que vous voulez phénotyper, et le nombre de parcelles.
+Voir le format ci-dessous.
+Vous recevez les résultats à la demi-heure d'après.
+
+## Création de matériel
+
+Attention aux identifiants des individus: c'est vous qui les choisissez, mais ils doivent être uniques (au sein de chaque équipe) et sont définitifs !!
+
+
+### Croisements
+
+Tous les croisements se font en serre.
+Vous pouvez en commander 2 fois par campagne, en envoyant aux régulateurs un fichier de type "croisement".
+Il faut autant de lignes que de descendants demandés pour une croisement.
+Voir le format ci-dessous.
+Les individus résultant sont disponibles dans la demi-heure d'après.
+
+Par exemple, \verb+62-87.1+ est l'identifiant pour un hybride F1 entre les lignées \verb+Coll062+ et \verb+Coll87+ de la collection.
+
+
+### F2 et SSD
+
+Ces demandes se font dans le même fichier "croisement".
+Toutes les autofécondations se font en serre.
+Pour chacune des générations que vous voulez avancer, envoyer le fichier des identifiants de vos plantes-mères de la génération n-1 et les identifiants que vous souhaitez pour chaque descendant.
+Il faut autant de lignes que de descendants demandés pour une plante-mère.
+Voir le format ci-dessous.
+Les individus résultant sont disponibles dans la demi-heure d'après.
+
+Par exemple, \verb+62-87.1.1+, \verb+62-87.1.2+ et \verb+62-87.1.3+ sont les identifiants de trois plantes F2 issues de l'hybride précédent.
+
+Idem, \verb+62-87.1.3.1+ est l'identifiant d'une plante F3 issue de \verb+62-87.1.3+.
+
+
+### Haploides doublés
+
+Ces demandes se font dans le même fichier "croisement".
+Voir le format ci-dessous.
+Les individus résultant sont disponibles dans la demi-heure d'après.
+
+Par exemple, \verb+62-87.1.HD1+ et \verb+62-87.1.HD2+ sont les identifiant de 2 haploides doublés à partir de la plante hybride F1 \verb+62-87.1+.
+
+
+### Génotypage
+
+Vous pouvez demander le génotypage selon les trois techniques, et vous pouvez soumettre aux heures pleines et aux demi-heures.
+Vous soumettez un fichier avec les identifiants des individus concernés dans un fichier en précisant la méthode. 
+Pour la méthode "simple marqueur", il vous faut préciser le code du SNP désiré.
+Voir le format ci-dessous.
+Vous recevez vos données dès qu'elles auront pu être générées.
+
+
+
+## Exemple de programme
+
+Timothée et Jacques créent une entreprise, la Tim&Jack Breeding Corp (dit *La Firme* dans le milieu).
+Ils ont eu le temps d'analyser les données, et ont élaboré une stratégie dont voici les premières étapes.
+
+
+### 0h00
+
+Ils décident de phénotyper 250 lignées de la collection, non expérimentées la dernière année, 50 sur deux parcelles (par exemple l'individu \verb+Coll342+), les autres sur une seule (par exemple l'individu \verb+Coll013+).
+
+Leur fichier ressemble à ça:
+```{r, echo=TRUE}
+(dat <- data.frame(ind=c("Coll342", "Coll013", "..."),
+                   task=c("pheno", "pheno", "pheno"),
+                   details=c("2", "1", "..."),
+                   stringsAsFactors=FALSE))
+```
+
+Ils décident aussi de réaliser des croisements: 
+
++ 25 croisements correspondant à différentes combinaisons des 30 lignées ayant montré le meilleur classement sur l'ensemble des données disponibles dont 50% sans symptôme de maladie;
+
++ 25 croisements entre une très bonne lignée (top 10) avec les lignées les plus distantes.
+
+Leur fichier ressemble à ça:
+```{r, echo=TRUE}
+(dat <- data.frame(parent1=c("Coll002", "Coll766", "..."),
+                   parent2=c("Coll013", "Coll025", "..."),
+                   child=c("2-13.1", "766-25.1", "..."),
+                   stringsAsFactors=FALSE))
+```
+
+Ils décident enfin de génotyper certains individus, par exemple l'individu \verb+Coll013+ sur la puce haute-densité, l'individu \verb+Coll125+ sur la puce basse-densité  et l'individu \verb+Coll025+ pour le SNP 33602.
+
+Leur fichier ressemblent à ça:
+
+```{r, echo=TRUE}
+(dat <- data.frame(ind=c("Coll013", "Coll025", "Coll125", "..."),
+                   task=c("geno", "geno", "geno", "..."),
+                   details=c("hd", "snp33602", "ld", "..."),
+                   stringsAsFactors=FALSE))
+```
+
+
+### 0h30
+
+Les phénotypes des essais sont délivrés, dans le même format que les données initiales de la collection:
+
+```{r, echo=FALSE}
+(dat <- data.frame(ind=c("Coll342", "Coll342", "Coll013", "..."),
+                   year=c(rep(2015, 3), "..."),
+                   plot=c(1:3, "..."),
+                   pathogen=c(rep(FALSE, 3), "..."),
+                   trait1=c(format(rnorm(n=3, mean=40, sd=4), digits=4), "..."),
+                   trait2=c(format(rnorm(n=3, mean=15, sd=2), digits=4), "..."),
+                   trait3=c(rep(0, 3), "..."),
+                   stringsAsFactors=FALSE))
+```
+
+Les génotypes issus des puces sont reçus dans le même format que les données initiales, un fichier par puce avec tous les individus ensemble:
+
+```{r, echo=FALSE}
+dat <- data.frame(snp07454=c(1, "..."),
+                  snp14386=c(0, "..."),
+                  snp21483=c(2, "..."),
+                  stringsAsFactors=FALSE)
+rownames(dat) <- c("Coll013", "...")
+dat
+```
+
+Pour les simples marqueurs, le format est le suivant:
+```{r, echo=FALSE}
+(dat <- data.frame(ind=c("Coll025", "..."),
+                   snp=c("snp33602", "..."),
+                   geno=c(1, "..."),
+                   stringsAsFactors=FALSE))
+```
+
+Et le reste de leur stratégie, et bien, cela ne vous regarde pas... ;)
+
+
+
+# Données disponibles initialement
+
+A votre arrivée dans le programme, nous vous donnons les fichiers contenant les phénotypes de quelques essais et les génotypes de plusieurs variétés.
+
+Voici les phénotypes:
+```{r load_phenos, eval=FALSE}
+phenos <- read.table(file="phenos_coll.txt.gz", header=TRUE, stringsAsFactors=FALSE)
+class(phenos)
+dim(phenos)
+str(phenos)
+head(phenos)
+summary(phenos)
+```
+
+Et voici les génotypes:
+```{r load_genos, eval=FALSE}
+genos <- as.matrix(read.table(file="genos_coll-2014.txt.gz", header=TRUE))
+class(genos)
+dim(genos)
+str(genos)
+genos[1:4,1:6]
+summary(genos)
+```
+
+
+
+<!--
+# Perspectives
+
+TODO: automatiser en utilisant [rchallenge](https://cran.r-project.org/web/packages/rchallenge/index.html)
+-->
+
+
+# Références
+
+* Massman, J. M., Jung, H.-J. G., Bernardo, R., 2013. Genomewide selection versus marker-assisted recurrent selection to improve grain yield and stover-quality traits for cellulosic ethanol in maize. Crop Science 53 (1), 58+. [URL](http://dx.doi.org/10.2135/cropsci2012.02.0112)
+
+* Riedelsheimer, C., Melchinger, A. E., Nov. 2013. Optimizing the allocation of resources for genomic selection in one breeding cycle. Theoretical and Applied Genetics 126 (11), 2835-2848. [URL](http://dx.doi.org/10.1007/s00122-013-2175-9)
+
+* Longin, C. F., Mi, X., Würschum, T., 2015. Genomic selection in wheat: optimum allocation of test resources and comparison of breeding strategies for line and hybrid breeding. Theoretical and Applied Genetics 128 (7), 1297-1306. [URL](http://dx.doi.org/10.1007/s00122-015-2505-1)
+
+* Duvick, D. N., Smith, J. S. C. & Cooper, M. Long-Term selection in a commercial hybrid maize breeding program. Plant Breeding Reviews 24, 109-151 (2004). [URL](http://dx.doi.org/10.1002/9780470650288.ch4)
+
+* Mackay, I. et al. Reanalyses of the historical series of UK variety trials to quantify the contributions of genetic and environmental factors to trends and variability in yield over time. Theoretical and Applied Genetics 122, 225-238 (2011). [URL](http://dx.doi.org/10.1007/s00122-010-1438-y)
+
+* Laidig, F., Piepho, H.-P., Drobek, T. & Meyer, U. Genetic and non-genetic long-term trends of 12 different crops in german official variety performance trials and on-farm yield trends. Theoretical and Applied Genetics 127, 2599-2617 (2014). [URL](http://dx.doi.org/10.1007/s00122-014-2402-z)
+
+* Moreau, L., Lemarié, S., Charcosset, A. & Gallais, A. Economic efficiency of one cycle of Marker-Assisted selection. Crop Science 40, 329+ (2000). [URL](http://dx.doi.org/10.2135/cropsci2000.402329x)
+
+* Oury, F.-X., Godin, C., 2007. Yield and grain protein concentration in bread wheat: how to use the negative relationship between the two characters to identify favourable genotypes? Euphytica 157 (1-2), 45-57. [URL](http://dx.doi.org/10.1007/s10681-007-9395-5)
+
+
+# Annexe
+
+```{r info}
+print(sessionInfo(), locale=FALSE)
+```
