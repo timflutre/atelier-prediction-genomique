@@ -66,7 +66,7 @@ Les versions du contenu sont gérées avec le logiciel git, et le dépôt centra
 
 # Introduction
 
-## A propos de la modélisation
+## A propos de modélisation statistique
 
 "Essentially, all models are wrong, but some are useful." (Box, 1987).
 Cette célèbre citation illustre parfaitement le fait qu'un modèle est une simplification du phénomène étudié, mais qu'après tout, si cette simplification nous apporte des enseignements et nous permet de prendre de bonnes décisions, cela importe tout autant.
@@ -79,40 +79,41 @@ Il est également utile, pour mieux comprendre le processus de modélisation sta
 En particulier, il ne faut pas confondre les données avec des variables aléatoires, même si on fait souvent le raccourci: "In both approaches [frequentist and Bayesian], a statistical model is introduced and we may say that the inference is based on what *would* happen if the data *were* to be random variables distributed according to the statistical model. This modeling assumption would be reasonable if the model *were* to describe accurately the variation in the data." ([Kass, 2011](http://dx.doi.org/10.1214/10-sts337)).
 
 
-## Notations et vocabulaire
+## Notation et vocabulaire
 
-L'inférence avec un modèle statistique consiste généralement à *estimer* les paramètres, puis à s'en servir pour *prédire* de nouvelles données.
+L'inférence avec un modèle statistique consiste généralement à **estimer les paramètres**, puis à s'en servir pour **prédire de nouvelles données**.
 
 Lorsque l'on propose un modèle pour répondre à une question donnée, on commence donc par expliquer les notations.
 Suivant les conventions, nous utilisons des lettres grecques pour dénoter les paramètres (non-observés), par exemple $\theta$, des lettres romaines pour les données observées, par exemple $y$, et des lettres romaines surmontées d'un tilde pour les données prédites, $\tilde{y}$.
 L'ensemble des données est généralement noté en majuscule, par exemple $\mathcal{D} = \{ y_1, y_2, y_3 \}$.
 De même, l'ensemble des paramètres est généralement noté en majuscule, par exemple $\Theta = \{ \theta_1, \theta_2 \}$.
 De plus, s'il y a plusieurs paramètres ou données, ils se retrouvent mathématiquement dans des vecteurs, en gras, ce qui donne $\boldsymbol{\theta}$ et $\boldsymbol{y}$.
+Par convention, les vecteurs sont en colonne.
 
-Une fois les notations établies, on écrit la *vraisemblance* (likelihood en anglais), souvent présentée comme étant la "probabilité des données sachant les paramètres".
+Une fois les notations établies, on écrit la **vraisemblance** (*likelihood*), souvent présentée comme étant la "probabilité des données sachant les paramètres".
 En fait, si les données sont des variables continues, c'est la densité de probabilité des données sachant les paramètres, notée $p(y | \theta)$, et si les données sont des variables discrètes, c'est la fonction de masse, notée $P(y | \theta)$.
 Mais le plus important est de réaliser que, dans la vraisemblance, ce ne sont pas les données qui varient, mais les paramètres: la vraisemblance est une fonction des paramètres, d'où le fait qu'on la note $\mathcal{L}(\theta)$ ou $\mathcal{L}(\theta | y)$.
 
-Tout naturellement, la méthode du *maximum de vraisemblance* cherche à identifier la valeur du paramètre, notée $\hat{\theta}$ par convention, qui maximise la vraisemblance:
+Tout naturellement, la méthode du **maximum de vraisemblance** cherche à identifier la valeur du paramètre, notée $\hat{\theta}$ par convention, qui maximise la vraisemblance:
 
 \begin{align}
 \hat{\theta} = \text{argmax}_\theta \, \mathcal{L} \; \; \Leftrightarrow \; \; \frac{\partial \mathcal{L}}{\partial \theta}(\hat{\theta}) = 0
 \end{align}
 
 Mais ceci n'est que le tout début de la démarche!
-En effet, certains décrivent les statistiques comme étant la *science de l'incertitude* ([Lindley, 2000](http://dx.doi.org/10.1111/1467-9884.00238)).
+En effet, certains décrivent les statistiques comme étant la "science de l'incertitude" ([Lindley, 2000](http://dx.doi.org/10.1111/1467-9884.00238)).
 Or pour l'instant, nous n'avons parlé que de la façon d'obtenir *une* valeur par paramètre, celle qui maximise la vraisemblance.
-Il est donc primordial ensuite de *quantifier l'incertitude* que nous avons quant à cette valeur.
-C'est sur ce point que différentes approches sont possibles (*fréquentiste*, *bayésienne*).
+Il est donc primordial ensuite de **quantifier l'incertitude** que nous avons quant à cette valeur.
+C'est sur ce point que différentes approches sont possibles (**fréquentiste**, **bayésienne**).
 Mais quelle que soit l'approche, si les échantillons sont "représentatifs" et le modèle n'est pas trop mauvais, on peut généralement s'attendre au fait que plus le nombre d'échantillons augmente, plus l'incertitude sur la valeur du paramètre diminue.
 
 
-## Comprendre par l'exemple
+## Comprendre la vraisemblance
 
 Le vocabulaire esquissé au paragraphe précédent n'est pas forcément très intuitif.
 Par exemple, supposons que l'on étudie une quantité physique dont la valeur résulte de la somme d'une très grande quantité de facteurs indépendants, chacun ayant un faible impact sur la valeur finale.
 Prenons trois mesures de cette quantité d'intérêt.
-Comme il y a de la variation, on choisit d'introduire une *variable aléatoire* $Y$ correspondant à la quantité d'intérêt, et dénotons par $y_1$, $y_2$ et $y_3$ les trois observations, vues comme des réalisations de cette variable aléatoire.
+Comme il y a de la variation, on choisit d'introduire une **variable aléatoire** $Y$ correspondant à la quantité d'intérêt, et dénotons par $y_1$, $y_2$ et $y_3$ les trois observations, vues comme des réalisations de cette variable aléatoire.
 
 ```{r echo=FALSE}
 set.seed(1)
@@ -120,94 +121,115 @@ y <- rnorm(n=3, mean=5, sd=1)
 ```
 Par exemple, supposons les valeurs suivantes:
 
-- $y_1$=`r y[1]`
+- $y_1$ = `r y[1]`
 
-- $y_2$=`r y[2]`
+- $y_2$ = `r y[2]`
 
-- $y_3$=`r y[3]`
+- $y_3$ = `r y[3]`
 
-Etant donné les caractéristiques du phénomène ("somme d'une très grande quantité de facteurs indépendants, chacun ayant un faible impact"), il est raisonnable de supposer que la variable $Y$ suit une *loi Normale* (c.f. le théorème central limite).
-Cette distribution de probabilité est caractérisée par deux paramètres, sa *moyenne* que l'on note généralement $\mu$, et sa *variance* que l'on note généralement $\sigma^2$ ($\sigma$ étant l'écart-type).
+Etant donné les caractéristiques du phénomène ("somme d'une très grande quantité de facteurs indépendants, chacun ayant un faible impact"), il est raisonnable de supposer que la variable $Y$ suit une **loi Normale** (c.f. le théorème central limite).
+Cette distribution de probabilité est caractérisée par deux paramètres, sa **moyenne** que l'on note généralement $\mu$, et sa **variance** que l'on note généralement $\sigma^2$ ($\sigma$ étant l'écart-type).
 En terme de notation, on écrit $Y \sim \mathcal{N}(\mu, \sigma^2)$, et la densité de probabilité de la réalisation $y$ de $Y$ s'écrit:
 \begin{align}
-Y \sim \mathcal{N}(\mu, \sigma^2) \; \; \Leftrightarrow \; \; p(Y=y | \mu, \sigma) = \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y - \mu)^2}{2 \sigma^2} \right)
+Y \sim \mathcal{N}(\mu, \sigma^2) \; \; \Leftrightarrow \; \; p(Y=y \, | \, \mu, \sigma) = \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y - \mu)^2}{2 \sigma^2} \right)
+\label{eqn:Norm}
 \end{align}
 
-L'intérêt de ce modèle paramétrique est de pouvoir *résumer* les données, par exemple un million de mesures, par seulement deux valeurs, les paramètres.
+L'intérêt de ce modèle paramétrique est de pouvoir "résumer" les données, par exemple un million de mesures, par seulement deux valeurs, les paramètres.
 Mais bien entendu, nous ne connaissons pas les valeurs de paramètres!
 La moyenne $\mu$ peut prendre toutes les valeurs entre $-\infty$ et $+\infty$, et la variance $\sigma^2$ n'a pour seule restriction que d'être positive.
 Or comme le montrent les graphiques ci-dessous, la loi Normale peut être assez différente selon les valeurs de ces paramètres:
 
 ```{r effect_mu, echo=FALSE}
 x <- seq(from=-3, to=10, length.out=500)
-plot(x=x, y=dnorm(x=x, mean=2, sd=1), type="l", col="blue",
-     main="Comparaison de deux lois Normale (sigma=1)",
-     xlab="quantile", ylab="densité de probabilité")
+plot(x=x, y=dnorm(x=x, mean=2, sd=1), type="l", col="blue", las=1,
+     main=expression(bold(Comparaison~de~deux~lois~Normales~(sigma==1))),
+     xlab="valeur de la variable aléatoire, y",
+     ylab="densité de probabilité, p(y)")
 points(x=x, y=dnorm(x=x, mean=5, sd=1), type="l", col="red")
 abline(v=0, lty=2)
-legend("topright", legend=c("mu=2", "mu=5"), col=c("blue", "red"), lty=1, bty="n")
+legend("topright", legend=c(expression(mu==2), expression(mu==5)),
+       col=c("blue", "red"), text.col=c("blue", "red"), lty=1, bty="n")
 ```
 
 ```{r effect_sigma, echo=FALSE}
 x <- seq(from=-7, to=13, length.out=500)
-plot(x=x, y=dnorm(x=x, mean=3, sd=1), type="l", col="blue",
-     main="Comparaison de deux lois Normale (mu=3)",
-     xlab="quantiles", ylab="densité de probabilité")
+plot(x=x, y=dnorm(x=x, mean=3, sd=1), type="l", col="blue", las=1,
+     main=expression(bold(Comparaison~de~deux~lois~Normales~(mu==3))),
+     xlab="valeur de la variable aléatoire, y",
+     ylab="densité de probabilité, p(y)")
 points(x=x, y=dnorm(x=x, mean=3, sd=3), type="l", col="red")
 abline(v=0, lty=2)
-legend("topright", legend=c("sigma=1", "sigma=3"), col=c("blue", "red"), lty=1, bty="n")
+legend("topright", legend=c(expression(sigma==1), expression(sigma==3)),
+       col=c("blue", "red"), text.col=c("blue", "red"), lty=1, bty="n")
 ```
 
 Revenons à nos trois mesures: `r y`.
 Parmi toutes les valeurs possibles des paramètres, le défi consiste donc à trouver celles pour lesquelles la loi Normale est une bonne description du mécanisme qui a généré ces données.
-On parle donc de trouver les valeurs des paramètres de telle sorte que la *vraisemblance* d'obtenir ces données soit la plus élevée possible pour ces valeurs des paramètres.
+On parle donc de trouver les valeurs des paramètres de telle sorte que la vraisemblance d'obtenir ces données soit la plus élevée possible pour ces valeurs des paramètres.
 
 Pour rendre les choses plus facile, supposons que l'on connaisse déjà la variance: $\sigma^2 = 1$.
 Il ne nous reste plus qu'à trouver la moyenne, $\mu$.
-Regardons cela de plus près pour la première observation, $y_1$=`r y[1]`:
+Regardons cela de plus près pour la première observation, $y_1$ = `r y[1]`:
 
 ```{r ex_lik_y1, echo=FALSE}
 x <- seq(from=-3, to=10, length.out=500)
-plot(x=x, y=dnorm(x=x, mean=2, sd=1), type="l", col="blue",
-     main="",
-     xlab="quantiles", ylab="densité de probabilité")
+plot(x=x, y=dnorm(x=x, mean=2, sd=1), type="l", col="blue", las=1,
+     main=expression(bold(Comparaison~de~deux~vraisemblances~Normales~(sigma==1))),
+     xlab="valeur de la variable aléatoire, y",
+     ylab="densité de probabilité, p(y)")
 points(x=x, y=dnorm(x=x, mean=5, sd=1), type="l", col="red")
 abline(v=0, lty=2)
-legend("topright", legend=c("mu=2", "mu=5"), col=c("blue", "red"), lty=1, bty="n")
+legend("topright", legend=c(expression(mu==2), expression(mu==5)),
+       col=c("blue", "red"), text.col=c("blue", "red"), lty=1, bty="n")
 segments(x0=y[1], y0=0, x1=y[1], y1=dnorm(x=y[1], mean=2, sd=1))
 segments(x0=y[1], y0=0, x1=y[1], y1=dnorm(x=y[1], mean=5, sd=1))
 segments(x0=y[1], y0=dnorm(x=y[1], mean=2, sd=1),
          x1=-5, y1=dnorm(x=y[1], mean=2, sd=1), col="blue")
 segments(x0=y[1], y0=dnorm(x=y[1], mean=5, sd=1),
          x1=-5, y1=dnorm(x=y[1], mean=5, sd=1), col="red")
+text(x=1.1*y[1], y=0.18, labels=expression(y[1]))
+text(x=-1.6, y=dnorm(x=y[1], mean=2, sd=1), col="blue", pos=3,
+     labels=expression(paste("p(",y[1]," | ",mu==2,")")))
+text(x=-1.6, y=dnorm(x=y[1], mean=5, sd=1), col="red", pos=3,
+     labels=expression(paste("p(",y[1]," | ",mu==5,")")))
 ```
 
-D'après le graphique, la densité de probabilité $p(y_1 | \mu=5, \sigma=1)$ est strictement supérieure à $p(y_1 | \mu=2, \sigma=1)$.
-Cela se vérifie si l'on fait le calcul avec la formule ci-dessus: $p(y_1 | \mu=5, \sigma=1)$=`r dnorm(x=y[1], mean=5, sd=1)` et $p(y_1 | \mu=2, \sigma=1)$=`r dnorm(x=y[1], mean=2, sd=1)`.
-Comme les deux densités ont la même valeur pour $\sigma$, la différence vient bien du terme $(y - \mu)^2$ dans l'exponentielle, terme qui représente l'écart à la moyenne.
-Au final, nous pouvons donc dire qu'en ce qui concerne la première observation, la vraisemblance $\mathcal{L}(\mu=5,\sigma=1)$ est plus grande que $\mathcal{L}(\mu=2,\sigma=1)$.
-
-Comme l'on dispose de plusieurs observations et que l'on suppose qu'elles sont toutes des réalisations de la même variable aléatoire, il est pertinent de calculer la vraisemblance de toutes ces observations conjointement plutôt que séparément:
+D'après le graphique:
 \[
-\mathcal{L}(\mu, \sigma) = p(y_1,y_2,y_3 | \mu, \sigma)
+p(y_1 \, | \, \mu=5, \sigma=1) \, > \, p(y_1 \, | \, \mu=2, \sigma=1)
 \]
 
-Si l'on fait aussi l'hypothèse que ces observations sont indépendantes, cela se simplifie en:
-\begin{align*}
-\mathcal{L}(\mu, \sigma) &= p(y_1 | \mu, \sigma) \times p(y_2 | \mu, \sigma) \times p(y_3 | \mu, \sigma) \\
-&= \prod_{i=1}^3 p(y_i | \mu, \sigma)
-\end{align*}
+Cela se vérifie si l'on fait le calcul avec la formule \eqref{eqn:Norm}:
 
-Il n'est pas très pratique de maximiser la vraisemblance directement, on préfère donc passer au log (qui est monotone, donc le maximum de l'un est le maximum de l'autre):
-\begin{align*}
+* $p(y_1 \, | \, \mu=5, \sigma=1)$ = `r dnorm(x=y[1], mean=5, sd=1)`;
+
+* $p(y_1 \, | \, \mu=2, \sigma=1)$ = `r dnorm(x=y[1], mean=2, sd=1)`.
+
+Comme les deux densités ont la même valeur pour $\sigma$, la différence vient bien du terme $(y - \mu)^2$ dans l'exponentielle de \eqref{eqn:Norm}, terme qui représente l'écart à la moyenne.
+Au final, nous pouvons donc dire qu'en ce qui concerne la première observation, la vraisemblance $\mathcal{L}(\mu=5,\sigma=1)$ est plus grande que $\mathcal{L}(\mu=2,\sigma=1)$.
+
+Comme on dispose de plusieurs observations, $\{y_1,y_2,y_3\}$, et qu'on suppose qu'elles sont toutes des réalisations de la même variable aléatoire, $Y$, il est pertinent de calculer la vraisemblance de toutes ces observations conjointement plutôt que séparément:
+\begin{align}
+\mathcal{L}(\mu, \sigma) = p(y_1,y_2,y_3 \, | \, \mu, \sigma)
+\end{align}
+
+Si l'on fait aussi l'hypothèse que ces observations sont indépendantes, cela se simplifie en:
+\begin{align}
+\mathcal{L}(\mu, \sigma) &= p(y_1 \, | \, \mu, \sigma) \times p(y_2 \, | \, \mu, \sigma) \times p(y_3 \, | \, \mu, \sigma) \\
+&= \prod_{i=1}^3 p(y_i \, | \, \mu, \sigma)
+\end{align}
+
+Il n'est pas très pratique de maximiser la vraisemblance directement, on préfère passer au log (qui est monotone, donc le maximum de l'un est aussi le maximum de l'autre):
+\begin{align}
 l(\mu,\sigma) &= \log \mathcal{L}(\mu, \sigma) \\
-&= \sum_{i=1}^3 \log p(y_i | \mu, \sigma) \\
+&= \sum_{i=1}^3 \log p(y_i \, | \, \mu, \sigma) \\
 &= \sum_{i=1}^3 \log \left[ \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y_i - \mu)^2}{2 \sigma^2} \right) \right] \\
 &= - 3 \log \sigma \; - \frac{3}{2} \log (2\pi) \; - \frac{1}{2 \sigma^2} \sum_{i=1}^3 (y_i - \mu)^2
-\end{align*}
+\end{align}
 
 Lorsque le nombre d'observations augmente, un simple examen graphique n'est pas très pratique ni suffisant.
-D'où le fait, qu'en pratique, (i) l'on écrive une fonction qui calcule la log-vraisemblance, et (ii) l'on cherche le maximum de cette fonction:
+D'où le fait, qu'en pratique, (i) on écrit une fonction qui calcule la log-vraisemblance, et (ii) on cherche le maximum de cette fonction:
 
 ```{r compute_lik}
 compute.log.likelihood <- function(parameters, data){
@@ -234,7 +256,6 @@ Cette section devrait vous avoir donné les bases du raisonnement ainsi que des 
 
 # Ecrire le modèle
 
-
 ## Notations
 
 * $n$: nombre d'individus (diploïdes, supposés non-apparentés)
@@ -255,7 +276,7 @@ Cette section devrait vous avoir donné les bases du raisonnement ainsi que des 
 
 * $\sigma^2$: variance des erreurs
 
-Données: $\mathcal{D} = \{ (y_1 | x_1), \ldots, (y_n | x_n) \}$
+Données: $\mathcal{D} = \{ (y_1 \, | \, x_1), \ldots, (y_n \, | \, x_n) \}$
 
 Paramètres: $\Theta = \{ \mu, \beta, \sigma \}$
 
@@ -263,24 +284,27 @@ Paramètres: $\Theta = \{ \mu, \beta, \sigma \}$
 ## Vraisemblance
 
 Dans notre cas, nous supposons que le génotype au SNP d'intérêt a un effet additif sur la moyenne du phénotype, ce qui s'écrit généralement:
-\[
+\begin{align}
 \forall i \; \; y_i = \mu + \beta x_i + \epsilon_i \text{ avec } \epsilon_i \overset{\text{i.i.d}}{\sim} \mathcal{N}(0, \sigma^2)
-\]
+\label{eqn:lik}
+\end{align}
 
 Une autre façon, mais équivalente, de l'écrire est:
-\[
-\forall i \; \; y_i | x_i, \mu, \beta, \sigma \; \overset{\text{i.i.d}}{\sim} \mathcal{N}(\mu + \beta x_i, \sigma^2)
-\]
+\begin{align}
+\forall i \; \; y_i \, | \, x_i, \mu, \beta, \sigma \; \overset{\text{i.i.d}}{\sim} \mathcal{N}(\mu + \beta x_i, \sigma^2)
+\label{eqn:likCond}
+\end{align}
 
-Cette deuxième formulation montre bien que, de manière générale, si l'on connaît les valeurs des variables explicatives ainsi que celles des paramètres, alors on est capable de *simuler* des valeurs de réponse.
+Cette deuxième formulation montre bien que, de manière générale, si l'on connaît les valeurs des variables explicatives ainsi que celles des paramètres, alors on est capable de simuler des valeurs de réponse.
 
 De plus, on peut écrire la vraisemblance sous forme plus explicite comme une fonction des paramètres $\Theta = \{ \mu, \beta, \sigma \}$:
 
-\begin{align*}
-\mathcal{L}(\Theta | \mathcal{D} ) &= p(\boldsymbol{y} | \boldsymbol{x}, \Theta) = p(y_1,\ldots,y_n | x_1,\ldots,x_n, \mu, \beta, \sigma) \\
-&= \prod_{i=1}^n p(y_i | x_i, \mu, \beta, \sigma) \\
-&= \prod_{i=1}^n \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y_i - \mu - \beta x_i)^2}{2 \sigma^2} \right)
-\end{align*}
+\begin{align}
+\mathcal{L}(\Theta \, | \, \mathcal{D} ) &= p(\boldsymbol{y} \, | \, \boldsymbol{x}, \Theta) \\
+&= \prod_{i=1}^n p(y_i \, | \, x_i, \mu, \beta, \sigma) \\
+&= \prod_{i=1}^n \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y_i - (\mu + \beta x_i))^2}{2 \sigma^2} \right)
+\label{eqn:likDetails}
+\end{align}
 
 
 # Simuler des données
@@ -292,17 +316,17 @@ Le mot "pseudo" est là pour rappeler que les générateurs informatiques sont d
 set.seed(1866) # année de parution de l'article de Mendel fondant la génétique
 ```
 
-Commençons par fixer le nombre d'individus:
+Commençons par fixer le nombre d'individus, $n$:
 ```{r set_sample_size}
 n <- 200
 ```
 
-Puis la moyenne globale (de manière arbitraire, ce n'est pas très important car on peut toujours centrer les phénotypes en début d'analyse):
+Puis la moyenne globale, $\mu$ (de manière arbitraire, ce n'est pas très important car on peut toujours centrer les phénotypes en début d'analyse):
 ```{r set_global_mean}
 mu <- 50
 ```
 
-Pour simuler les génotypes, nous allons supposer que la population est à l'équilibre d'Hardy-Weinberg:
+Pour simuler les génotypes, $\boldsymbol{x}$, nous allons supposer que la population est à l'équilibre d'Hardy-Weinberg:
 ```{r simul_geno}
 ##' Genotype frequencies
 ##'
@@ -310,7 +334,7 @@ Pour simuler les génotypes, nous allons supposer que la population est à l'éq
 ##' (https://en.wikipedia.org/wiki/Hardy%E2%80%93Weinberg_principle).
 ##' @param maf frequency of the minor allele, a
 ##' @return vector of genotype frequencies
-##' @author Timothée Flutre
+##' @author Timothee Flutre
 calcGenoFreq <- function(maf){
   stopifnot(is.numeric(maf), length(maf) == 1, maf >= 0, maf <= 0.5)
   geno.freq <- c((1 - maf)^2,
@@ -341,18 +365,18 @@ sum(genotypes) / (2 * n) # estimate of the MAF
 var(genotypes) # important for the estimate of beta
 ```
 
-Tirons une valeur pour l'effet du génotype sur le phénotype:
+Tirons une valeur pour l'effet du génotype sur le phénotype, $\beta$:
 ```{r simul_geno_effect}
 (beta <- rnorm(n=1, mean=2, sd=1))
 ```
 
-Simulons des erreurs (par simplicité, fixons $\sigma$ à 1):
+Simulons les erreurs, $\boldsymbol{\epsilon}$ (par simplicité, fixons $\sigma$ à 1):
 ```{r simul_errors}
 sigma <- 1
 errors <- rnorm(n=n, mean=0, sd=sigma)
 ```
 
-Nous avons maintenant tout ce qu'il faut pour simuler les phénotypes:
+Nous avons maintenant tout ce qu'il faut pour simuler les phénotypes, $\boldsymbol{y}$, via \eqref{eqn:lik}:
 ```{r simul_pheno}
 phenotypes <- mu + beta * genotypes + errors
 ```
@@ -366,18 +390,18 @@ summary(dat)
 
 # Réaliser l'inférence
 
-## Représentation graphique
+## Visualisation graphique
 
 Avant toute autre chose, regardons à quoi ressemblent les données:
 ```{r look_pheno}
 hist(phenotypes, breaks="FD", las=1, main="",
-     xlab="Phenotypes", ylab="Number of individuals")
+     xlab="Phénotypes", ylab="Nombre d'individus")
 ```
 
 Comme ce qui nous intéresse ici, ce ne sont pas uniquement les phénotypes, mais bien la relation entre les génotypes et les phénotypes, un autre type de graphique semble plus approprié:
 ```{r look_geno_pheno}
 boxplot(phenotypes ~ genotypes, varwidth=TRUE, notch=TRUE,
-        xlab="Genotypes", ylab="Phenotypes", las=1)
+        xlab="Génotypes", ylab="Phénotypes", las=1)
 ```
 
 Remarquez l'importance de faire des graphiques les plus clairs et intelligibles possible.
@@ -386,7 +410,7 @@ Ce ne sont souvent que les graphiques que l'on montre à la place des tableaus d
 
 ## Dérivation mathématique
 
-Pour trouver les valeurs des paramètres qui maximisent la vraisemblance, on travaille généralement avec la log-vraisemblance, $l(\Theta) = \log \mathcal{L}(\Theta)$, puis on utilise les [règles d'analyse](https://en.wikipedia.org/wiki/Differentiation_rules):
+Pour trouver les valeurs des paramètres qui maximisent la vraisemblance \eqref{eqn:likDetails}, on travaille généralement avec la log-vraisemblance, $l(\Theta) = \log \mathcal{L}(\Theta)$, puis on utilise les [règles d'analyse](https://en.wikipedia.org/wiki/Differentiation_rules):
 
 * $\frac{\partial l}{\partial \beta}(\hat{\beta}) = 0 \; \Leftrightarrow \; \hat{\beta} = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}$
 
@@ -400,18 +424,19 @@ Une fois ces estimations obtenues, on veut généralement faire deux choses.
 La première est d'évaluer la qualité du modèle, c'est-à-dire son ajustement aux données.
 Dans le cas de la régression linéaire, ceci peut se faire à l'aide du coefficient de détermination, interprété comme la proportion de la variance phénotypique expliquée par les prédicteurs:
 
-\begin{align*}
+\begin{align}
 R^2 = \frac{Var(\hat{\mu} + \hat{\beta} \boldsymbol{x})}{Var(\boldsymbol{y})} = \frac{\hat{\beta}^2 \; Var(\boldsymbol{x})}{\hat{\beta}^2 \; Var(\boldsymbol{x}) + \hat{\sigma}^2} \; \; \Leftrightarrow \; \; R^2 = \frac{\sum_i ((\hat{\mu} + \hat{\beta} x_i) - \bar{y})^2}{\sum_i (y_i - \bar{y})^2}
-\end{align*}
+\label{eqn:R2}
+\end{align}
 
 La deuxième est de quantifier l'incertitude autour de ces estimations.
 Dans la démarche fréquentiste, on considère que les estimations sont des réalisations de variables aléatoires appelées "estimateurs".
 Dans le cas de la régression linéaire, ces estimateurs, $M$ pour $\mu$, $B$ pour $\beta$ et $S$ pour $\sigma$, sont des combinaisons linéaires des $\{Y_i\}$, variables indépendantes et suivant une loi Normale, donc les estimateurs suivent eux aussi une loi Normale.
 Par exemple, pour l'estimateur $B$ du paramètre $\beta$:
 
-\[
+\begin{align}
 B = \frac{\sum_i (x_i - \bar{x})(Y_i - \bar{Y})}{\sum_i (x_i - \bar{x})^2} \; \; \text{ et } \; \; B \sim \mathcal{N}(E_B, V_B)
-\]
+\end{align}
 
 Il reste alors à calculer l'espérance et la variance de la loi Normale pour chaque estimateur, et c'est notamment à partir de la variance de l'estimateur que l'on obtient l'erreur standard de l'estimation, celle-ci permettant de quantifier l'incertitude autour de l'estimation.
 
@@ -442,9 +467,10 @@ summary(fit)
 Rajoutons la droite de régression au graphique des données:
 ```{r look_geno_pheno_reg}
 plot(phenotypes ~ jitter(genotypes, factor=0.5), las=1,
-     xlab="Genotypes", ylab="Phenotypes")
+     xlab="Génotypes", ylab="Phénotypes")
 abline(a=coefficients(fit)[1], b=coefficients(fit)[2], col="red")
-legend("bottomright", legend="MLE line", col="red", lty=1, bty="n")
+legend("bottomright", legend="droite du maximum de vraisemblance",
+       col="red", lty=1, bty="n")
 ```
 
 
@@ -480,7 +506,7 @@ Dans notre cas de régression linéaire simple, on peut utiliser le coefficient 
 summary(fit)$r.squared
 ```
 
-On peut facilement vérifier que cette valeur renvoyée par la fonction \verb+lm+ correspond à la formule écrite ci-dessus:
+On peut facilement vérifier que cette valeur renvoyée par la fonction \verb+lm+ correspond à la formule \eqref{eqn:R2}:
 ```{r calc_adjust}
 (coefficients(fit)[2]^2 * var(dat$x)) /
   (coefficients(fit)[2]^2 * var(dat$x) + summary(fit)$sigma^2)
@@ -505,9 +531,10 @@ Après avoir ajusté le modèle avec la fonction \verb+lm()+, nous pouvons récu
 
 Pour comparer les deux, on définit une fonction de perte (*loss function*) reliant le paramètre, $\beta$, et son estimateur, $B$.
 On utilise communément une fonction quadratique, dont on prend l'espérance, ce qui donne l'erreur quadratique moyenne (*mean squared error*):
-\[
+\begin{align}
 MSE = E \left( (B - \beta)^2 \right)
-\]
+\end{align}
+
 Calculons sa racine carrée afin que le résultat soit dans la même unité que le paramètre:
 ```{r rmse_beta}
 (rmse.beta <- sqrt((beta.hat - beta)^2))
@@ -539,7 +566,7 @@ x.new <- sample(x=c(0,1,2), size=n.tilde, replace=TRUE, prob=calcGenoFreq(f))
 y.new <- mu + beta * x.new + rnorm(n=n.tilde, mean=0, sd=sigma)
 ```
 
-Puis utilisons nos estimations obtenues précédemment pour prédire ces nouveaux phénotypes à partir de ces nouveaux génotypes:
+Puis utilisons nos estimations obtenues précédemment pour prédire les nouveaux phénotypes à partir des nouveaux génotypes:
 ```{r predict_ytilde}
 y.tilde <- (coefficients(fit)[1] + coefficients(fit)[2] * x.new)
 ```
@@ -553,8 +580,10 @@ errors <- y.new - y.tilde
 Regardons visuellement ce que ça donne:
 
 ```{r ynew_vs_ytilde}
-plot(x=y.new, y=y.tilde, xlab="New phenotypes", ylab="Predicted phenotypes", las=1)
+plot(x=y.new, y=jitter(y.tilde), las=1, xlab="Nouveaux phénotypes",
+     ylab="Phénotypes prédits")
 abline(a=0, b=1, lty=2)
+legend("topleft", legend="ligne identité", lty=2, bty="n")
 ```
 
 
@@ -570,42 +599,28 @@ C'est à vous !
 
 # Perspectives
 
+## Ré-écrire le modèle
+
+La loi Normale dans l'équation de vraisemblance \eqref{eqn:likCond} est utilisée sous sa forme *univariée*, c'est-à-dire qu'on s'en sert pour "tirer" aléatoirement un seul nombre correspondant à une réalisation de la variable aléatoire d'intérêt.
+
+Or la même loi existe aussi sous forme *multivariée*, ce qui permet, à chaque fois qu'on "tire" dedans, d'obtenir *plusieurs* nombres, ceux-ci étant arrangés dans un vecteur.
+Sous cette forme, la vraisemblance s'écrit maintenant:
+
+\begin{align}
+\boldsymbol{y} \, | \, \boldsymbol{x}, \mu, \beta, \sigma \; \sim \mathcal{N}_n(\boldsymbol{1} \mu + \boldsymbol{x} \beta, \sigma^2 I_n)
+\label{eqn:likCondMulti}
+\end{align}
+
+où $\boldsymbol{y}$ est le vecteur de dimension $n$ contenant les phénotypes, $\boldsymbol{x}$ est le vecteur de dimension $n$ contenant les génotypes, $\boldsymbol{1}$ est le vecteur de dimension $n$ ne contenant que des $1$, et $I_n$ est la matrice identité de dimension $n \times n$.
+
+
 ## Améliorer le modèle
 
 Naturellement, l'activité de modélisation statistique ne se limite pas à simuler des données sur ordinateur.
 Bien au contraire, elle est au coeur de l'activité de recherche en ce qu'elle vise à identifier les caractéristiques saillantes d'un phénomène naturel afin d'en réaliser l'inférence.
 
-Concernant le thème de l'atelier, la prédiction génomique, quelles sont les limites du modèle exploré ci-dessus?
-Que proposez-vous pour y remédier?
-
-## Ré-écrire le modèle
-
-Dans une section précédente, nous avons vu que la vraisemblance pouvait s'écrire de la manière suivante:
-
-\[
-\forall i \; \; y_i | x_i, \mu, \beta, \sigma \; \overset{\text{i.i.d}}{\sim} \mathcal{N}(\mu + \beta x_i, \sigma^2)
-\]
-
-La loi Normale ci-dessus est utilisée sous sa forme *univariée*, c'est-à-dire qu'on s'en sert pour tirer aléatoirement un seul nombre correspondant à une réalisation de la variable aléatoire d'intérêt.
-
-Or la même loi existe aussi sous forme *multivariée*, ce qui permet, à chaque fois qu'on "tire" dedans, d'obtenir *plusieurs* nombres, ceux-ci étant arrangés dans un vecteur.
-Sous cette forme, la vraisemblance s'écrit maintenant:
-
-\[
-\boldsymbol{y} | \boldsymbol{x}, \mu, \beta, \sigma \; \sim \mathcal{N}_n(\mu \boldsymbol{1} + \beta \boldsymbol{x}, \sigma^2 I_n)
-\]
-
-où $\boldsymbol{y}$ est le vecteur de dimension $n$ contenant les phénotypes, $\boldsymbol{x}$ est le vecteur de dimension $n$ contenant les génotypes, $\boldsymbol{1}$ est le vecteur de dimension $n$ ne contenant que des $1$, et $I_n$ est la matrice identité de dimension $n \times n$.
-
-D'ailleurs, on écrit souvent ce type de vraisemblance de manière encore plus concise:
-
-\[
-\boldsymbol{y} | W, X, \boldsymbol{\alpha}, \boldsymbol{\beta}, \sigma \; \sim \mathcal{N}_n(W \boldsymbol{\alpha} + X \boldsymbol{\beta}, \Sigma) \text{ avec } \Sigma = \sigma^2 I_n
-\]
-
-où $W$ est la matrice qui contient la colonne de 1 ainsi que potentiellement d'autres colonnes (si besoin est), $\boldsymbol{\alpha}$ est le vecteur contenant la moyenne globale $\mu$ ainsi que d'autres effets (si besoin est) considérés comme "fixes", $X$ est une matrice potentiellement à plusieurs colonnes, ici contenant les génotypes, $\boldsymbol{\beta}$ est un vecteur contenant des effets associés aux colonnes de $X$ et considérés comme "aléatoires", et $\Sigma$ est la matrice de variance-covariance.
-
-Sous cette forme, ne devient-il pas "facile" d'inclure dans notre modèle initial, la régression linéaire simple, certains élements proposés en perspective?
+Concernant le thème de l'atelier, la prédiction génomique, quelles sont les limites du modèle exploré ci-dessus ?
+Que proposez-vous pour y remédier ?
 
 
 # Annexe
