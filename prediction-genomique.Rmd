@@ -227,12 +227,12 @@ Passons donc au deuxième cas extrême d'architecture génétique additive, dans
 On parle alors de **caractère polygénique**.
 Comme il y a vraiment beaucoup de SNPs ($P >> N$), l'hypothèse habituelle est que leurs allèles ont tous des effets très faibles.
 Donc chercher à les estimer individuellement n'est pas une stratégie pertinente.
-Il vaut mieux viser à estimer leur effet global, par exemple en supposant qu'ils s'additionnent tous: $\sum_{p=1}^P \boldsymbol{x}_p \beta_p = X \boldsymbol{\beta}$.
+Il vaut mieux viser à estimer leur effet global, par exemple en supposant qu'ils s'additionnent tous: $\forall i,\; \sum_{p=1}^P x_{ip} \beta_p = \boldsymbol{x}_i^T \boldsymbol{\beta}$.
 On parle alors d'architecture génétique **additive infinitésimale**.
 De plus, sans connaissance plus précise a priori, il est habituel de supposer que les effets alléliques sont tous indépendants les uns des autres (attention, les génotypes, eux, ne sont généralement pas indépendants à cause du déséquilibre de liaison).
 Au final, le modèle mixte s'écrit:
 \begin{align}
-\boldsymbol{y} = \boldsymbol{1} \mu + X \boldsymbol{\beta} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{\beta} \sim \mathcal{N}(\boldsymbol{0}, \sigma_\beta^2 I)
+\boldsymbol{y} = \boldsymbol{1} \mu + X \boldsymbol{\beta} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{\beta} \sim \mathcal{N}_P(\boldsymbol{0}, \sigma_\beta^2 I)
 \label{eqn:lmmRR}
 \end{align}
 
@@ -257,7 +257,7 @@ A_{\text{mark}} = \frac{X X^T}{2 \sum_p f_p (1 - f_p)}
 \label{eqn:Amark}
 \end{align}
 
-Le modèle de régression d'arête \eqref{eqn:lmmRR} s'avère être équivalent au modèle suivant:
+Le modèle de régression d'arête \eqref{eqn:lmmRR} est donc équivalent au modèle suivant:
 \begin{align}
 \boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{u} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{u} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_u^2 A_{\text{mark}})
 \label{eqn:lmmAmark}
@@ -347,7 +347,7 @@ beta.poly <- setNames(rnorm(n=P, mean=0, sd=sqrt(sigma.beta2.poly)), snps.id)
 Fixons la moyenne globale, et simulons les erreurs:
 ```{r simul_mu_epsilon}
 mu <- 36
-sigma.epsilon2 <- 1
+sigma.epsilon2 <- 3
 epsilon <- matrix(rnorm(n=N, mean=0, sd=sqrt(sigma.epsilon2)))
 ```
 
@@ -370,10 +370,14 @@ Dans ce cas, on s'attend à une héritabilité au sens strict de:
 ```{r h2}
 sigma.u2 <- sigma.beta2.poly * 2 * sum(afs * (1 - afs))
 (h2 <- sigma.u2 / (sigma.u2 + sigma.epsilon2))
+```
+
+Ce que l'on retrouve dans les données simulées:
+```{r h2_obs}
 (var(X0 %*% beta.poly) / (var(X0 %*% beta.poly) + var(epsilon)))
 ```
 
-Notez qu'on aurait aussi pu simuler les valeurs génotypiques additives via $\boldsymbol{u} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_u^2 A_{\text{mark}})$.
+Notez qu'on aurait aussi pu directement simuler les valeurs génotypiques additives via $\boldsymbol{u} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_u^2 A_{\text{mark}})$.
 En R, en utilisant la fonction \verb+mvrnorm+ du paquet [MASS](https://cran.r-project.org/web/packages/MASS/), cela aurait donné:
 ```{r simul_u, eval=FALSE}
 u <- mvrnorm(n=1, mu=rep(0, N), Sigma=sigma.u2 * A.mark)
@@ -389,17 +393,22 @@ y.poly <- matrix(1, nrow=N) * mu + u + epsilon
 Avant toute autre chose, regardons à quoi ressemblent les données:
 ```{r infer_visual}
 hist(y.mono, breaks="FD", las=1, col="grey", border="white",
-     main="Caractère monogénique", xlab="Phénotypes", ylab="Nombre d'individus")
+     main="Caractère monogénique", ylab="Nombre d'individus",
+     xlab=expression(paste("Phénotypes, ", bold(y))))
 hist(y.poly, breaks="FD", las=1, col="grey", border="white",
-     main="Caractère polygénique", xlab="Phénotypes", ylab="Nombre d'individus")
+     main="Caractère polygénique", ylab="Nombre d'individus",
+     xlab=expression(paste("Phénotypes, ", bold(y))))
 ```
 
 
 ## SNP à SNP ("GWAS")
 
-Le paquet [QTLRel](https://cran.r-project.org/web/packages/QTLRel/index.html) implémente une méthode permettant de tester l'effet allélique SNP par SNP tout en contrôlant l'apparentement entre individus.
-Sur le plan statistique, il existe de meilleurs méthodes, mais celle-ci suffit aux besoins de ce document.
-Sur le plan informatique, comme elle est relativement lente, nous allons tester seulement un sous-ensemble des $P =$ `r P` SNPs pour aller plus vite.
+Le paquet [QTLRel](https://cran.r-project.org/web/packages/QTLRel/index.html) implémente une procédure particulière pour ajuster le modèle \eqref{eqn:lmmGwas}.
+Dans un premier temps, les composants de la variance, $\sigma_u^2$ et $\sigma^2$, sont estimés, mais sans inclure l'information des génotypes.
+Dans un second temps, les effets alléliques sont estimés SNP par SNP, en testant l'hypothèse nulle suivante: $\mathcal{H}_0:"\beta_p = 0"$.
+
+Sur le plan statistique, il existe une meilleur méthode que cette procédure en deux étapes, mais ce paquet suffit aux besoins de ce document.
+Sur le plan informatique, comme le code de QTLRel n'est pas très rapide, nous allons tester seulement un sous-ensemble des $P =$ `r P` SNPs pour aller plus vite.
 
 Echantillonnons donc uniformément un sous-ensemble de SNPs à tester (mais incluant le causal):
 ```{r select_subset_snps}
@@ -427,7 +436,7 @@ res.poly.gwas$scan <- scanOne(y=y.poly, gdat=X0[,subset.snps],
 
 ## Tous les SNPs conjointement ("ridge")
 
-Le paquet [rrBLUP](http://cran.r-project.org/web/packages/rrBLUP/index.html) implémente la régression d'arête permettant d'estimer tous les effets alléliques conjointement.
+Le paquet [rrBLUP](http://cran.r-project.org/web/packages/rrBLUP/index.html) implémente la régression d'arête \eqref{eqn:lmmRR} permettant d'estimer tous les effets alléliques conjointement.
 
 Ajustons le modèle conjoint \eqref{eqn:lmmRR} sur les données du caractère monogénique:
 ```{r mono_adjust_ridge}
@@ -442,7 +451,7 @@ res.poly.ridge <- mixed.solve(y=y.poly, Z=X0)
 
 # Evaluer les résultats
 
-La manière habituelle de regarder les résultats du modèle d'inférence SNP à SNP \eqref{eqn:lmmGwas} est de tracer un *Manhattan plot* (regardez la fonction \verb+manhattan+ du paquet [qqman](https://cran.r-project.org/web/packages/qqman/)).
+La manière habituelle de regarder les résultats des tests du modèle d'inférence SNP à SNP \eqref{eqn:lmmGwas} est de tracer un *Manhattan plot* (regardez la fonction \verb+manhattan+ du paquet [qqman](https://cran.r-project.org/web/packages/qqman/)).
 
 Dans tous les cas, comme les données sont simulées, nous connaissons le SNP $p$ avec l'effet $\beta_p$ le plus grand.
 Il sera indiqué d'un point rouge dans les graphiques ci-dessous.
@@ -485,8 +494,9 @@ Le modèle d'inférence SNP à SNP parvient bien à détecter le SNP causal dans
 ```
 -->
 
-A l'inverse, le modèle d'inférence conjoint estime très précisément les composants de la variance dans le cas du caractère polygénique:
+A l'inverse, le modèle d'inférence conjoint estime relativement précisément les composants de la variance et la moyenne globale dans le cas du caractère polygénique:
 ```{r eval_poly_estim_vc_ridge}
+c(mu, res.poly.ridge$beta)
 c(sigma.epsilon2, res.poly.ridge$Ve)
 c(sigma.beta2.poly, res.poly.ridge$Vu)
 ```
@@ -494,35 +504,38 @@ c(sigma.beta2.poly, res.poly.ridge$Vu)
 Il est ensuite intéressant de remarquer que les effets aux marqueurs sont mal estimés individuellement:
 ```{r eval_poly_estim_beta_ridge}
 (c <- cor(beta.poly, res.poly.ridge$u))
+par(mar=c(5, 4.5, 4, 2) + 0.1)
 plot(beta.poly, res.poly.ridge$u, las=1, asp=1,
-     xlab="Vrais effets alléliques additifs",
-     ylab="Effets alléliques additifs estimés",
-     main=paste0("corrélation = ", format(c, digits=2)))
+     xlab=expression(paste("Vrais effets alléliques additifs, ", bold(beta))),
+     ylab=expression(paste("Effets alléliques additifs estimés, ",
+                           hat(beta))),
+     main=bquote(paste("corrélation(", bold(beta), ",", hat(bold(beta)), ") = ",
+                       .(format(c, digits=2)))))
 abline(v=0, lty=2); abline(h=0, lty=2); abline(a=0, b=1, lty=2)
-abline(lm(res.poly.ridge$u ~ beta.poly), col="red")
 ```
 
-On voit bien cependant clairement l'effet du "rétrécissement" des estimations vers 0.
+On voit néanmoins clairement l'effet du "rétrécissement" des estimations vers 0.
 
 Par contre, les valeurs génotypiques additives, elles, sont bien mieux estimées:
 ```{r eval_poly_estim_u_ridge}
 (c <- cor(X0 %*% beta.poly, X0 %*% res.poly.ridge$u))
+par(mar=c(5, 4.5, 4, 2) + 0.1)
 plot(X0 %*% beta.poly, X0 %*% res.poly.ridge$u, las=1, asp=1,
-     xlab="Vraies valeurs génotypiques additives",
-     ylab="Valeurs génotypiques additives estimées",
-     main=paste0("corrélation = ", format(c, digits=2)))
+     xlab=expression(paste("Vraies valeurs génotypiques additives, ", bold(u))),
+     ylab=expression(paste("Valeurs génotypiques additives prédites, ",
+                           hat(bold(u)))),
+     main=bquote(paste("corrélation(", bold(u), ",", hat(bold(u)), ") = ",
+                       .(format(c, digits=2)))))
 abline(v=0, lty=2); abline(h=0, lty=2); abline(a=0, b=1, lty=2)
-abline(lm(X0 %*% res.poly.ridge$u ~ X0 %*% beta.poly), col="red")
 ```
 
 C'est en cela qu'analyser conjointement tous les marqueurs est pertinent.
 Pour les caractères polygéniques, le modèle d'inférence SNP à SNP \eqref{eqn:lmmGwas} n'est pas efficace car les effets alléliques, pris individuellement, sont trop faibles.
 En estimant tous les effets conjointement avec \eqref{eqn:lmmRR}, même si chacun d'eux est sous-estimé, leur somme, elle, le sera bien plus précisément.
 
-Notez que je parle parfois de valeurs génotypiques additives "estimées" et parfois de valeurs génotypiques additives "prédites".
-Dans la littérature scientifique utilisant l'interprétation fréquentiste des probabilités, on parle de valeurs génotypiques additives "prédites".
-Les inconnues $\boldsymbol{u}$ sont les *breeding values* et les résultats $\hat{\boldsymbol{u}}$ sont les *Best Linear Unbiased Predictions* (BLUPs) des *breeding values*.
-De manière générale, dans cette littérature, les effets "fixes" sont "estimés" et les effets "aléatoires" sont "prédits".
+Notez que je parle d'effets alléliques "estimés" et de valeurs génotypiques "prédites", même si les deux sont des effets aléatoires dans les modèles mixtes \eqref{eqn:lmmRR} et \eqref{eqn:lmmAmark}.
+L'une des raisons vient du fait que le nombre de valeurs génotypiques dépend du nombre d'individus.
+De plus, dans le modèle \eqref{eqn:lmmAmark}, les inconnues $\boldsymbol{u}$ sont les *breeding values* et les résultats $\hat{\boldsymbol{u}}$ sont les *Best Linear Unbiased Predictions* (BLUPs) des *breeding values*.
 
 C'est la raison pour laquelle on parle de **prédiction génomique**, qui mène ensuite tout naturellement à la **sélection génomique** qui se base sur les valeurs génotypiques additives "prédites" grâce aux génotypes aux marqueurs.
 
