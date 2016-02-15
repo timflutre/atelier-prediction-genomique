@@ -36,7 +36,9 @@ install.packages("MASS")
 * téléchargez le fichier "premiers-pas.Rmd":
 https://github.com/timflutre/atelier-prediction-genomique/blob/master/premiers-pas.Rmd
 Cliquez sur "Raw" en haut à droite, puis faites "clic droit" et
-"Enregistrez-sous" pour le sauver dans votre dossier de travail
+"Enregistrez-sous" pour le sauver dans votre dossier de travail.
+Enlevez l'extension ".txt" si elle a été rajoutée automatiquement: il faut que
+le nom du fichier se termine par ".Rmd".
 
 * ouvrez RStudio, faites "File" > "Open file..." et sélectionnez le fichier
 Rmd que vous venez de sauver. Si les accents s'affichent mal, cliquez à
