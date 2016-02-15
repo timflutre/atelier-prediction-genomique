@@ -401,7 +401,8 @@ hist(phenotypes, breaks="FD", las=1, main="",
 Comme ce qui nous intéresse ici, ce ne sont pas uniquement les phénotypes, mais bien la relation entre les génotypes et les phénotypes, un autre type de graphique semble plus approprié:
 ```{r look_geno_pheno}
 boxplot(phenotypes ~ genotypes, varwidth=TRUE, notch=TRUE,
-        xlab="Génotypes", ylab="Phénotypes", las=1)
+        xlab="Génotypes", ylab="Phénotypes", las=1, xaxt="n")
+axis(side=1, at=1:3, labels=c("0 (AA)", "1 (Aa)", "2 (aa)"))
 ```
 
 Remarquez l'importance de faire des graphiques les plus clairs et intelligibles possible.
