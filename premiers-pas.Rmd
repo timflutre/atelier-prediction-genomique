@@ -465,10 +465,11 @@ Regardons donc les résultats:
 summary(fit)
 ```
 
-Rajoutons la droite de régression au graphique des données:
+Rajoutons la droite de régression au graphique des données (notez l'utilisation de la fonction \verb+jitter+ pour faciliter la visualisation graphique):
 ```{r look_geno_pheno_reg}
 plot(phenotypes ~ jitter(genotypes, factor=0.5), las=1,
-     xlab="Génotypes", ylab="Phénotypes")
+     xlab="Génotypes", ylab="Phénotypes", xaxt="n")
+axis(side=1, at=0:2, labels=c("0 (AA)", "1 (Aa)", "2 (aa)"))
 abline(a=coefficients(fit)[1], b=coefficients(fit)[2], col="red")
 legend("bottomright", legend="droite du maximum de vraisemblance",
        col="red", lty=1, bty="n")
