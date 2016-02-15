@@ -581,7 +581,7 @@ errors <- y.new - y.tilde
 Regardons visuellement ce que ça donne:
 
 ```{r ynew_vs_ytilde}
-plot(x=y.new, y=jitter(y.tilde), las=1, xlab="Nouveaux phénotypes",
+plot(x=y.new, y=y.tilde, las=1, xlab="Nouveaux phénotypes",
      ylab="Phénotypes prédits")
 abline(a=0, b=1, lty=2)
 legend("topleft", legend="ligne identité", lty=2, bty="n")
