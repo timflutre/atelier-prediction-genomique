@@ -622,6 +622,61 @@ Sous cette forme, la vraisemblance s'écrit maintenant:
 
 où $\boldsymbol{y}$ est le vecteur de dimension $n$ contenant les phénotypes, $\boldsymbol{x}$ est le vecteur de dimension $n$ contenant les génotypes, $\boldsymbol{1}$ est le vecteur de dimension $n$ ne contenant que des $1$, et $I_n$ est la matrice identité de dimension $n \times n$.
 
+Si vous n'êtes pas très familier de la version multivariée, voici un exemple avec un vecteur aléatoire de longueur 2, $\boldsymbol{\theta}$, distribué selon une loi Normale bivariée $\mathcal{N}_2(\boldsymbol{\mu}, \Sigma)$.
+Ce vecteur aléatoire a deux éléments, $\theta_1$ et $\theta_2$.
+Le vecteur $\boldsymbol{\mu}$ a donc également deux éléments, le premier, $\mu_1$, étant l'espérance de $\theta_1$, et le deuxième, $\mu_2$, étant l'espérance de $\theta_2$.
+La matrice $\Sigma$ contient les variances $\sigma_1^2$ de $\theta_1$ et $\sigma_2^2$ de $\theta_2$ sur la diagonale.
+Mais hors de la diagonale elle contient la covariance $\sigma_{12}^2$ entre $\theta_1$ et $\theta_2$.
+Dans ce cas simple, on retrouve donc la corrélation, $\rho$, entre $\theta_1$ et $\theta_2$ comme étant $\sigma_{12}^2 / \sqrt{\sigma_1^2 + \sigma_2^2}$.
+On peut donc écrire:
+\begin{align}
+\begin{bmatrix}
+\theta_1 \\
+\theta_2
+\end{bmatrix}
+\sim
+\mathcal{N}_2 \left(
+\begin{bmatrix}
+\mu_1 \\
+\mu_2
+\end{bmatrix},
+\begin{bmatrix}
+\sigma_1^2 & \sigma_{12}^2 \\
+\sigma_{12}^2 & \sigma_2^2
+\end{bmatrix}
+\right)
+\Leftrightarrow
+\boldsymbol{\theta} \sim \mathcal{N}_2(\boldsymbol{\mu}, \Sigma)
+\end{align}
+
+Passons au simulations, en commençant par fixer quelques valeurs:
+```{r norm_bivar_param}
+mu.1 <- 5
+mu.2 <- 23
+mu <- c(mu.1, mu.2)
+var.1 <- 1
+var.2 <- 2
+rho <- 0.8
+covar.12 <- rho * sqrt(var.1 * var.2)
+Sigma <- matrix(c(var.1, covar.12, covar.12, var.2), nrow=2, ncol=2)
+```
+
+Voici une fonction permettant de simuler des vecteurs aléatoires, issue du paquet [MASS](https://cran.r-project.org/web/packages/MASS/):
+```{r norm_bivar_simul}
+theta <- mvrnorm(n=100, mu=mu, Sigma=Sigma)
+```
+
+Regardons à quoi les échantillons ressemblent:
+```{r norm_bivar_plots}
+bivn.kde <- kde2d(x=theta[,1], y=theta[,2], n=50)
+image(bivn.kde, xlab=expression(theta[1]), ylab=expression(theta[2]), las=1,
+      main=bquote(bold(paste("Echantillons d'une Normal bivariée avec ",
+                             rho, " = ", .(rho)))))
+contour(bivn.kde, add=T)
+```
+
+On retrouve bien une forte corrélation positive puisqu'on a utilisé $\rho$ = `r rho` dans les simulations.
+
 
 ## Améliorer le modèle
 
