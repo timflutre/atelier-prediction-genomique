@@ -34,7 +34,7 @@ abstract: |
 
 * Montpellier SupAgro, [bâtiment 18](http://www.supagro.fr/web/UserFiles/Flash/plan-campus.html) (annexe de Mandon).
 
-* [Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte)) et [Timothée Flutre](mailto:timothee.flutre@supagro.inra.fr) ([INRA](http://www.inra.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](http://umr-agap.cirad.fr/equipes-scientifiques/diversite-adaptation-et-amelioration-de-la-vigne/contexte-et-objectifs)).
+* [Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte)) et [Timothée Flutre](mailto:timothee.flutre@supagro.inra.fr) ([INRA](http://www.inra.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](http://umr-agap.cirad.fr/equipes-scientifiques/diversite-adaptation-et-amelioration-de-la-vigne/contexte-et-objectifs)), avec l'aide de Julie Fiévet et Philippe Brabant d'[AgroParisTech](http://www.agroparistech.fr).
 
 
 # Objectifs de l'atelier
@@ -97,8 +97,8 @@ Les étudiants doivent venir chacun avec leur ordinateur portable avec la config
 1. système d'exploitation Windows, Mac ou Linux;
 
 2. logiciel R (version $\geq$ 3) et au moins les paquets suivants:
-+ [knitr](https://cran.r-project.org/web/packages/knitr/), [rmarkdown](https://cran.r-project.org/web/packages/rmarkdown/): pour les rapports;
-+ [MASS](https://cran.r-project.org/web/packages/MASS/): pour les simulations;
++ [knitr](https://cran.r-project.org/web/packages/knitr/), [rmarkdown](https://cran.r-project.org/web/packages/rmarkdown/): pour les rapports dynamiques;
++ [MASS](https://cran.r-project.org/web/packages/MASS/): pour les simulations multivariées;
 + [QTLRel](https://cran.r-project.org/web/packages/QTLRel/), [qqman](https://cran.r-project.org/web/packages/qqman/): pour la génétique d'association;
 + [rrBLUP](https://cran.r-project.org/web/packages/rrBLUP/), [BGLR](https://cran.r-project.org/web/packages/BGLR/): pour la prédiction génomique.
 
@@ -106,6 +106,9 @@ Les étudiants doivent venir chacun avec leur ordinateur portable avec la config
 # Ressources en ligne
 
 Ce document, ainsi que les autres nécessaires à la réalisation de l'atelier, se trouve à l'adresse suivante: https://github.com/timflutre/atelier-prediction-genomique.
+Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
+Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
+Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en cas de doute).
 
 
 # Programme de la semaine

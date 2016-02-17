@@ -55,7 +55,7 @@ suppressPackageStartupMessages(library(MASS))
 
 # Contexte
 
-Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016, avec l'aide de Julie Fiévet et Philippe Brabant, à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire), et de la spécialisation [PIST](http://www.agroparistech.fr/Production-et-innovation-dans-les,1633.html) du [Cursus Ingénieur](http://www.agroparistech.fr/Cursus-ingenieurs.html) d'[AgroparisTech](http://www.agroparistech.fr/).
 
 Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
 Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).

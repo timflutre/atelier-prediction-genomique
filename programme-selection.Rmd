@@ -1,6 +1,6 @@
 ---
 title: "Programme de Sélection"
-author: "Jacques David et Timothée Flutre"
+author: "Jacques David, Philippe Brabant et Timothée Flutre"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
 output:
   html_document:
@@ -31,9 +31,9 @@ options(digits=3)
 
 # Contexte
 
-Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016, avec l'aide de Julie Fiévet et Philippe Brabant, à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire), et de la spécialisation [PIST](http://www.agroparistech.fr/Production-et-innovation-dans-les,1633.html) du [Cursus Ingénieur](http://www.agroparistech.fr/Cursus-ingenieurs.html) d'[AgroparisTech](http://www.agroparistech.fr/).
 
-Ce document a pour but d'explorer par simulation les stratégies possibles d'un sélectionneur en prenant un cas *très simplifié* de plante annuelle de type "blé".
+Ce document a pour but d'explorer par simulation les stratégies possibles d'un sélectionneur en prenant un cas *très simplifié* de plante annuelle.
 Il est recommandé d'avoir déjà lu et suivi les documents "Premiers pas" et "Prédiction génomique" de l'atelier.
 
 Concrètement, cela prend la forme d'un "jeu sérieux" (*serious game*) qui implique plusieurs équipes.
@@ -49,7 +49,7 @@ Découverte récemment aux confins de la vallée supérieure de l'Aghromonpe, *A
 Elle produit des fleurs qui contiennent un composé alcaloïde, la *sepmetine*, consommée par les étudiants pour éviter les maux de tête lors des efforts intellectuels trop intenses.
 Le marché est donc très important et se développe rapidement. 
 *Apimeta* peut être sensible à quelques maladies, dont la redoutable rouille fluorescente, *Putrida psychedelica*.
-Les producteurs sont payés à la quantité produite (les rendements sont de l'ordre de 40 kg fleur par ha), mais les transformateurs ont réussi à exiger que la teneur moyenne en sepmetine des lots commerciaux soit au dessus de 15 pour mille. 
+Les producteurs sont payés à la quantité produite (les rendements sont de l'ordre de 40 kg de fleurs par ha), mais les transformateurs ont réussi à exiger que la teneur moyenne en sepmetine des lots commerciaux soit au dessus de 14 pour mille. 
 
 ## Biologie de l'espèce
 
@@ -65,7 +65,7 @@ L'espèce est diploïde.
 Elle possède 10 chromosomes, tous de même taille.
 Une carte physique est d'ailleurs disponible.
 Deux puces ont été construites à partir du séquençage *de novo* de 20 individus:
-une puce à haute densité de 10 000 marqueurs SNPs, le génotypage coûtant 150 Mendels par individu, et une puce basse densité de 5000 marqueurs dont le génotypage coûte 10 Mendels.
+une puce à haute densité de 10 000 marqueurs SNPs, le génotypage coûtant 50 Mendels par individu, et une puce basse densité de 5000 marqueurs dont le génotypage coûte 17 Mendels.
 Un génotypage de type KASPar peut également être développé pour des SNPs uniques, au prix d'1 Mendel par point.
 
 ## Ressources génétiques et donnnées disponibles
@@ -97,25 +97,25 @@ Le coût unitaire d'une parcelle expérimentale (semis, phénotypage des trois c
 La serre peut servir à effectuer les croisements et les générations accélerées.
 Il est possible de faire 2 générations par an.
 Le cout d'un croisement (quelques semences F1 par croisement) est de 1/2 PE, soit `r cost.PE / 2` Mendels.
-La culture et récolte d'une plante individuelle est de 1/100 PE, soit `r cost.PE / 100` Mendels.
+La culture et récolte d'une plante individuelle est de 1/25 PE, soit `r cost.PE / 25` Mendels.
 
 ## Laboratoire de biotechnologie
 
 La production d'une graine haploide fonctionne comme sur le maïs, la pollinisation de la plante donneuse se fait par le pollen d'un génotype inducteur de gynogénèse.
 Les graines haploïdes se repèrent facilement.
 Le doublement du stock chromosomique de la plante haploïde prend une génération également. 
-Au final, l'obtention de la récolte de 1000 graines d'un haploide doublé prend un an et coûte 1/25 PE, soit `r cost.PE / 25` Mendels.
+Au final, l'obtention de la récolte de 1000 graines d'un haploide doublé prend un an et coûte 1/5 PE, soit `r cost.PE / 5` Mendels.
 
 ## Récapitulatif des coûts
 
-| Prestation      | Coût (Mendel)   | Coût (PE)
+| Prestation      | Coût (Mendels)   | Coût (PE)
 |-----------------|:---------------:|:-------:|
 parcelle                  | `r cost.PE`           | 1 
 croisement                | `r cost.PE/2`         | 1/2
-autofécondation serre     | `r cost.PE/100`       | 1/100
-haploide doublé serre     | `r cost.PE/25`        | 1/25
-génotypage haute densité  | `r cost.PE * 3`       | 3
-génotypage basse densité  | `r cost.PE / 5`       | 1/5
+autofécondation serre     | `r cost.PE/25`       | 1/25
+haploide doublé serre     | `r cost.PE/5`        | 1/5
+génotypage haute densité  | `r cost.PE * 1`       | 1
+génotypage basse densité  | `r ceiling(cost.PE / 3)`       | 1/3
 génotypage simple-SNP     | `r cost.PE/50`        | 1/50
 
 
@@ -127,8 +127,8 @@ Le coût de dépôt à l'inscription est de 200 Mendels par variété.
 
 Elles devront satisfaire aux critères DHS qui seront évalués essentiellement sur le taux d'hétérozygotie de la variété proposée: $\le$ 3 %.
 
-Elles devront aussi satisfaire aux critères VATE correspondant à un minimum de 105 % de la productivité brute des 5 meilleurs lignées disponibles pour tous en début de programme.
-Les variétés en-dessous du seuil de 14 % de sepmetine seront éliminées.
+Elles devront aussi satisfaire aux critères VATE correspondant à un minimum de 103 % de la productivité brute moyenne des 5 meilleurs lignées disponibles pour tous en début de programme: \verb+Coll0640 Coll0249 Coll0005 Coll0602 Coll0186+.
+Les variétés en-dessous du seuil de 14 pour mille de sepmetine seront éliminées.
 Les variétés résistantes auront un bonus.
 
 La disponibilité en semence devra être suffisante.

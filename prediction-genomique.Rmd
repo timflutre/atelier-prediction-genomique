@@ -34,7 +34,7 @@ options(digits=3)
 
 # Contexte
 
-Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016 à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire).
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016, avec l'aide de Julie Fiévet et Philippe Brabant, à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire), et de la spécialisation [PIST](http://www.agroparistech.fr/Production-et-innovation-dans-les,1633.html) du [Cursus Ingénieur](http://www.agroparistech.fr/Cursus-ingenieurs.html) d'[AgroparisTech](http://www.agroparistech.fr/).
 
 Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
 Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
@@ -218,7 +218,7 @@ La matrice résultant du [produit matriciel](https://fr.wikipedia.org/wiki/Produ
 
 * sur la diagonale, elle contient le nombre de locus homozygotes pour chaque individu;
 
-* hors de la diagonale, elle contient le nombre d'allèles partagés par chaque paire d'individus apparentés.
+* hors de la diagonale, elle mesure en quelque sorte le nombre d'allèles partagés par chaque paire d'individus apparentés.
 
 Ce modèle \eqref{eqn:lmmGwas} a cependant le désavantage d'utiliser les marqueurs pour estimer l'apparentement, tout en testant leurs effets par ailleurs, un peu comme s'il voulait faire deux choses à la fois sans se décider entre utiliser les marqueurs un par un ou tous ensemble.
 Il existe bien certaines astuces, mais d'autres modèles plus élégants évitent d'utiliser deux fois la même information, en incluant explicitemenent tous les marqueurs dans la régression.
@@ -238,9 +238,10 @@ Au final, le modèle mixte s'écrit:
 
 En modélisation statistique, ce modèle est connu sous le nom de **régression d'arête** (*ridge regression*).
 Dans la régression linéaire classique, maximiser la vraisemblance revient à minimiser la somme des carrés des erreurs.
-Cette somme des carrés s'écrit comme une norme euclidienne aussi appelée "norme $L^2$.
+Cette somme des carrés s'écrit comme une norme euclidienne, aussi appelée "norme $L^2$".
 Dans le cas de la régression d'arête, un terme de pénalité est ajouté à la vraisemblance, terme qui dépend aussi de la norme $L^2$ des effets pour la minimiser.
 C'est cette pénalité qui induit le rétrécissement des estimations des effets vers 0.
+Cela introduit du biais dans les estimations $\hat{\boldsymbol{\beta}}$ mais au bénéfice de réduire leur variance.
 
 En supposant $Cov(X \boldsymbol{\beta}, \boldsymbol{\epsilon}) = 0$, on obtient:
 \begin{align}
@@ -588,6 +589,9 @@ où $\delta_0$ est la variable aléatoire qui prend la valeur 0 avec une probabi
 Dans ce modèle, $\pi$ représente la proportion de SNPs dont les allèles ont un effet additif non-nul.
 On l'appelle souvent la "probabilité d'inclusion".
 Estimer ce paramètre revient donc à s'adapter à différentes architectures génétiques additives.
+On fait cet effort-là lorsque l'on veut également identifier les SNPs ayant des effets alléliques non-nuls, en essayant de prédire précisément tout en étant parcimonieux, c'est-à-dire en n'incluant que les SNPs nécessaires.
+On cherchent donc à ce que le vecteur $\hat{\boldsymbol{\beta}}$ soit **peu dense** (*sparse*).
+De manière générale, *shrinkage* et *sparsity* sont deux mots-clés des modèles statistiques à grande dimension.
 
 Simulons des données:
 ```{r simul_sparse}
