@@ -76,7 +76,7 @@ Chaque année pendant dix ans, 150 lignées ont été plantées, en deux répét
 De plus, chaque lignée a été expérimentée deux années successives.
 Chaque année, l'essai comporte donc 75 lignées déjà expérimentées l'année précédente, et 75 nouvelles lignées.
 
-Les données relevées sont la production de fleurs (kg/ha), la teneur en sepmetine (g/kg) et la présence de symptômes causés par *Putrida psychedelica*.
+Les données relevées sont la production de fleurs en kg/ha (\verb+trait1+ dans le fichier), la teneur en sepmetine g/kg (\verb+trait2+ dans le fichier) et la présence de symptômes causés par *Putrida psychedelica* (\verb+trait3+ dans le fichier).
 Pour les 150 lignées expérimentées la dernière année, les données génotypiques sur la puce à haute densité sont déjà disponibles. 
 
 
@@ -161,7 +161,7 @@ Il faut autant de lignes que de descendants demandés pour une croisement.
 Voir le format ci-dessous.
 Les individus résultant sont disponibles dans la demi-heure d'après.
 
-Par exemple, \verb+62-87.1+ est l'identifiant pour un hybride F1 entre les lignées \verb+Coll062+ et \verb+Coll87+ de la collection.
+Par exemple, \verb+62-87.1+ est l'identifiant pour un hybride F1 entre les lignées \verb+Coll062+ et \verb+Coll087+ de la collection.
 
 
 ### F2 et SSD
@@ -185,6 +185,12 @@ Voir le format ci-dessous.
 Les individus résultant sont disponibles dans la demi-heure d'après.
 
 Par exemple, \verb+62-87.1.HD1+ et \verb+62-87.1.HD2+ sont les identifiant de 2 haploides doublés à partir de la plante hybride F1 \verb+62-87.1+.
+
+
+### Phénotypage
+
+Vous soumettez un fichier avec les identifiants des individus concernés dans un fichier, une ligne par individu, en précisant le nombre de parcelles sur lesquelles l'individu en question doit être phénotypé.
+Voir le format ci-dessous.
 
 
 ### Génotypage
