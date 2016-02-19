@@ -401,6 +401,15 @@ hist(y.poly, breaks="FD", las=1, col="grey", border="white",
      xlab=expression(paste("Phénotypes, ", bold(y))))
 ```
 
+Il est aussi recommandé de regarder la matrice d'apparentement estimée à partir des marqueurs via \eqref{eqn:Amark}.
+Pour cela, les fonctions \verb+seriate+ et \verb+pimage+ du paquet [seriation](https://cran.r-project.org/web/packages/seriation/) peuvent vous être utile:
+
+```{r seriation, eval=FALSE}
+library(seriation)
+A.mark.reorder <- seriate(A.mark)
+pimage(A.mark, A.mark.reorder)
+```
+
 
 ## SNP à SNP ("GWAS")
 
