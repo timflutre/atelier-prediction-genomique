@@ -216,9 +216,8 @@ La matrice résultant du [produit matriciel](https://fr.wikipedia.org/wiki/Produ
 (A.mark <- X0 %*% t(X0))
 ```
 
-* sur la diagonale, elle contient le nombre de locus homozygotes pour chaque individu;
-
-* hors de la diagonale, elle mesure en quelque sorte le nombre d'allèles partagés par chaque paire d'individus apparentés.
+L'élément $(i,j)$ de la matrice $A_{\text{mark}}$ contient le nombre de locus homozygotes communs entre les individus $i$ et $j$, auquel a été soustrait le nombre de locus homozygotes opposés (ex. $i$ est \verb+AA+ alors que $j$ est \verb+TT+).
+Sur la diagonale, la matrice contient donc simplement le nombre de locus homozygotes pour chaque individu.
 
 Ce modèle \eqref{eqn:lmmGwas} a cependant le désavantage d'utiliser les marqueurs pour estimer l'apparentement, tout en testant leurs effets par ailleurs, un peu comme s'il voulait faire deux choses à la fois sans se décider entre utiliser les marqueurs un par un ou tous ensemble.
 Il existe bien certaines astuces, mais d'autres modèles plus élégants évitent d'utiliser deux fois la même information, en incluant explicitemenent tous les marqueurs dans la régression.
