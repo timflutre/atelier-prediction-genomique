@@ -6,11 +6,13 @@ output:
   html_document:
     toc: true
     toc_depth: 3
+    toc_float: true
     number_sections: TRUE
   pdf_document:
     toc: true
     toc_depth: 3
     number_sections: TRUE
+    keep_tex: yes
 mode: selfcontained
 abstract: |
   Ce document a pour but d'introduire concrètement les étudiants à l'un des aspects de la modélisation statistique, la simulation. Il prend comme exemple la régression linéaire simple, historiquement développée par [Galton (1886)](http://dx.doi.org/10.2307/2841583) pour étudier l'hérédité de la taille dans l'espèce humaine.
@@ -565,7 +567,7 @@ errors <- phenotypes - predict(fit)
 (rmse.y <- sqrt(mean(errors^2)))
 ```
 
-Mais, de façon plus intéressante, nous voudrions évaluer les prédictions phénotypes sur $n_{\text{new}}$ nouveaux individus.
+Mais, de façon plus intéressante, nous voudrions évaluer les prédictions phénotypiques sur $n_{\text{new}}$ nouveaux individus.
 Pour cela, commençons par simuler de nouvelles données, $\mathcal{D}_{\text{new}} = \{(y_{i,\text{new}} \, | \, x_{i,\text{new}})\}$, toujours avec les *mêmes* "vraies" valeurs des paramètres, $\Theta = \{\mu, \beta, \sigma\}$:
 ```{r simul_new_data}
 set.seed(1944) # année de découverte de l'ADN comme support des gènes
@@ -589,8 +591,8 @@ Regardons visuellement ce que ça donne:
 
 ```{r ynew_vs_ytilde}
 plot(x=y.new, y=y.new.tilde, las=1,
-     xlab=expression(paste("Nouveaux phénotypes, ", bold(y)[new])),
-     ylab=expression(paste("Phénotypes prédits, ", bold(tilde(y))[new])))
+     xlab=expression(paste("Nouveaux vrais phénotypes, ", bold(y)[new])),
+     ylab=expression(paste("Nouveaux phénotypes prédits, ", bold(tilde(y))[new])))
 abline(a=0, b=1, lty=2)
 legend("topleft", legend="ligne identité", lty=2, bty="n")
 ```
@@ -627,7 +629,7 @@ Ce vecteur aléatoire a deux éléments, $\theta_1$ et $\theta_2$.
 Le vecteur $\boldsymbol{\mu}$ a donc également deux éléments, le premier, $\mu_1$, étant l'espérance de $\theta_1$, et le deuxième, $\mu_2$, étant l'espérance de $\theta_2$.
 La matrice $\Sigma$ contient les variances $\sigma_1^2$ de $\theta_1$ et $\sigma_2^2$ de $\theta_2$ sur la diagonale.
 Mais hors de la diagonale elle contient la covariance $\sigma_{12}^2$ entre $\theta_1$ et $\theta_2$.
-Dans ce cas simple, on retrouve donc la corrélation, $\rho$, entre $\theta_1$ et $\theta_2$ comme étant $\sigma_{12}^2 / \sqrt{\sigma_1^2 + \sigma_2^2}$.
+Dans ce cas simple, on retrouve donc la corrélation, $\rho$, entre $\theta_1$ et $\theta_2$ comme étant $\sigma_{12}^2 / \sqrt{\sigma_1^2 \sigma_2^2}$.
 On peut donc écrire:
 \begin{align}
 \begin{bmatrix}
@@ -675,7 +677,7 @@ image(bivn.kde, xlab=expression(theta[1]), ylab=expression(theta[2]), las=1,
 contour(bivn.kde, add=T)
 ```
 
-On retrouve bien une forte corrélation positive puisqu'on a utilisé $\rho$ = `r rho` dans les simulations.
+A vue d'oeil, on retrouve bien les valeurs utilisées pour les espérances, ainsi qu'une forte corrélation positive puisqu'on a utilisé $\rho$ = `r rho` dans les simulations.
 
 
 ## Améliorer le modèle
