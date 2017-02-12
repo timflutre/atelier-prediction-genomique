@@ -2,6 +2,7 @@
 title: "Premiers pas"
 author: "Timothée Flutre"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
 output:
   html_document:
     toc: true
@@ -46,7 +47,8 @@ render("premiers-pas.Rmd", "all")
 Il est généralement plus simple d'utiliser le logiciel libre [RStudio](http://www.rstudio.com/), mais ce n'est pas obligatoire.
 Pour plus de détails, lisez [cette page](http://rmarkdown.rstudio.com/).
 
-Le format Rmd permet également d'utiliser le language LaTeX pour écrire des équations. Pour en savoir plus, reportez-vous au [livre en ligne](https://fr.wikibooks.org/wiki/LaTeX).
+Le format Rmd permet également d'utiliser le language [LaTeX](https://www.latex-project.org/) pour écrire des équations.
+Pour en savoir plus, reportez-vous au [livre en ligne](https://fr.wikibooks.org/wiki/LaTeX).
 
 De plus, ce document nécessite de charger des paquets additionnels (ceux-ci doivent être installés au préalable sur votre machine, via \verb+install.packages("pkg")+):
 
@@ -57,13 +59,13 @@ suppressPackageStartupMessages(library(MASS))
 
 # Contexte
 
-Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016, avec l'aide de Julie Fiévet et Philippe Brabant, à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire), et de la spécialisation [PIST](http://www.agroparistech.fr/Production-et-innovation-dans-les,1633.html) du [Cursus Ingénieur](http://www.agroparistech.fr/Cursus-ingenieurs.html) d'[AgroparisTech](http://www.agroparistech.fr/).
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre depuis 2015, avec l'aide de Julie Fiévet et Philippe Brabant, à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire), et de la spécialisation [PIST](http://www.agroparistech.fr/Production-et-innovation-dans-les,1633.html) du [Cursus Ingénieur](http://www.agroparistech.fr/Cursus-ingenieurs.html) d'[AgroparisTech](http://www.agroparistech.fr/).
 
 Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
 Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
 Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en cas de doute).
 
-Les versions du contenu sont gérées avec le logiciel git, et le dépôt central est hébergé sur [GitHub](https://github.com/timflutre/atelier-prediction-genomique).
+Les versions du contenu sont gérées avec le logiciel [git](https://www.git-scm.com/), et le dépôt central est hébergé sur [GitHub](https://github.com/timflutre/atelier-prediction-genomique).
 
 
 # Introduction
@@ -411,7 +413,7 @@ axis(side=1, at=0:2, labels=c("0 (AA)", "1 (Aa)", "2 (aa)"))
 ```
 
 Remarquez l'importance de faire des graphiques les plus clairs et intelligibles possible.
-Ce ne sont souvent que les graphiques que l'on montre à la place des tableaus de résultats, ceux-ci étant connus pour être plus difficiles à lire ([Gelman *et al.*, 2002](http://dx.doi.org/10.1198/000313002317572790)).
+Ce ne sont souvent que les graphiques que l'on montre à la place des tableaux de résultats, ceux-ci étant connus pour être plus difficiles à lire ([Gelman *et al.*, 2002](http://dx.doi.org/10.1198/000313002317572790)).
 
 
 ## Dérivation mathématique
@@ -457,7 +459,7 @@ Bien entendu, R a nativement une fonction implémentant l'estimation par maximum
 fit <- lm(y ~ x, data=dat)
 ```
 
-Avant toute autre chose, il nous faut vérifier que les hypothèses du modèles sont vérifiées (homoscédasticité, Normalité, indépendence):
+Avant toute autre chose, il nous faut vérifier que les hypothèses du modèles sont vérifiées (homoscédasticité, Normalité, indépendance):
 ```{r diagnostics}
 par(mfrow=c(2,2))
 plot(fit)
