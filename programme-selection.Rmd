@@ -2,15 +2,20 @@
 title: "Programme de Sélection"
 author: "Jacques David, Philippe Brabant et Timothée Flutre"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
 output:
   html_document:
     toc: true
     toc_depth: 3
+    toc_float: true
     number_sections: TRUE
   pdf_document:
     toc: true
     toc_depth: 3
     number_sections: TRUE
+mode: selfcontained
+abstract: |
+  Ce document présente un "jeu sérieux" sur le thème de la sélection artificielle des plantes.
 ---
 
 <!--
@@ -31,14 +36,14 @@ options(digits=3)
 
 # Contexte
 
-Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre en 2016, avec l'aide de Julie Fiévet et Philippe Brabant, à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire), et de la spécialisation [PIST](http://www.agroparistech.fr/Production-et-innovation-dans-les,1633.html) du [Cursus Ingénieur](http://www.agroparistech.fr/Cursus-ingenieurs.html) d'[AgroparisTech](http://www.agroparistech.fr/).
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre depuis 2016, avec l'aide de Julie Fiévet et Philippe Brabant, à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire), et de la spécialisation [PIST](http://www.agroparistech.fr/Production-et-innovation-dans-les,1633.html) du [Cursus Ingénieur](http://www.agroparistech.fr/Cursus-ingenieurs.html) d'[AgroparisTech](http://www.agroparistech.fr/).
 
 Ce document a pour but d'explorer par simulation les stratégies possibles d'un sélectionneur en prenant un cas *très simplifié* de plante annuelle.
 Il est recommandé d'avoir déjà lu et suivi les documents "Premiers pas" et "Prédiction génomique" de l'atelier.
 
 Concrètement, cela prend la forme d'un "jeu sérieux" (*serious game*) qui implique plusieurs équipes.
 L'objectif de chacune est de parvenir à réaliser du progrès génétique aboutissant à l'inscription d'une nouvelle variété qui satisfait aux critères usuels de DHS et VATE.
-L'évaluation des variétés proposées à l'inscription par chaque équipe aura lieu à la fin d'une période de sélection s'étalant sur plusieurs générations.
+L'évaluation des variétés proposées à l'inscription par chaque équipe aura lieu à la fin d'une période de sélection s'étalant sur plusieurs générations (une heure dans la vie réelle correspond à une année dans la vie du jeu).
 
 
 # Informations biologiques
@@ -46,17 +51,17 @@ L'évaluation des variétés proposées à l'inscription par chaque équipe aura
 ## *Apimeta simulans*, une espèce pleine d'avenir
 
 Découverte récemment aux confins de la vallée supérieure de l'Aghromonpe, *Apimeta simulans* appartient au genre des *Statisticeae*.
-Elle produit des fleurs qui contiennent un composé alcaloïde, la *sepmetine*, consommée par les étudiants pour éviter les maux de tête lors des efforts intellectuels trop intenses.
+Elle produit des fleurs qui contiennent un composé alcaloïde, la *sepmetine*, consommée par les étudiants pour éviter les maux de tête lors d'efforts intellectuels trop intenses.
 Le marché est donc très important et se développe rapidement. 
 *Apimeta* peut être sensible à quelques maladies, dont la redoutable rouille fluorescente, *Putrida psychedelica*.
-Les producteurs sont payés à la quantité produite (les rendements sont de l'ordre de 40 kg de fleurs par ha), mais les transformateurs ont réussi à exiger que la teneur moyenne en sepmetine des lots commerciaux soit au dessus de 14 pour mille. 
+Les producteurs sont payés à la quantité produite, les rendements étant de l'ordre de 40 kg de fleurs par ha, mais les transformateurs ont réussi à exiger que la teneur moyenne en sepmetine des lots commerciaux soit au dessus de 14 pour mille. 
 
 ## Biologie de l'espèce
 
 *Apimeta simulans* est hermaphrodite et autogame.
 Elle est produite sous forme de lignées pures, et se croise facilement.
 On peut produire en serre jusqu'à deux générations par an pour accélerer la fixation et le retour à l'homozygotie.
-Il est également possible de produire des haploides doublés.
+Il est également possible de produire des haploïdes doublés.
 Le taux de multiplication de l'espèce est très élevé, chaque plante étant capable de produire plus de 1000 graines.
 
 ## Génome et ressources génomiques
@@ -65,69 +70,76 @@ L'espèce est diploïde.
 Elle possède 10 chromosomes, tous de même taille.
 Une carte physique est d'ailleurs disponible.
 Deux puces ont été construites à partir du séquençage *de novo* de 20 individus:
-une puce à haute densité de 10 000 marqueurs SNPs, le génotypage coûtant 50 Mendels par individu, et une puce basse densité de 5000 marqueurs dont le génotypage coûte 17 Mendels.
-Un génotypage de type KASPar peut également être développé pour des SNPs uniques, au prix d'1 Mendel par point.
+
+* une puce à haute densité, de 10 000 marqueurs SNPs;
+
+* une puce à basse densité, de 5000 marqueurs SNPs.
+
+Un génotypage de type KASPar peut également être développé pour des SNPs uniques.
 
 ## Ressources génétiques et donnnées disponibles
 
 Environ 800 lignées sont disponibles.
-Le lieu d'expérimentation est composé de 300 parcelles.
-Chaque année pendant dix ans, 150 lignées ont été plantées, en deux répétitions chacune (sans bloc).
+Le lieu d'expérimentation est composé de `r (nb.PEs <- 300)` parcelles.
+Chaque année pendant dix ans, `r (nb.PEs/2)` lignées ont été plantées, en deux répétitions chacune (sans bloc).
 De plus, chaque lignée a été expérimentée deux années successives.
 Chaque année, l'essai comporte donc 75 lignées déjà expérimentées l'année précédente, et 75 nouvelles lignées.
 
-Les données relevées sont la production de fleurs en kg/ha (\verb+trait1+ dans le fichier), la teneur en sepmetine g/kg (\verb+trait2+ dans le fichier) et la présence de symptômes causés par *Putrida psychedelica* (\verb+trait3+ dans le fichier).
-Pour les 150 lignées expérimentées la dernière année, les données génotypiques sur la puce à haute densité sont déjà disponibles. 
+Les données relevées sont la production de fleurs en kg/ha (\verb+trait1+ dans le fichier), la teneur en sepmetine en g/kg (\verb+trait2+ dans le fichier) et la présence de symptômes causés par *Putrida psychedelica* (\verb+trait3+ dans le fichier).
+Pour les `r (nb.PEs/2)` lignées expérimentées la dernière année, les données génotypiques sur la puce à haute densité sont déjà disponibles.
 
 
-# Moyens expérimentaux
-
-Chaque équipe dispose d'un capital maximum de 10 000 Mendels.
-
+# Moyens expérimentaux et financiers
 
 ## Réseau d'expérimentation
 
-Il y a un site expérimental possible, Agrom-sur-Lez (AZ), qui a 300 parcelles.
+Il y a un site expérimental possible, Agrom-sur-Lez (AZ), qui a `r nb.PEs` parcelles.
 L'implantation d'une parcelle nécessite environ 500 graines.
 Le coût unitaire d'une parcelle expérimentale (semis, phénotypage des trois caractères et récolte), 1 PE, est de `r (cost.PE <- 50)` Mendels.
 
-
 ## Serre
 
-La serre peut servir à effectuer les croisements et les générations accélerées.
+La serre peut servir à effectuer les croisements et les générations accélérées.
 Il est possible de faire 2 générations par an.
-Le cout d'un croisement (quelques semences F1 par croisement) est de 1/2 PE, soit `r cost.PE / 2` Mendels.
+Le coût d'un croisement (quelques semences F1 par croisement) est de 1/2 PE, soit `r cost.PE / 2` Mendels.
 La culture et récolte d'une plante individuelle est de 1/25 PE, soit `r cost.PE / 25` Mendels.
 
 ## Laboratoire de biotechnologie
 
-La production d'une graine haploide fonctionne comme sur le maïs, la pollinisation de la plante donneuse se fait par le pollen d'un génotype inducteur de gynogénèse.
+La production d'une graine haploïde fonctionne comme sur le maïs, la pollinisation de la plante donneuse se fait par le pollen d'un génotype inducteur de gynogénèse.
 Les graines haploïdes se repèrent facilement.
 Le doublement du stock chromosomique de la plante haploïde prend une génération également. 
-Au final, l'obtention de la récolte de 1000 graines d'un haploide doublé prend un an et coûte 1/5 PE, soit `r cost.PE / 5` Mendels.
+Au final, l'obtention de la récolte de 1000 graines d'un haploïde doublé prend six mois et coûte 1/5 PE, soit `r cost.PE / 5` Mendels.
 
 ## Récapitulatif des coûts
 
-| Prestation      | Coût (Mendels)   | Coût (PE)
-|-----------------|:---------------:|:-------:|
-parcelle                  | `r cost.PE`           | 1 
-croisement                | `r cost.PE/2`         | 1/2
-autofécondation serre     | `r cost.PE/25`       | 1/25
-haploide doublé serre     | `r cost.PE/5`        | 1/5
-génotypage haute densité  | `r cost.PE * 1`       | 1
-génotypage basse densité  | `r ceiling(cost.PE / 3)`       | 1/3
-génotypage simple-SNP     | `r cost.PE/50`        | 1/50
+| Prestation              | Coût (Mendels)           | Coût (PE) |
+|-------------------------|:------------------------:|:---------:|
+parcelle                  | `r cost.PE`              | 1
+croisement                | `r cost.PE / 2`          | 1/2
+autofécondation serre     | `r cost.PE / 25`         | 1/25
+haploïde doublé serre     | `r cost.PE / 5`          | 1/5
+génotypage haute densité  | `r cost.PE * 1`          | 1
+génotypage basse densité  | `r ceiling(cost.PE / 3)` | 1/3
+génotypage simple-SNP     | `r cost.PE / 50`         | 1/50
 
+## Budget total
+
+Chaque équipe dispose d'un capital maximum de 150 000 Mendels sur 10 ans, soit de quoi phénotyper sur toutes les parcelles chaque année.
+
+<!--
+Chaque équipe dispose d'un capital maximum de `r (cost.PE * nb.PEs * 10)` Mendels sur 10 ans, soit de quoi phénotyper sur toutes les parcelles chaque année.
+-->
 
 
 # Epreuve finale
 
-Chaque groupe devra proposer à l'inscription une ou plusieurs variétés à la fin du programme (vendredi midi).
+Chaque groupe devra proposer à l'inscription une ou plusieurs variétés à la fin du programme.
 Le coût de dépôt à l'inscription est de 200 Mendels par variété.
 
 Elles devront satisfaire aux critères DHS qui seront évalués essentiellement sur le taux d'hétérozygotie de la variété proposée: $\le$ 3 %.
 
-Elles devront aussi satisfaire aux critères VATE correspondant à un minimum de 103 % de la productivité brute moyenne des 5 meilleurs lignées disponibles pour tous en début de programme: \verb+Coll0640 Coll0249 Coll0005 Coll0602 Coll0186+.
+Elles devront aussi satisfaire aux critères VATE correspondant à un minimum de 103 % de la productivité brute moyenne des lignées témoins disponibles pour tous en début de programme.
 Les variétés en-dessous du seuil de 14 pour mille de sepmetine seront éliminées.
 Les variétés résistantes auront un bonus.
 
@@ -156,7 +168,7 @@ Attention aux identifiants des individus: c'est vous qui les choisissez, mais il
 ### Croisements
 
 Tous les croisements se font en serre.
-Vous pouvez en commander 2 fois par campagne, en envoyant aux régulateurs un fichier de type "croisement".
+Vous pouvez en commander 2 fois par an, en envoyant aux régulateurs un fichier de type "matériel végétal".
 Il faut autant de lignes que de descendants demandés pour une croisement.
 Voir le format ci-dessous.
 Les individus résultant sont disponibles dans la demi-heure d'après.
@@ -166,7 +178,7 @@ Par exemple, \verb+62-87.1+ est l'identifiant pour un hybride F1 entre les lign�
 
 ### F2 et SSD
 
-Ces demandes se font dans le même fichier "croisement".
+Ces demandes se font dans le même fichier "matériel végétal".
 Toutes les autofécondations se font en serre.
 Pour chacune des générations que vous voulez avancer, envoyer le fichier des identifiants de vos plantes-mères de la génération n-1 et les identifiants que vous souhaitez pour chaque descendant.
 Il faut autant de lignes que de descendants demandés pour une plante-mère.
@@ -178,22 +190,22 @@ Par exemple, \verb+62-87.1.1+, \verb+62-87.1.2+ et \verb+62-87.1.3+ sont les ide
 Idem, \verb+62-87.1.3.1+ est l'identifiant d'une plante F3 issue de \verb+62-87.1.3+.
 
 
-### Haploides doublés
+### Haploïdes doublés
 
-Ces demandes se font dans le même fichier "croisement".
+Ces demandes se font dans le même fichier "matériel végétal".
 Voir le format ci-dessous.
 Les individus résultant sont disponibles dans la demi-heure d'après.
 
-Par exemple, \verb+62-87.1.HD1+ et \verb+62-87.1.HD2+ sont les identifiant de 2 haploides doublés à partir de la plante hybride F1 \verb+62-87.1+.
+Par exemple, \verb+62-87.1.HD1+ et \verb+62-87.1.HD2+ sont les identifiant de 2 haploïdes doublés à partir de la plante hybride F1 \verb+62-87.1+.
 
 
-### Phénotypage
+## Phénotypage
 
 Vous soumettez un fichier avec les identifiants des individus concernés dans un fichier, une ligne par individu, en précisant le nombre de parcelles sur lesquelles l'individu en question doit être phénotypé.
 Voir le format ci-dessous.
 
 
-### Génotypage
+## Génotypage
 
 Vous pouvez demander le génotypage selon les trois techniques, et vous pouvez soumettre aux heures pleines et aux demi-heures.
 Vous soumettez un fichier avec les identifiants des individus concernés dans un fichier en précisant la méthode. 
@@ -209,7 +221,7 @@ Timothée et Jacques créent une entreprise, la Tim&Jack Breeding Corp (dit *La 
 Ils ont eu le temps d'analyser les données, et ont élaboré une stratégie dont voici les premières étapes.
 
 
-### 0h00
+### t0
 
 Ils décident de phénotyper 250 lignées de la collection, non expérimentées la dernière année, 50 sur deux parcelles (par exemple l'individu \verb+Coll342+), les autres sur une seule (par exemple l'individu \verb+Coll013+).
 
@@ -227,7 +239,7 @@ Ils décident aussi de réaliser des croisements:
 
 + 25 croisements entre une très bonne lignée (top 10) avec les lignées les plus distantes.
 
-Leur fichier ressemble à ça:
+Leur fichier ressemble à cela:
 ```{r, echo=TRUE}
 (dat <- data.frame(parent1=c("Coll002", "Coll766", "..."),
                    parent2=c("Coll013", "Coll025", "..."),
@@ -237,8 +249,7 @@ Leur fichier ressemble à ça:
 
 Ils décident enfin de génotyper certains individus, par exemple l'individu \verb+Coll013+ sur la puce haute-densité, l'individu \verb+Coll125+ sur la puce basse-densité  et l'individu \verb+Coll025+ pour le SNP 33602.
 
-Leur fichier ressemblent à ça:
-
+Leur fichier ressemble à cela:
 ```{r, echo=TRUE}
 (dat <- data.frame(ind=c("Coll013", "Coll025", "Coll125", "..."),
                    task=c("geno", "geno", "geno", "..."),
@@ -247,7 +258,7 @@ Leur fichier ressemblent à ça:
 ```
 
 
-### 0h30
+### t0 + 1/2
 
 Les phénotypes des essais sont délivrés, dans le même format que les données initiales de la collection:
 
@@ -281,6 +292,9 @@ Pour les simples marqueurs, le format est le suivant:
                    stringsAsFactors=FALSE))
 ```
 
+### t0 + 1
+
+A partir de là, ils vont très vraisemblablement décider de réaliser plusieurs centaines d'haploïdes doublés pour chaque F1.
 Et le reste de leur stratégie, et bien, cela ne vous regarde pas... ;)
 
 
@@ -288,6 +302,7 @@ Et le reste de leur stratégie, et bien, cela ne vous regarde pas... ;)
 # Données disponibles initialement
 
 A votre arrivée dans le programme, nous vous donnons les fichiers contenant les phénotypes de quelques essais et les génotypes de plusieurs variétés.
+Nous vous donnons également des fichiers d'exemple pour faire vos demandes de croisement, phénotypage et génotypage.
 
 Voici les phénotypes:
 ```{r load_phenos, eval=FALSE}
