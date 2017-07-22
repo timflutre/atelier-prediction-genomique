@@ -243,7 +243,7 @@ Au final, le modèle mixte s'écrit:
 En modélisation statistique, ce modèle est connu sous le nom de **régression d'arête** (*ridge regression*).
 Dans la régression linéaire classique, maximiser la vraisemblance revient à minimiser la somme des carrés des erreurs ($\sum_i \epsilon_i ^2$).
 Sous forme vectorielle, cette somme des carrés s'écrit comme une norme euclidienne ($|| \boldsymbol{\epsilon} ||^2$), aussi appelée "norme $L^2$".
-Dans le cas de la régression d'arête, un terme de pénalité est ajouté à la vraisemblance, terme qui dépend aussi de la norme $L^2$ des effets pour la minimiser: $|| \boldsymbol{\epsilon} ||^2 + \lambda || \boldsymbol{\beta} ||^2$, où $\lambda$, paramètre à estimer, corresponds à la pénalité à appliquer aux effets.
+Dans le cas de la régression d'arête, un terme de pénalité est ajouté à la vraisemblance, terme qui dépend aussi de la norme $L^2$ des effets pour la minimiser: $|| \boldsymbol{\epsilon} ||^2 + \lambda || \boldsymbol{\beta} ||^2$, où $\lambda$, paramètre à estimer, correspond à la pénalité à appliquer aux effets.
 C'est cette pénalité qui induit le rétrécissement des estimations des effets vers 0.
 Cela introduit du biais dans les estimations $\hat{\boldsymbol{\beta}}$ mais au bénéfice de réduire leur variance.
 
@@ -256,7 +256,7 @@ où nous avons utilisé la formule mathématique $Var(M \boldsymbol{\theta}) = M
 
 Mais surtout, remarquez que $X X^T$ apparaît dans \eqref{eqn:var_y_ridge}.
 Ceci permet de faire le lien entre l'apparentement attendu calculé à partir du pédigrée et l'apparentement réalisé estimé à partir des marqueurs.
-En effet, en considérant les génotypes dans $X$ comme des variables aléatoires, et en posant certaines hypothèses, il s'avère que l'espérance $E(X X^T)$ est égale à $A_{\text{ped}} \times 2 \sum_p f_p (1 - f_p)$ à une constante près, où les $f_p$'s sont les fréquences alléliques des $P$ SNPs.
+En effet, en considérant les génotypes dans $X$ comme des variables aléatoires, et en posant certaines hypothèses (voir Habier et coll., 2007), il s'avère que l'espérance $E(X X^T)$ est égale à $A_{\text{ped}} \times 2 \sum_p f_p (1 - f_p)$ à une constante près, où les $f_p$'s sont les fréquences alléliques des $P$ SNPs.
 (La constante se retrouvera dans l'estimation de la moyenne globale $\mu$, et n'a donc pas grande importance.)
 
 Un estimateur de l'apparentement génétique additif deux-à-deux à partir des génotypes aux SNPs est donc:
@@ -489,6 +489,7 @@ points(x=which(names(res.poly.gwas$scan$p) != names(which.max(beta.poly[subset.s
 ```
 
 Le modèle d'inférence SNP à SNP parvient bien à détecter le SNP causal dans le cas du caractère monogénique, mais l'interprétation du *Manhattan plot* est beaucoup moins claire dans le cas du caractère polygénique.
+En effet, dans ce cas, tous les SNP ayant un effet non-nul de faible grandeur, aucun ne ressort disctinctement, et celui avec le plus grand $\beta$ n'a pas le plus grand $\hat{\beta}$.
 
 <!--
 ```{r eval_manhattan_qqman}
@@ -603,7 +604,7 @@ On l'appelle souvent la "probabilité d'inclusion".
 Estimer ce paramètre revient donc à s'adapter à différentes architectures génétiques additives.
 On fait cet effort-là lorsque l'on veut également identifier les SNPs ayant des effets alléliques non-nuls, en essayant de prédire précisément tout en étant parcimonieux, c'est-à-dire en n'incluant que les SNPs nécessaires.
 On cherchent donc à ce que le vecteur $\boldsymbol{\hat{\beta}}$ soit **peu dense** (*sparse*).
-De manière générale, *shrinkage* et *sparsity* sont deux mots-clés des modèles statistiques à grande dimension.
+De manière générale, *shrinkage* et *sparsity* sont deux mots-clés des modèles statistiques en grande dimension.
 
 Simulons des données:
 ```{r simul_sparse}
@@ -619,12 +620,15 @@ Le paquet [BGLR](http://cran.r-project.org/web/packages/BGLR/) implémente le mo
 Ce paquet utilise une méthode d'inférence bayésienne, l'**échantillonneur de Gibbs** (*Gibbs sampler*).
 Mais il est trop long d'en dire plus ici.
 De plus, comme l'inférence se réalise par échantillonnage, elle est (bien) plus longue que les méthodes présentées précédemment.
-La commande R ci-dessous n'est donc pas executée:
+La commande R ci-dessous n'est donc pas executée dans ce document:
 ```{r fit_BGLR_BayesC, eval=FALSE}
 nIter <- 1*10^5; burnIn <- 1*10^4; thin <- 5
 res.BGLR <- BGLR(y=y.sparse, ETA=list(list(X=X, model="BayesC")),
                  verbose=FALSE, nIter=nIter, burnIn=burnIn, thin=thin)
 ```
+
+Pour information, comme la convergence de l'échantillonneur de Gibbs peut être lente à atteindre, d'autant plus que la taille du jeu de données est grande, des logiciels ont été développés spécifiquement pour la génétique quantitative.
+Ils sont souvent écrits en language [Fortran](https://en.wikipedia.org/wiki/Fortran), tels que la suite [BLUPF90](https://en.wikipedia.org/wiki/BLUPF90), ainsi que le logiciel [GS3](http://genoweb.toulouse.inra.fr/~alegarra/gs3_folder/) (encapsulé dans le paquet R [rgs3](https://github.com/INRA/rgs3)).
 
 <!--
 Lorsqu'on utilise un algorithme de type *Markov Chain Monte-Carlo* (MCMC), il est toujours important de vérifier qu'il a convergé, au moins visuellement (renseignez-vous plus en détails sur cette étape importante !):
@@ -678,7 +682,7 @@ abline(lm(X %*% res.BGLR$ETA[[1]]$b ~ X %*% beta.sparse), col="red")
 Beaucoup d'autres modèles de sélection de variables existent.
 Certains utilisent d'autres normes pour pénaliser la vraisemblance tout en sélectionnant certaines variables, comme la norme $L^1$ pour le modèle **Lasso** ([Tibshirani, 1996](http://www.jstor.org/stable/2346178); paquet [glmnet](https://cran.r-project.org/web/packages/glmnet/) et [lars](https://cran.r-project.org/web/packages/lars/)), une combinaison des normes $L^1$ et $L^2$ pour le modèle **Elastic Net** ([Zou & Hastie, 2005](http://dx.doi.org/10.1111/j.1467-9868.2005.00503.x); paquet glmnet), etc.
 
-De plus, pour un même modèle, par exemple \eqref{eqn:lmmSS}, d'autres méthodes algorithmiques sont utilisées, plus rapides que l'échantillonneur de Gibbs, mais au prix d'approximations, comme par exemple le **bayésien variationnel** ([Carbonetto & Stephens, 2012](http://dx.doi.org/10.1214/12-ba703); paquet [varbvs](https://cran.r-project.org/package=varbvs).
+De plus, pour un même modèle, par exemple \eqref{eqn:lmmSS}, d'autres méthodes algorithmiques sont utilisées, plus rapides que l'échantillonneur de Gibbs, mais au prix d'approximations, comme par exemple le **bayésien variationnel** ([Carbonetto & Stephens, 2012](http://dx.doi.org/10.1214/12-ba703); paquet [varbvs](https://cran.r-project.org/package=varbvs)).
 
 
 ## Au-delà de l'architecture génétique additive
@@ -690,8 +694,8 @@ D'un point de vue géométrique, ce produit scalaire quantifie la distance liné
 Mais on peut bien sûr utiliser d'autres fonctions de distance, non-linéaires cette fois.
 On utilise alors le terme de **noyau** (*kernel*) pour dénoter ces fonctions.
 Afin de capturer la contribution des effets génétiques non-additifs, certains ont proposé d'utiliser le modèle \eqref{eqn:lmmAmark} avec $A_{\text{mark}}$ calculée via un noyau défini dans un **espace de Hilbert à noyau reproduisant** (*Reproducing Kernel Hilbert Space*, RKHS).
-A ce terme compliqué peut en fait simplement correspondre un noyau gaussien tel que $A_{ij} = \exp{\left( - (D_{ij} \, / \, \theta)^2 \right)}$ où $D_{ij}$ est la distance euclidienne entre $\boldsymbol{x}_i$ et $\boldsymbol{x}_j$ normalisée dans l'intervalle $[0,1]$ et $\theta$ est un paramètre d'échelle influençant la vitesse à laquelle la covariance génétique décroît en fonction de la distance.
-Le paquet rrBLUP implémente cette méthode, $\theta$ devant être estimé par validation croisée.
+A ce terme compliqué peut en fait simplement correspondre un noyau gaussien tel que $A_{ij} = \exp{\left( - (D_{ij} \, / \, \theta)^2 \right)}$ où $D_{ij}$ est la distance euclidienne entre $\boldsymbol{x}_i$ et $\boldsymbol{x}_j$ normalisée dans l'intervalle $[0,1]$ et $\theta$ est un paramètre d'échelle influençant la vitesse à laquelle la covariance génétique décroît en fonction de la distance (celui-ci doit être estimé par validation croisée).
+Le paquet rrBLUP permet d'utiliser ce noyau, d'autres étant implémentés dans le paquet [KRMM](https://cran.r-project.org/package=KRMM).
 
 
 
