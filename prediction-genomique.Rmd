@@ -1,6 +1,6 @@
 ---
 title: "Prédiction génomique"
-author: "Timothée Flutre"
+author: "Timothée Flutre (INRA)"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
 colorlinks: true
 linkcolor: blue
@@ -16,7 +16,7 @@ output:
     number_sections: TRUE
 mode: selfcontained
 abstract: |
-  Ce document a pour but d'explorer par simulation l'intérêt de la prédiction génomique en sélection artificielle pour l'amélioration génétique des espèces domestiquées. Suivant [Fisher (1918)](http://dx.doi.org/10.1017/S0080456800012163), il se focalise sur les architectures génétiques additives d'un unique caractère continu.
+  Ce document a pour but d'explorer par simulation l'intérêt de la prédiction génomique en sélection artificielle d'espèces domestiquées. Suivant [Fisher (1918)](http://dx.doi.org/10.1017/S0080456800012163), il se focalise sur les architectures génétiques additives d'un unique caractère continu.
 ---
 
 <!--
@@ -54,6 +54,11 @@ suppressPackageStartupMessages(library(QTLRel))
 suppressPackageStartupMessages(library(rrBLUP))
 ```
 
+Il est également utile de savoir combien de temps est nécessaire pour exécuter tout le code R de ce document (voir l'annexe):
+```{r time_0}
+t0 <- proc.time()
+```
+
 
 # Introduction
 
@@ -76,17 +81,17 @@ où:
 
 Si l'on suppose que les valeur génotypique et composante non-génétique ne sont pas corrélées, alors la variance phénotypique est égale à $\sigma_p^2 = \sigma_g^2 + \sigma_\epsilon^2$, et l'**héritabilité au sens large** est définit comme étant $H^2 = \frac{\sigma_g^2}{\sigma_g^2 + \sigma_\epsilon^2}$.
 
-La valeur génotypique peut également se décomposer en **composantes additive** (somme des effets alléliques à tous les locus), **de dominance** (interactions entre effets alléliques intra-locus) et **d'épistasie** (interactions entre effets alléliques inter-locus): $g_i = a_i + d_i + \zeta_i$.
+La valeur génotypique peut également se décomposer en **composantes additive**, **de dominance** et **d'épistasie**: $g_i = a_i + d_i + \zeta_i$.
+La première est particulièrement importante car elle correspond à la part de la valeur génotypique qui est héritable, c'est-à-dire transmissible à la descendance.
+C'est donc surtout la **valeur génotypique additive** (*breeding value*) qui est d'intérêt pour le sélectionneur.
+En effet, celui-ci peut s'en servir comme critère pour trier les individus de son programme de sélection et identifier ceux à utiliser préférentiellement comme géniteurs.
 
 On suppose généralement aussi que ces composantes ne sont pas corrélées, et donc $\sigma_g^2 = \sigma_a^2 + \sigma_d^2 + \sigma_\zeta^2$.
 Ceci amène à définir l'**héritabilité au sens strict**: $h^2 = \frac{\sigma_a^2}{\sigma_g^2 + \sigma_\epsilon^2}$.
 
 Sur le plan fondamental, l'un des buts de la génétique quantitative est de quantifier la part de la variation phénotypique au sein de la population expliquée par la composante génétique, c'est-à-dire d'estimer l'héritabilité.
 Sur le plan appliqué, l'un des buts consiste à quantifier la valeur génotypique de chaque individu.
-Remarquez que, lors d'une reproduction sexuée, chaque parent transmet une combinaison de ses allèles, et non ses génotypes.
-C'est donc surtout la **valeur génotypique additive** (*breeding value*) qui est d'intérêt pour le sélectionneur.
-En effet, celui-ci peut s'en servir comme critère pour trier les individus de son programme de sélection et identifier ceux à utiliser préférentiellement comme géniteurs.
-Au cours d'un programme de sélection, génération après génération, l'augmentation de la valeur génotypique additive moyenne est communément appelée "progrès génétique".
+
 
 Le même modèle que \eqref{eqn:quantgenUni} mais en notation matricielle:
 \begin{align}
@@ -118,7 +123,7 @@ où la fonction $g$ correspond à l'**architecture génétique** du caractère d
 
 On peut n'utiliser les marqueurs que pour estimer la matrice d'apparentement plus précisément, mais on peut aussi les inclure explicitement dans le modèle comme variables explicatives et tenter d'estimer les effets de leurs allèles.
 
-Avec le toujours plus grand débit des technologies de séquençage, il est fréquent qu'il y ait beaucoup plus de marqueurs que d'individus: $N << P$.
+Avec le toujours plus grand débit des technologies de séquençage, il est fréquent qu'il y ait beaucoup plus de marqueurs que d'individus: $P >> N$.
 Dans de tels cas, le modèle de régression multiple correspondant à l'extension de la régression simple présentée dans le document "Premiers Pas" ne donne plus de bonnes estimations des effets alléliques.
 La **vraisemblance** doit être **pénalisée** (on dit aussi **régularisée**).
 Cela se traduit par un **rétrécissement des estimations des effets** (*shrinkage*).
@@ -242,8 +247,8 @@ Au final, le modèle mixte s'écrit:
 
 En modélisation statistique, ce modèle est connu sous le nom de **régression d'arête** (*ridge regression*).
 Dans la régression linéaire classique, maximiser la vraisemblance revient à minimiser la somme des carrés des erreurs ($\sum_i \epsilon_i ^2$).
-Sous forme vectorielle, cette somme des carrés s'écrit comme une norme euclidienne ($|| \boldsymbol{\epsilon} ||^2$), aussi appelée "norme $L^2$".
-Dans le cas de la régression d'arête, un terme de pénalité est ajouté à la vraisemblance, terme qui dépend aussi de la norme $L^2$ des effets pour la minimiser: $|| \boldsymbol{\epsilon} ||^2 + \lambda || \boldsymbol{\beta} ||^2$, où $\lambda$, paramètre à estimer, correspond à la pénalité à appliquer aux effets.
+Sous forme vectorielle, cette somme de carrés s'écrit comme une norme euclidienne au carré ($|| \boldsymbol{\epsilon} ||_2^2$), où la norme $|| \cdot ||_2$ est aussi appelée "norme $L^2$".
+Dans le cas de la régression d'arête, un terme de pénalité est ajouté à la vraisemblance, terme qui dépend aussi de la norme $L^2$ des effets pour la minimiser: $|| \boldsymbol{\epsilon} ||_2^2 + \lambda || \boldsymbol{\beta} ||_2^2$, où $\lambda$, paramètre à estimer, correspond à la pénalité à appliquer aux effets.
 C'est cette pénalité qui induit le rétrécissement des estimations des effets vers 0.
 Cela introduit du biais dans les estimations $\hat{\boldsymbol{\beta}}$ mais au bénéfice de réduire leur variance.
 
@@ -320,7 +325,7 @@ La matrice des relations génétiques additives peut s'estimer avec \eqref{eqn:A
 A.mark <- (X %*% t(X)) / (2 * sum(afs * (1 - afs)))
 ```
 
-Une simulation moins simpliste nécessiterait un véritable scénario évolutif, par exemple en utilisant le coalescent avec recombinaison.
+Une simulation moins simpliste nécessiterait un véritable scénario évolutif, par exemple en utilisant le processus stochastique du coalescent avec recombinaison.
 
 
 ## Effets additifs des allèles
@@ -584,6 +589,33 @@ Concernant la précision de prédiction, à la place des $\widehat{\text{MSPE}}_
 Le mot employé en anglais pour ce critère est *accuracy* (lorsque le carré de la corrélation est indiqué, le terme utilisé est *reliability*).
 Si ce coefficient est calculé, il est recommandé de regarder également les estimations des moyenne globale et pente de la régression linéaire simple $\boldsymbol{y}_k = a + b \, \boldsymbol{\hat{a}}_k$.
 
+Concrètement, pour évaluer la précision de la prédiction par validation croisée en R avec `rrBLUP`, le paquet [cvTools](https://cran.r-project.org/web/packages/cvTools/index.html) peut être utile.
+Mais il requiert une méthode `predict`, qui n'est pas fournie par `rrBLUP` version 4.5.
+Il faut donc d'abord encapsuler la fonction `mixed.solve` dans une autre fonction de telle sorte qu'elle renvoie un objet de classe `"rr"`.
+Puis il faut ajouter la méthode `predict` à cette classe:
+
+```{r prep_rrBLUP_for_crossval, eval=FALSE}
+rr <- function(y, Z, K=NULL, X=NULL, method="REML"){
+  out <- mixed.solve(y=y, Z=Z, K=K, X=X, method=method)
+  return(structure(out, class="rr"))
+}
+predict.rr <- function(object, newZ){
+  out <- as.vector(newZ %*% object$u)
+  if(! is.null(rownames(newZ)))
+    names(out) <- rownames(newZ)
+  return(out)
+}
+```
+
+Une fois que c'est fait, on peut réaliser la validation croisée comme suit:
+```{r crossval, eval=FALSE}
+folds <- cvFolds(n=nrow(X), K=5, R=10)
+call <- call("rr", y=y.poly, Z=X)
+system.time(
+    out.cv <- cvTool(call=call, x=X, y=y.poly, names=c("Z", "y"),
+                     cost=cor, folds=folds))
+```
+
 
 ## Intermédiaires d'architecture génétique additive
 
@@ -731,7 +763,7 @@ Cependant, en voici quelques uns:
 Les grandes simplifications de ce travail ont été de ne se concentrer que sur un seul caractère, continu de sucroît, et d'ignorer un grand nombre d'éléments tels le déséquilibre de liaison, les interactions génotype-environnement, etc.
 
 Or tout ceci intervient dans la "vraie vie".
-C'est bien là le défi des sélectionneurs, qu'ils soient dans des entreprises semencières ou dans des collectifs de paysans: créer continuellement de nouvelles variétés combinant plusieurs caractères d'intérêt et adaptées à l'itinéraire technique, à la filière économique, à l'agriculteur, au consommateur, etc.
+C'est bien là le défi des sélectionneurs, qu'ils soient dans des entreprises semencières ou dans des collectifs de paysans: gérér la diversité et créer continuellement de nouvelles variétés combinant plusieurs caractères d'intérêt et adaptées à l'itinéraire technique, à la filière économique, à l'agriculteur, au consommateur, etc.
 
 Mais ce sera pour le cours suivant !
 
@@ -758,6 +790,10 @@ Mais ce sera pour le cours suivant !
 
 * Howard, R., A. Carriquiry, and W. Beavis (2014, June). Parametric and nonparametric statistical methods for genomic selection of traits with additive and epistatic genetic architectures. G3 4 (6), 1027-46. [DOI](http://dx.doi.org/10.1534/g3.114.010298)
 
+* Rabier, C.-E., Barre, P., Asp, T., Charmet, G., Mangin, B. (2016, June). On the accuracy of genomic selection. PLoS ONE 11 (6): e0156086. [DOI](https://doi.org/10.1371/journal.pone.0156086)
+
+* Scutari, M., Mackay, I., Balding, D. (2016, September). Using genetic distance to infer the accuracy of genomic prediction. PLoS Genetics 12 (9): e1006288. [DOI](https://doi.org/10.1371/journal.pgen.1006288)
+
 * Huang, W., and T. F. C. Mackay (2016, November). The genetic architecture of quantitative traits cannot be inferred from variance component analysis. PLoS Genetics 12 (11): e1006421. [DOI](http://dx.doi.org/10.1371/journal.pgen.1006421)
 
 
@@ -765,5 +801,6 @@ Mais ce sera pour le cours suivant !
 # Annexe
 
 ```{r info}
+t1 <- proc.time(); t1 - t0
 print(sessionInfo(), locale=FALSE)
 ```
