@@ -1,6 +1,6 @@
 ---
 title: "Premiers pas"
-author: "Timothée Flutre"
+author: "Timothée Flutre (INRA)"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
 colorlinks: true
 output:
@@ -13,7 +13,6 @@ output:
     toc: true
     toc_depth: 3
     number_sections: TRUE
-    keep_tex: yes
 mode: selfcontained
 abstract: |
   Ce document a pour but d'introduire concrètement les étudiants à l'un des aspects de la modélisation statistique, la simulation. Il prend comme exemple la régression linéaire simple, historiquement développée par [Galton (1886)](http://dx.doi.org/10.2307/2841583) pour étudier l'hérédité de la taille dans l'espèce humaine.
@@ -54,6 +53,11 @@ De plus, ce document nécessite de charger des paquets additionnels (ceux-ci doi
 
 ```{r load_pkg}
 suppressPackageStartupMessages(library(MASS))
+```
+
+Il est également utile de savoir combien de temps est nécessaire pour exécuter tout le code R de ce document (voir l'annexe):
+```{r time_0}
+t0 <- proc.time()
 ```
 
 
@@ -449,7 +453,7 @@ B = \frac{\sum_i (x_i - \bar{x})(Y_i - \bar{Y})}{\sum_i (x_i - \bar{x})^2} \; \;
 Il reste alors à calculer l'espérance et la variance de la loi Normale pour chaque estimateur, et c'est notamment à partir de la variance de l'estimateur que l'on obtient l'erreur standard de l'estimation, celle-ci permettant de quantifier l'incertitude autour de l'estimation.
 
 Pour en savoir plus, reportez-vous par exemple au livre "Statistique inférentielle" de Daudin, Robin et Vuillet (Presses Universitaires de Rennes, 2001).
-Du matériel pédagogique sur le modèle linéaire est aussi disponible en accès libre sur le site internet de la Société Française de Statistique ([ici](http://www.sfds.asso.fr/370-Ressources_pour_lenseignement_par_filieres)).
+Du matériel pédagogique sur le modèle linéaire est aussi disponible en accès libre sur le site internet de la Société Française de Statistique ([ici](https://www.sfds.asso.fr/fr/enseignement_de_la_statistique/ressources/enseignement_superieur/597-par_thematiques/)).
 
 
 ## Implémentation (facile)
@@ -694,5 +698,6 @@ Que proposez-vous pour y remédier ?
 # Annexe
 
 ```{r info}
+t1 <- proc.time(); t1 - t0
 print(sessionInfo(), locale=FALSE)
 ```
