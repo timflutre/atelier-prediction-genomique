@@ -5,11 +5,11 @@ Cet atelier se déroule dans le cadre des options [APIMET](http://www.agro-montp
 
 * Depuis 2016, Philippe Brabant ([AgroParisTech](http://www.agroparistech.fr/)) et ses collègues sont associés à cet atelier, dans le cadre de la spécialisation [PISTv](http://www.agroparistech.fr/Produire-et-innover-dans-les-systemes-techniques-vegetaux-PISTv) (3e année du cursus d'ingénieur).
 
-* En 2017 et 2018, Friedrich Longin ([Université d'Hohenheim](https://lsa-weizen.uni-hohenheim.de/)) a participé à l'atelier, en présentant ses travaux sur l'optimisation des schémas de sélection.
+* En 2017 et 2018, Friedrich Longin ([Université de Hohenheim](https://lsa-weizen.uni-hohenheim.de/)) a participé à l'atelier, en présentant ses travaux sur l'optimisation des schémas de sélection.
 
 * En 2018, Julien Diot (étudiant en option [Data Science](https://www.supagro.fr/web/pages/idl=19&page=216&id_page=4276) de Montpellier SupAgro) a participé à l'atelier en tant que développeur principal de l'interface web du jeu sérieux.
 
-Le copyright concernant le matériel pédagogique de l'atelier appartient à l'INRA, Montpellier SupAgro et AgroParisTech.
+Le copyright concernant le matériel pédagogique de l'atelier appartient à l'INRA, Montpellier SupAgro, AgroParisTech et/ou l'université de Hohenheim.
 Afin de favoriser la collaboration pédagogique, le contenu des documents est sous licence Creative Commons Attribution-ShareAlike 4.0 International ([CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)).
 
 Les différentes versions du matériel pédagogique sont gérées avec le logiciel [git](https://git-scm.com/), et le dépôt central est hébergé sur [GitHub](https://github.com/timflutre/atelier-prediction-genomique).
