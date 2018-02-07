@@ -1,0 +1,138 @@
+---
+title: "Atelier de prédiction et sélection génomique"
+author: "J. David & T. Flutre"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
+output:
+  html_document:
+    toc: true
+    toc_depth: 1
+    number_sections: TRUE
+  pdf_document:
+    toc: true
+    toc_depth: 1
+    number_sections: TRUE
+mode: selfcontained
+abstract: |
+  Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique. Cet atelier est destiné aux étudiants en spécialisation APIMET et SEPMET de Montpellier SupAgro et PIST d'AgroParisTech, ainsi qu'à des personnes extérieures.
+---
+
+
+# Date, lieu et contacts
+
+* Du lundi 12 au vendredi 16 février 2018.
+
+* Montpellier SupAgro, [bâtiment 18](http://www.supagro.fr/web/UserFiles/Flash/plan-campus.html) (annexe de Mandon).
+
+* [Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte)) et [Timothée Flutre](mailto:timothee.flutre@inra.fr) ([INRA](http://www.inra.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](http://umr-agap.cirad.fr/equipes-scientifiques/diversite-adaptation-et-amelioration-de-la-vigne/contexte-et-objectifs)), avec l'aide de Julie Fiévet et Philippe Brabant d'[AgroParisTech](http://www.agroparistech.fr), Friedrich Longin de l'[université d'Hohenheim](https://lsa-weizen.uni-hohenheim.de/) et Julien Diot (étudiant en option [Data Science](https://www.supagro.fr/web/pages/idl=19&page=216&id_page=4276) de Montpellier SupAgro)
+
+
+# Objectifs de l'atelier
+
+Il vise à familiariser les étudiants avec la prédiction génomique de caractères quantitatifs et son utilisation dans les programmes de sélection.
+Il se déroule en trois étapes. 
+
+1. "Optimization of breeding schemes with genomic selection in R" par Friedrich Longin (Univ. Hohenheim) 
++ Présentation (en anglais) de la théorie
++ Mise en pratique via des simulations de schémas de sélection
+
+2. Les bases de la prédiction génomique
++ Simulation de données phénotypiques selon différentes architectures génétiques
++ Présentation des principales méthodes d'inférence des effets génétiques
++ Exploration de la qualité des prédictions en fonction de paramètres tels que la structure du matériel végétal, la densité de génotypage, etc.
+
+3. "Jouez au sélectionneur !"
++ Constitution d'équipes de sélection 
++ Elaboration d'une stratégie de sélection mêlant essais au champ, génotypage et prédiction
++ Réalisation du schéma de sélection sur une succession de plusieurs années simulant la temporalité et le budget d'un véritable programme de sélection
++ Mise en commun, examen des résultats et comparaison des stratégies
+
+
+# Pré-requis
+
+Les étudiants doivent avoir révisé assez sérieusement les notions suivantes.
+
+1. Les bases de la génétique quantitative
++ 1.1. Décomposition de la variance et notion d'héritabilité
++ 1.2. Effets additifs d'un allèle, modèle biallélique de Fisher
++ 1.3. Prédiction de l'effet additif par la régression du nombre d'allèles favorables
++ 1.4. Covariance entre apparentés et construction d'une matrice de simple apparentement
+
+2. Les outils statistiques suivants
++ 2.1 Modèle linéaire mixte (à effets fixes et aléatoires)
++ 2.2 Estimation des composantes de la variance par le modèle mixte
++ 2.3 Utilisation des matrices d'apparentement dans le modèle mixte
+
+3. Avoir revu les TPs
++ 3.1 Estimation des composantes de la variance
++ 3.2 Génétique d'association
++ 3.3 Prédiction génomique
+
+4. Logiciel R
++ 4.1 Bases de la programmation en R
++ 4.2 Boucles et stockage de valeurs dans un objet
++ 4.3 Ecriture d'une fonction
++ 4.4 Ecriture de rapports au format Rmd
+
+
+# Equipement et configuration
+
+Les étudiants doivent venir chacun avec leur ordinateur portable avec la configuration suivante:
+
+1. système d'exploitation Windows, Mac ou GNU/Linux;
+
+2. logiciels [R](https://www.r-project.org/) (version $\geq$ 3) et [RStudio](https://www.rstudio.com/products/rstudio/) (version $\geq$ 1), et au moins les paquets suivants:
++ [selection](https://cran.r-project.org/package=selectiongain): pour la prédiction du gain génétique;
++ [knitr](https://cran.r-project.org/package=knitr/), [rmarkdown](https://cran.r-project.org/package=rmarkdown/): pour les rapports dynamiques;
++ [MASS](https://cran.r-project.org/package=MASS/): pour les simulations multivariées;
++ [QTLRel](https://cran.r-project.org/package=QTLRel/), [qqman](https://cran.r-project.org/package=qqman/): pour la génétique d'association;
++ [rrBLUP](https://cran.r-project.org/package=rrBLUP/), [BGLR](https://cran.r-project.org/package=BGLR/): pour la prédiction génomique.
++ [cvTools](https://cran.r-project.org/package=cvTools): pour la validation croisée
++ [gtools](https://cran.r-project.org/package=gtools): pour trier de manière alphanumérique
+
+
+# Ressources en ligne
+
+Ce document, ainsi que les autres nécessaires à la réalisation de l'atelier, se trouve à l'adresse suivante: https://github.com/timflutre/atelier-prediction-genomique.
+Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
+Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
+Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en cas de doute).
+
+
+# Programme de la semaine
+
+## Lundi
+
+* 9h - 12h: cours "Optimization of breeding schemes with GS in R", par F. Longin (document "Selgain_Montpellier_2018.pdf")
+
+* 14h - 17h: travaux pratiques via des simulations de schémas de sélection (document "Selgain_Montpellier_2018_example.R").
+
+## Mardi
+
+* 9h - 12h: introduction à la modélisation statistique via la simulation en prenant la régression linéaire simple comme exemple (document "premiers-pas.pdf")
+
+* 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique (document "prediction-genomique.pdf")
+
+## Mercredi
+
+* 9h - 12h: investigation par simulation, en groupes, des aspects influençant la précision de prédiction
+
+* 14h - 15h30: présentation des résultats et discussion
+
+* 15h30 - 17h: présentation du jeu sérieux sur la sélection, constitution des équipes et réflexions stratégiques
+
+## Jeudi
+
+* 9h - 12h: lancement du jeu (1 heure = 1 année)
+
+* 14h - 17h: suite du jeu (1 heure = 1 année)
+
+## Vendredi
+
+* 9h - 11h40: suite du jeu (40 minutes = 1 année)
+
+* 11h40 - 12h: procédure d'inscription comparant les génotypes proposés des équipes avec les témoins
+
+* 13h30 - 15h: discussion sur les différentes stratégies suivies
+
+* 15h - 16h: discussion sur les acquis réalisés durant l'atelier et les améliorations à apporter
