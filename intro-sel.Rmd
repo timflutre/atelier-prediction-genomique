@@ -352,6 +352,27 @@ text(x=z[idx]+1.8, y=phi.z[idx],
 
 Attention cependant au fait que la précision de cette approximation diminue avec la taille de la population, $I$, notamment quand $I < 100$.
 
+Remarquez aussi que l'intensité de sélection n'augmente pas linéairement en fonction du taux de sélection:
+```{r, echo=FALSE}
+alpha2i <- function(alpha){
+  return(dnorm(x=qnorm(p=alpha, mean=0, sd=1, lower.tail=FALSE),
+               mean=0, sd=1) /
+         alpha)
+}
+values.alpha <- c(1/10, 1 / (100 * seq(1, 10, by=1)))
+values.i <- alpha2i(values.alpha)
+values.alpha <- c(1, values.alpha)
+values.i <- c(0, values.i)
+ticks.x <- c(0, 0.10, seq(1, 10, by=1))
+plot(x=ticks.x, y=values.i, type="b", las=1,
+     xaxt="n",
+     xlab=expression(Taux~de~sélection~(alpha)),
+     ylab="Intensité de sélection (i)",
+     main="Relation non-linéaire")
+axis(side=1, at=ticks.x[c(1, seq(4,12,by=2))],
+     labels=c("1", "1/200", "1/400", "1/600", "1/800", "1/1000"))
+```
+
 
 # Réponse à la sélection
 
