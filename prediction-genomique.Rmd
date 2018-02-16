@@ -260,9 +260,18 @@ Var(\boldsymbol{y}) = \sigma_\beta^2 \, X X^T + \sigma^2 I
 où nous avons utilisé la formule mathématique $Var(M \boldsymbol{\theta}) = M \, Var(\boldsymbol{\theta}) \, M^T$ qui est l'équivalent matriciel de $Var(m \, \theta) = m^2 \, Var(\theta)$ où $m$ est un coefficient connu et $\theta$ est une variable aléatoire.
 
 Mais surtout, remarquez que $X X^T$ apparaît dans \eqref{eqn:var_y_ridge}.
-Ceci permet de faire le lien entre l'apparentement attendu calculé à partir du pédigrée et l'apparentement réalisé estimé à partir des marqueurs.
-En effet, en considérant les génotypes dans $X$ comme des variables aléatoires, et en posant certaines hypothèses (voir Habier et coll., 2007), il s'avère que l'espérance $E(X X^T)$ est égale à $A_{\text{ped}} \times 2 \sum_p f_p (1 - f_p)$ à une constante près, où les $f_p$'s sont les fréquences alléliques des $P$ SNPs.
-(La constante se retrouvera dans l'estimation de la moyenne globale $\mu$, et n'a donc pas grande importance.)
+Ceci permet de faire le lien entre l'apparentement attendu calculé à partir du pédigrée ($A_\text{ped}$) et l'apparentement réalisé estimé à partir des marqueurs ($A_\text{mark}$).
+En effet, considérons les génotypes dans $X$ comme des variables aléatoires et suivons [Habier et coll. (2007)](http://dx.doi.org/10.1534/genetics.107.081190) pour calculer l'espérance du produit des génotypes aux marqueurs pour les individus $i$ et $j$:
+
+\begin{align*}
+\mathbb{E}[\boldsymbol{x}_i^T \, \boldsymbol{x}_j] &= \sum_{p=1}^P \mathbb{E}[X_{ip} \, X_{jp}] \\
+ &= \sum_{p=1}^P \left( \text{Cov}[X_{ip}, \, X_{jp}] + \mathbb{E}[X_{ip}] \mathbb{E}[X_{jp}] \right)
+\end{align*}
+
+Remarquez que $\text{Cov}[X_{ip}, \, X_{jp}] = A_{ij} \times 2 \, f_p \, (1 - f_p)$, où $A_{ij}$ est la relation génétique additive entre les individus $i$ et $j$, égale à deux fois leur coefficient de simple apparentement (aussi souvent noté $\phi_A$), et où les $f_p$'s sont les fréquences alléliques des $P$ SNPs.
+Par ailleurs, $\mathbb{E}[X_{ip}] = 2 \, f_p$.
+Il s'avère donc que l'espérance $\mathbb{E}[X X^T]$ est égale à $A_{\text{ped}} \times 2 \sum_p f_p (1 - f_p)$ à une constante près.
+(Pendant l'inférence, la constante $\boldsymbol{1} \boldsymbol{1}^T 4 \sum_p f_p^2$ se retrouvera dans l'estimation de la moyenne globale $\mu$, et n'a donc pas grande importance.)
 
 Un estimateur de l'apparentement génétique additif deux-à-deux à partir des génotypes aux SNPs est donc:
 \begin{align}
@@ -270,9 +279,17 @@ A_{\text{mark}} = \frac{X X^T}{2 \sum_p f_p (1 - f_p)}
 \label{eqn:Amark}
 \end{align}
 
+Un autre estimateur, celui de [VanRaden (2008)](http://dx.doi.org/10.3168/jds.2007-0980), centre d'abord la matrice $X$ avec les fréquences alléliques, de telle sorte que $A_{\text{mark}}$, sous Hardy-Weinberg, est centrée le long de sa diagonale sur $1$ et hors de sa diagonale sur $0$:
+
+\[
+A_{\text{mark},VR} = \frac{X_\text{centered} \; X_\text{centered}^T}{2 \sum_p f_p (1 - f_p)}
+\]
+
+Parmi plusieurs estimateurs d'apparentement, celui proposé par VanRaden a été considéré comme un choix robuste ([Toro et coll., 2011](http://www.gsejournal.org/content/43/1/27)).
+
 Ainsi, le modèle de régression d'arête \eqref{eqn:lmmRR} est équivalent au modèle suivant:
 \begin{align}
-\boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{a} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 A_{\text{mark}})
+\boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{a} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 \, A_{\text{mark}})
 \label{eqn:lmmAmark}
 \end{align}
 
@@ -325,7 +342,8 @@ La matrice des relations génétiques additives peut s'estimer avec \eqref{eqn:A
 A.mark <- (X %*% t(X)) / (2 * sum(afs * (1 - afs)))
 ```
 
-Une simulation moins simpliste nécessiterait un véritable scénario évolutif, par exemple en utilisant le processus stochastique du coalescent avec recombinaison.
+Une simulation moins simpliste avec du déséquilibre de liaison (indispensable à une bonne précision de prédiction) nécessiterait un véritable scénario évolutif, par exemple en utilisant le processus stochastique du coalescent avec recombinaison.
+Pour cela, vous pouvez vous inspirer du document "Exemple de simulation pour explorer la prédiction génomique".
 
 
 ## Effets additifs des allèles
@@ -596,10 +614,12 @@ Puis il faut ajouter la méthode `predict` à cette classe:
 
 ```{r prep_rrBLUP_for_crossval, eval=FALSE}
 rr <- function(y, Z, K=NULL, X=NULL, method="REML"){
+  stopifnot(is.matrix(Z))
   out <- mixed.solve(y=y, Z=Z, K=K, X=X, method=method)
   return(structure(out, class="rr"))
 }
 predict.rr <- function(object, newZ){
+  stopifnot(is.matrix(newZ))
   out <- as.vector(newZ %*% object$u)
   if(! is.null(rownames(newZ)))
     names(out) <- rownames(newZ)
@@ -610,11 +630,13 @@ predict.rr <- function(object, newZ){
 Une fois que c'est fait, on peut réaliser la validation croisée comme suit:
 ```{r crossval, eval=FALSE}
 folds <- cvFolds(n=nrow(X), K=5, R=10)
-call <- call("rr", y=y.poly, Z=X)
+callRR <- call("rr", y=y.poly, Z=X)
 system.time(
-    out.cv <- cvTool(call=call, x=X, y=y.poly, names=c("Z", "y"),
+    out.cv <- cvTool(call=callRR, x=X, y=y.poly, names=c("Z", "y"),
                      cost=cor, folds=folds))
 ```
+
+Regardez le document "Exemple de simulation pour explorer la prédiction génomique" pour plus de détails.
 
 
 ## Intermédiaires d'architecture génétique additive
