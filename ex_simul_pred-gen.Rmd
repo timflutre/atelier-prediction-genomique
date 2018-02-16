@@ -275,10 +275,12 @@ abline(lm(a.pred.test ~ a[in.test]), col="red")
 Définir des fonctions supplémentaires est nécessaire pour utiliser le paquet `cvTools` avec la fonction `mixed.solve` du paquet `rrBLUP`:
 ```{r}
 rr <- function(y, Z, K=NULL, X=NULL, method="REML"){
+  stopifnot(is.matrix(Z))
   out <- rrBLUP::mixed.solve(y=y, Z=Z, K=K, X=X, method=method)
   return(structure(out, class="rr"))
 }
 predict.rr <- function(object, newZ){
+  stopifnot(is.matrix(newZ))
   out <- as.vector(newZ %*% object$u)
   if(! is.null(rownames(newZ)))
     names(out) <- rownames(newZ)
