@@ -1,3 +1,5 @@
+<!-- pandoc README.md -f commonmark -t html -s -o README.html -->
+
 # Atelier de prédiction et sélection génomique
 
 Ce répertoire contient le matériel pédagogique utilisé lors de l'atelier de **prédiction et sélection génomique** organisé et animé depuis 2015 par Jacques David ([Montpellier SupAgro](http://supagro.fr/)) et Timothée Flutre ([INRA](http://www.inra.fr/)).
@@ -7,7 +9,7 @@ Cet atelier se déroule dans le cadre des options [APIMET](http://www.agro-montp
 
 * En 2017 et 2018, Friedrich Longin ([Université de Hohenheim](https://lsa-weizen.uni-hohenheim.de/)) a participé à l'atelier, en présentant ses travaux sur l'optimisation des schémas de sélection.
 
-* En 2018, Julien Diot (étudiant en option [Data Science](https://www.supagro.fr/web/pages/idl=19&page=216&id_page=4276) de Montpellier SupAgro) a participé à l'atelier en tant que développeur principal de l'interface web du jeu sérieux.
+* En 2018, Julien Diot (étudiant en option [Data Science](https://www.supagro.fr/web/pages/idl=19&page=216&id_page=4276) de Montpellier SupAgro) a participé à l'atelier en tant que développeur principal de l'interface web du jeu sérieux ([code](https://github.com/timflutre/PlantSelBreedGame)).
 
 Le copyright concernant le matériel pédagogique de l'atelier appartient à l'INRA, Montpellier SupAgro, AgroParisTech et/ou l'université de Hohenheim.
 Afin de favoriser la collaboration pédagogique, le contenu des documents est sous licence Creative Commons Attribution-ShareAlike 4.0 International ([CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)).
