@@ -317,7 +317,7 @@ où $z$ est l'ordonnée du point de la loi Normale centrée réduite ayant pour 
 Il existe des tables contenant les valeurs de $i$ pour différentes valeurs de $\alpha$, mais on peut facilement les recalculer:
 
 ```{r}
-alpha <- c(0.01, 0.05, 0.1, 0.15, 0.2, 0.5) # from 1% to 20%
+alpha <- c(0.01, 0.05, 0.1, 0.15, 0.2, 0.5) # from 1% to 50%
 z <- qnorm(p=alpha, mean=0, sd=1, lower.tail=FALSE)
 phi.z <- dnorm(x=z, mean=0, sd=1)
 (i <- phi.z / alpha)
