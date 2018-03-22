@@ -88,7 +88,7 @@ avec:
 
 * $\boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 \, A_{\text{mark}})$ avec $A_{\text{mark}} = \frac{X X^T}{2 \sum_{p} f_p (1 - f_p)}$.
 
-Cet estimateur de $A_{\text{mark}}$ est décrit dans [Habier et coll. (2007)](http://dx.doi.org/10.1534/genetics.107.081190), mais un meilleur estimateur, centré, est proposé dans [VanRaden (2008)](http://dx.doi.org/10.3168/jds.2007-0980): pour plus de détails, lire [Vitezica et coll. (2013)](http://dx.doi.org/10.1534/genetics.113.155176).
+Cet estimateur de $A_{\text{mark}}$ est décrit dans [Habier et coll. (2007)](http://dx.doi.org/10.1534/genetics.107.081190), mais un meilleur estimateur, centré, est proposé dans [VanRaden (2008)](http://dx.doi.org/10.3168/jds.2007-0980): pour plus de détails, lire [Toro et coll. (2011)](http://www.gsejournal.org/content/43/1/27) et [Vitezica et coll. (2013)](http://dx.doi.org/10.1534/genetics.113.155176).
 
 
 # Simulation des données
