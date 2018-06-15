@@ -71,29 +71,30 @@ Les versions du contenu sont gérées avec le logiciel git, et le dépôt centra
 
 ## Modélisation théorique
 
-Concentrons-nous sur un seul caractère d'une espèce donnée, et imaginons une population de $I$ génotypes, chacun ayant une valeur génotypique $g_i$, avec $i \in \{1,\ldots,I\}$.
-Dans la théorie classique de la génétique quantitative, la valeur génotypique se décompose en valeurs additive ($a_i$), de dominance ($d_i$) et d'épistasie ($\zeta_i$), $g_i = a_i + d_i + \zeta_i$, de telle sorte que $a_i$ corresponde à la part héritable, c'est-à-dire transmise à la descendance, donc particulièrement d'intérêt en sélection, d'où le fait qu'on l'appelle aussi \textit{breeding value}.
+Concentrons-nous sur un seul caractère d'une espèce donnée, et imaginons une population de $I$ génotypes, chacun ayant une valeur génotypique notée $g_i$, avec $i \in \{1,\ldots,I\}$.
+Dans la théorie classique de la génétique quantitative, la valeur génotypique est décomposée en valeurs additive ($a_i$), de dominance ($d_i$) et d'épistasie ($\zeta_i$), indépendantes les unes des autres, $g_i = a_i + d_i + \zeta_i$, de telle sorte que $a_i$ corresponde à la part héritable, c'est-à-dire transmise à la descendance, donc particulièrement d'intérêt en sélection, d'où le fait qu'on l'appelle aussi \textit{breeding value}.
 
 L'architecture génétique du caractère est aussi supposée infinitésimale, ce qui permet de la modéliser comme suit: $\forall i, \; g_i \sim \mathcal{N}(0, \sigma_g^2)$.
 Dans le cas de la valeur additive: $\forall i, \; a_i \sim \mathcal{N}(0, \sigma_a^2)$, où $\sigma_a^2$ correspond à la variance génétique additive.
-De manière similaire pour les deux autres.
+De manière similaire pour $d_i$ et $\zeta_i$.
+Sous forme multivariée, on écrit: $\boldsymbol{a} \sim \mathcal{N}_I(\boldsymbol{0}, \sigma_a^2 A)$, où $A$ est la matrice des relations génétiques additives dont l'espérance, sous les hypothèses de transmission mendélienne, est calculable à partir du pédigrée ($A$ est aussi estimable directement à partir de données de génotypage).
 
 Tant qu'il existe "suffisamment" de variation d'origine génétique additive entre les génotypes ($\sigma_a^2 >> 0$), on peut espérer augmenter la valeur génotypique moyenne de la population au fil des générations en sélectionnant les reproducteurs parmi ceux ayant les meilleurs valeurs additives ($a_i^{(s)}$).
 
 ## Modélisation statistique
 
-Or les valeurs génotypiques ne sont pas observables, il faut donc les estimer à partir d'un échantillon de $N$ valeurs phénotypiques, notées $\{y_n\}_{1 \le n \le N}$, avec $\text{E}[y_n] = \mu_0$ et $\text{Var}[y_n] = \sigma_p^2$.
+Or les valeurs génotypiques ne sont pas observables, il faut donc les estimer/prédire à partir d'un échantillon de $N$ observations phénotypiques, notées $\{y_n\}_{1 \le n \le N}$, avec $\text{E}[y_n] = \mu_0$ et $\text{Var}[y_n] = \sigma_p^2$.
 Si l'on suppose aussi que les données sont distribuées selon une Normale, sans covariance entre les erreurs, la vraisemblance s'écrit:
 
 \[
-\forall n, \, y_n | \mu_0, \sigma_p^2 \, \sim \, \mathcal{N}(\mu_0, \sigma_p^2)
+\forall n, \, y_n | \mu_0, \sigma_p^2 \; \overset{\text{i.i.d}}{\sim} \; \mathcal{N}(\mu_0, \sigma_p^2)
 \]
 
 Classiquement, on collecte plusieurs observations ($J$) pour chaque génotype, ce qui fait que $N = I \times J$ lorsqu'il n'y a pas de données manquantes.
 En supposant qu'il n'y a pas besoin de prendre compte des corrélations spatio-temporelles entre les observations, la vraisemblance peut alors s'écrire comme:
 
 \[
-\forall i,j, \, y_{ij} = \mu + g_i + \epsilon_{ij} \text{ avec } \epsilon_{ij} \sim \mathcal{N}(0, \sigma^2) \; \Leftrightarrow \; \forall i,j, \; y_{ij} | \mu, g_i, \sigma^2 \, \sim \, \mathcal{N}(\mu + g_i, \sigma^2)
+\forall i,j, \, y_{ij} = \mu + g_i + \epsilon_{ij} \text{ avec } \epsilon_{ij} | \sigma^2 \, \overset{\text{i.i.d}}{\sim} \, \mathcal{N}(0, \sigma^2) \; \Leftrightarrow \; \forall i,j, \; y_{ij} | \mu, g_i, \sigma^2 \, \overset{\text{i.i.d}}{\sim} \, \mathcal{N}(\mu + g_i, \sigma^2)
 \]
 
 Après intégration des $\{g_i\}_{1 \le i \le I}$, on obtient:
@@ -108,13 +109,13 @@ On est en présence d'un modèle linéaire mixte.
 Dans le paradigme fréquentiste, l'inférence des composantes de la variance ($\sigma_g^2$ et $\sigma^2$) peut se réaliser via la méthode \textit{ReML}.
 Ensuite, le \textit{BLUP} (resp. \textit{BLUE}) de $g_i$ (resp. $\mu$) peut être calculé à partir des équations de Henderson (\textit{MME}).
 
-Les composantes de la variance sont également utilisées pour calculer la corrélation entre les valeurs génotypiques et les valeurs phénotypiques:
+Les composantes de la variance sont également utilisées pour calculer la corrélation entre les valeurs génotypiques et les observations phénotypiques:
 
 \[
-\frac{\text{Cov}[g, y]}{\sigma_g^2 \; \sigma_p^2} = \frac{\sigma_g^2 + \text{Cov}[g, \epsilon]}{\sigma_g^2 \; \sigma_p^2}
+\rho_{g,y} \; = \; \frac{\text{Cov}[g, y]}{\sigma_g \; \sigma_p} = \frac{\sigma_g^2 + \text{Cov}[g, \epsilon]}{\sigma_g \; \sigma_p}
 \]
 
-Dans le cas où il n'y a pas de covariance entre génotypes et environnement, on appelle **héritabilité au sens large** le carré de cette corrélation, noté:
+Dans le cas où il n'y a pas de covariance entre génotypes et environnement, on appelle **héritabilité au sens large** (\textit{broad-sense}) le carré de cette corrélation:
 
 \[
 H^2 = \frac{\sigma_g^2}{\sigma_p^2}
@@ -125,7 +126,7 @@ L'héritabilité au sens large nous renseigne donc sur la capacité d'un disposi
 ## D'une génération à l'autre
 
 Considérons la relation entre le phénotype des enfants et le phénotype moyen de leurs deux parents (le "parent moyen").
-Pour cela, notons $y_{\text{mère}}$ (resp. $y_{\text{père}}$) une valeur phénotypique de la mère (resp. du père) avec $y$ leur moyenne, $y = \frac{y_{\text{mère}} + y_{\text{père}}}{2}$, et $y_e$ une valeur phénotypique de leur enfant.
+Pour cela, notons $y_{\text{mère}}$ (resp. $y_{\text{père}}$) une observation phénotypique de la mère (resp. du père) avec $y$ leur moyenne, $y = \frac{y_{\text{mère}} + y_{\text{père}}}{2}$, et $y_e$ une observation phénotypique de leur enfant.
 
 D'après la théorie:
 
@@ -158,9 +159,11 @@ Au final, la pente de la droite vaut:
 \beta_{\text{enfants},\text{parents}} = \frac{\sigma_a^2}{\sigma_p^2} = h^2
 \]
 
-où $h^2$ est appelée **héritabilité au sens strict**.
+où $h^2$ est appelée **héritabilité au sens strict** (\textit{narrow-sense}).
 
 Ceci montre que les mesures phénotypiques sur des génotypes apparentés nous renseignent sur la variance génétique additive d'une population.
+
+Notons que $h^2$ correspond aussi à la corrélation entre observation phénotypique et valeur génotypique additive au sein d'un individu: $\rho_{a,y} = \frac{\text{Cov}[a, y]}{\sigma_a \sigma_p} = \frac{\sigma_a^2}{\sigma_a \sigma_p} = h$.
 
 
 
@@ -170,8 +173,8 @@ Voici un exemple concret qui servira dans la suite, pour lequel on se limite au 
 Comme ce document traite de sélection et non d'inférence, on se limite aussi au cas où $J=1$.
 
 De plus, supposons que la relation entre génotypes des parents et des enfants est linéaire.
-S'il n'y a pas de sélection, c'est-à-dire que tout génotype peut être parent, les moyenne et variance phénotypique à la génération des enfants sont égales à celles des parents, $\mu_0$ et $\sigma_p^2$.
-Comme la pente de la droite, $\beta_{\text{enfants,parents}}$, correspond à $h^2$, on peut en déduire la covariance entre valeurs phénotypiques des parents et enfants, et ainsi simuler toutes les valeurs phénotypiques via une loi Normale bivariée.
+S'il n'y a pas de sélection, c'est-à-dire que tout génotype peut être parent, les moyenne et variance phénotypiques à la génération des enfants sont égales à celles des parents, $\mu_0$ et $\sigma_p^2$.
+Comme la pente de la droite, $\beta_{\text{enfants,parents}}$, correspond à $h^2$, on peut en déduire la covariance entre observations phénotypiques des parents et enfants, et ainsi simuler toutes les observations phénotypiques via une loi Normale bivariée.
 
 ```{r}
 set.seed(1859)
@@ -192,19 +195,23 @@ Sigma <- matrix(c(var.midparents, covar.midpar.off,
                 nrow=2, ncol=2)
 all.y <- mvrnorm(n=N, mu=c(mean.midparents, mean.offsprings),
                  Sigma=Sigma)
-y <- all.y[,1] # mid-parents
+y <- all.y[,1]   # mid-parents
 y.e <- all.y[,2] # offsprings
 ```
 
 Voici les histogrammes des vraies données:
-```{r}
-tmp <- hist(x=y, breaks="FD",
+```{r, echo=FALSE}
+half.y <- max(mean(y) - min(y), max(y) - mean(y))
+xlim.y <- c(mean(y) - half.y, mean(y) + half.y)
+tmp <- hist(x=y, breaks="FD", xlim=xlim.y,
             col="grey", border="white", las=1,
             main="Phénotypes des parents", ylab="Comptage")
 y1 <- quantile(tmp$counts, 0.35)
 abline(v=mu.0, lty=2, lwd=2)
 text(x=mu.0-0.7, y=y1, labels=expression(mu["0"]), cex=1.5)
-tmp <- hist(x=y.e, breaks="FD",
+half.y.e <- max(mean(y.e) - min(y.e), max(y.e) - mean(y.e))
+xlim.y.e <- c(mean(y.e) - half.y.e, mean(y.e) + half.y.e)
+tmp <- hist(x=y.e, breaks="FD", xlim=xlim.y.e,
             col="grey", border="white", las=1,
             main="Phénotypes des enfants", ylab="Comptage")
 y.e1 <- quantile(tmp$counts, 0.35)
@@ -245,7 +252,7 @@ La sélection s'applique communément par **troncation**, c'est-à-dire en chois
 
 Dans l'exemple, fixons le seuil $y_t$ à 43:
 ```{r, echo=FALSE}
-tmp <- hist(x=y, breaks="FD",
+tmp <- hist(x=y, breaks="FD", xlim=xlim.y,
             col="grey", border="white", las=1,
             main="Phénotypes des parents et seuil de sélection",
             ylab="Comptage")
@@ -275,7 +282,8 @@ sum(is.sel <- (y >= y.t))
 (S <- mu.s - mu.0)
 ```
 ```{r, echo=FALSE}
-tmp <- hist(x=y, breaks="FD", col="grey", border="white", las=1,
+tmp <- hist(x=y, breaks="FD", xlim=xlim.y,
+            col="grey", border="white", las=1,
             main="Phénotypes des parents et différentiel de sélection",
             ylab="Comptage")
 abline(v=mu.0, lty=2, lwd=2)
@@ -306,7 +314,7 @@ Pour comparer la sélection sur différents caractères, il est donc recommandé
 i = \frac{S}{\sigma_p}
 \]
 
-Dans le cas où les valeurs utilisés pour la sélection (ici les valeurs génotypiques $\{g_i\}_{1 \le i \le I}$) suivent une loi Normale, un autre avantage de l'intensité $i$ est de permettre d'approximer sa relation avec le **taux de sélection** $\alpha$:
+Dans le cas où les valeurs utilisées pour la sélection (ici les valeurs génotypiques $\{g_i\}_{1 \le i \le I}$) suivent une loi Normale, un autre avantage de l'intensité $i$ est de permettre d'approximer sa relation avec le **taux de sélection** $\alpha$:
 
 \[
 i = \frac{z}{\alpha}
@@ -334,20 +342,17 @@ idx <- which(alpha %in% 0.05)
 lines(x=c(z[idx], z[idx]), y=c(0,phi.z[idx]), lwd=2, lty=2)
 arrows(x0=z[idx], y0=phi.z[idx], x1=z[idx]+0.7, lwd=2, length=0.2)
 text(x=z[idx]*1.4, y=phi.z[idx]*1.4,
-     labels=paste0("alpha=", format(100*alpha[idx], digits=2), "%",
-                   "; i=", format(i[idx], digits=3)))
+     labels=bquote(alpha==.(format(100*alpha[idx], digits=2))*"% ;"~i==.(format(i[idx], digits=3))))
 idx <- which(alpha %in% 0.15)
 lines(x=c(z[idx], z[idx]), y=c(0,phi.z[idx]), lwd=2, lty=2)
 arrows(x0=z[idx], y0=phi.z[idx], x1=z[idx]+0.7, lwd=2, length=0.2)
 text(x=z[idx]*1.9, y=phi.z[idx]*1.2,
-     labels=paste0("alpha=", format(100*alpha[idx], digits=2), "%",
-                   "; i=", format(i[idx], digits=3)))
+     labels=bquote(alpha==.(format(100*alpha[idx], digits=2))*"% ;"~i==.(format(i[idx], digits=3))))
 idx <- which(alpha %in% 0.50)
 lines(x=c(z[idx], z[idx]), y=c(0,phi.z[idx]), lwd=2, lty=2)
 arrows(x0=z[idx], y0=phi.z[idx], x1=z[idx]+0.7, lwd=2, length=0.2)
 text(x=z[idx]+1.8, y=phi.z[idx],
-     labels=paste0("alpha=", format(100*alpha[idx], digits=2), "%",
-                   "; i=", format(i[idx], digits=3)))
+     labels=bquote(alpha==.(format(100*alpha[idx], digits=2))*"% ;"~i==.(format(i[idx], digits=3))))
 ```
 
 Attention cependant au fait que la précision de cette approximation diminue avec la taille de la population, $I$, notamment quand $I < 100$.
@@ -368,7 +373,7 @@ plot(x=ticks.x, y=values.i, type="b", las=1,
      xaxt="n",
      xlab=expression(Taux~de~sélection~(alpha)),
      ylab="Intensité de sélection (i)",
-     main="Relation non-linéaire")
+     main="Relation non-linéaire entre intensité et taux de sélection")
 axis(side=1, at=ticks.x[c(1, seq(4,12,by=2))],
      labels=c("1", "1/200", "1/400", "1/600", "1/800", "1/1000"))
 ```
@@ -376,10 +381,10 @@ axis(side=1, at=ticks.x[c(1, seq(4,12,by=2))],
 
 # Réponse à la sélection
 
-L'héritabilité au sens strict, $h^2$, étant inférieure à 1, la droite de régression des enfants sur les parents n'est donc pas aussi pentue que la droite identité.
+L'héritabilité au sens strict, $h^2$, étant inférieure (ou égale) à 1, la droite de régression des enfants sur les parents n'est donc généralement pas aussi pentue que la droite identité.
 C'est cette observation qui a amené Galton a parlé de "régression".
 
-Or, si l'on compare la moyenne des parents sélectionnés, $\mu^{(s)}$, avec celle de leurs enfants, notée $\mu_1$, on voit une augmentation, ce qui amène à définir la **réponse à la sélection** (aussi appelé **gain génétique**):
+Or, comparée à la moyenne des parents sélectionnés, $\mu^{(s)}$, la moyenne de leurs enfants, notée $\mu_1$, est plus élevée, ce qui amène à définir la **réponse à la sélection** (aussi appelé **gain génétique**):
 
 \[
 R = \mu_1 \; - \; \mu_0
@@ -428,7 +433,7 @@ text(x=34.8, y=mu.0+0.4, labels=expression(mu["0"]), cex=1.5)
 abline(v=y.t, lty=1, lwd=2)
 text(x=y.t-0.4, y=34.4, labels=expression("y"["t"]), cex=1.5)
 abline(v=mu.s, lty=3, lwd=2)
-text(x=mu.s+0.6, y=34.4, labels=expression(mu^"(s)"), cex=1.5)
+text(x=mu.s+0.6, y=34.6, labels=expression(mu^"(s)"), cex=1.5)
 arrows(x0=mu.0, y0=35.2,
        x1=mu.s, y1=35.2, lwd=2, code=3)
 text(x=mu.0+(S/2), y=36, labels="S", cex=2)
@@ -440,14 +445,13 @@ text(x=36.4, y=mu.0+(R/2), labels="R", cex=2)
 ## mtext("T. Flutre (INRA)", side=1, line=3.5, at=47, cex=0.8)
 ```
 
-On voit que le changement, dû à la sélection, de moyenne phénotypique au sein des parents ($S$) induit bien un changement de moyenne phénotypique au sein de leurs enfants:
+On voit que le changement, dû à la sélection, de moyenne phénotypique au sein des parents ($S$) induit bien un changement de moyenne phénotypique au sein de leurs enfants ($R$):
 
 \[
 \beta_{\text{enfants,parents}} = \frac{\mu_1 - \mu_0}{\mu^{(s)} - \mu_0} \; \Leftrightarrow \; h^2 = \frac{R}{S}
 \]
 
 Cette équation combine une information d'hérédité ($h^2$) avec une information de sélection ($S$) pour prédire le changement d'une génération à l'autre ($R$).
-
 Cette relation est généralement appelée l'**équation du sélectionneur**:
 
 \[
@@ -455,7 +459,7 @@ R = h^2 \; S
 \]
 
 De plus, comme $S = i \, \sigma_p$, on peut écrire: $R = i \, h^2 \, \sigma_p = i \, h \, \sigma_a$, où $h = \frac{\sigma_a}{\sigma_p}$.
-On peut aussi voir $h$ comme la corrélation entre les valeurs phénotypiques $\{y_n\}$ et les valeurs génotypiques additives, $\{a_i\}$, d'où le fait que $h$ soit aussi noté $r$ pour indiquer que ça mesure la précision (\textit{accuracy}) avec laquelle les valeurs phénotypiques permettent d'approximer les valeurs génotypiques additives:
+On peut aussi voir $h$ comme la corrélation entre les observations phénotypiques $\{y_n\}$ et les valeurs génotypiques additives, $\{a_i\}$, d'où le fait que $h$ soit aussi notée $r$ pour indiquer qu'elle mesure la précision (\textit{accuracy}) avec laquelle les observations phénotypiques permettent d'approximer les valeurs génotypiques additives:
 
 \[
 R = i \; r \; \sigma_a
@@ -472,10 +476,9 @@ La précision de prédiction dépend quant à elle du nombre de génotypes test�
 
 Si l'on veut un nombre minimum de génotypes remplissant le critère de sélection, un nombre suffisant de génotypes testés est nécessaire.
 De plus, un nombre suffisant d'observations est requis pour évaluer précisement les valeurs génotypiques.
-A budget constant, il est donc nécessaire d'optimiser les paramètres d'un programme de sélection, et de concevoir une stratégie.
+A budget constant, il est donc nécessaire d'optimiser les paramètres d'un programme de sélection, et donc de mettre au point une stratégie.
 
-Si on sélectionne très fortement dès la première génération en ne permetant qu'à un tout petit nombre de génotypes de se reproduire, on va certes augmenter fortement la moyenne de la génération suivante, mais on va aussi diminuer drastiquement la variance génétique.
-Or, en pratique, il est très fréquent qu'il faille explorer un très grand nombre de combinaisons (par croisement) avant d'obtenir des génotypes performants.
+Si on sélectionne très fortement dès la première génération en ne permetant qu'à un tout petit nombre de génotypes de se reproduire, on va certes augmenter fortement la moyenne de la génération suivante, mais on va aussi diminuer drastiquement la variance génétique au sein de celle-ci.
 Un équilibre doit donc être trouvé entre augmenter la moyenne de génération en génération, sans pour autant perdre trop de variance.
 
 
