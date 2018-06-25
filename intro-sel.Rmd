@@ -2,6 +2,7 @@
 title: "Introduction à la sélection"
 author: "Timothée Flutre (INRA)"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+lang: "fr"
 colorlinks: true
 output:
   html_document:
@@ -22,6 +23,8 @@ abstract: |
 Ce morceau de code R est utilisé pour vérifier que tout ce dont on a besoin est disponible.
 -->
 ```{r setup, include=FALSE}
+##`
+## https://github.com/vspinu/polymode/issues/147#issuecomment-399745611
 R.v.maj <- as.numeric(R.version$major)
 R.v.min.1 <- as.numeric(strsplit(R.version$minor, "\\.")[[1]][1])
 if(R.v.maj < 2 || (R.v.maj == 2 && R.v.min.1 < 15))

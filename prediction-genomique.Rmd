@@ -2,6 +2,7 @@
 title: "Prédiction génomique"
 author: "Timothée Flutre (INRA)"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+lang: "fr"
 colorlinks: true
 linkcolor: blue
 output:
@@ -23,6 +24,8 @@ abstract: |
 Ce morceau de code R est utilisé pour vérifier que tout ce dont on a besoin est disponible.
 -->
 ```{r setup, include=FALSE}
+##`
+## https://github.com/vspinu/polymode/issues/147#issuecomment-399745611
 R.v.maj <- as.numeric(R.version$major)
 R.v.min.1 <- as.numeric(strsplit(R.version$minor, "\\.")[[1]][1])
 if(R.v.maj < 2 || (R.v.maj == 2 && R.v.min.1 < 15))
@@ -301,7 +304,7 @@ Cette équivalence permet d'utiliser \eqref{eqn:lmmRR} pour:
 
 * estimer la composante génétique additive de la variance, $\hat{\sigma}_a^2 = \hat{\sigma}_\beta^2 \times 2 \sum_p f_p (1 - f_p)$;
 
-* et estimer l'héritabilité au sens strict, $\hat{h}^2 = \frac{\hat{\sigma}_a^2}{\hat{\sigma}_a^2 + \hat{\sigma}^2}$.
+* et estimer l'héritabilité au sens strict, $\hat{h}^2 = \frac{\hat{\sigma}_a^2}{\hat{\sigma}_g^2 + \hat{\sigma}^2}$.
 
 Il y aurait encore beaucoup à dire sur ces questions, mais passons maintenant aux exercices pratiques.
 
@@ -398,7 +401,8 @@ y.poly <- matrix(1, nrow=N) * mu + X %*% beta.poly + epsilon
 Dans ce cas, on s'attend à une héritabilité au sens strict de:
 ```{r h2}
 sigma.a2 <- sigma.beta2.poly * 2 * sum(afs * (1 - afs))
-(h2 <- sigma.a2 / (sigma.a2 + sigma.epsilon2))
+sigma.g2 <- sigma.a2
+(h2 <- sigma.a2 / (sigma.g2 + sigma.epsilon2))
 ```
 
 Ce que l'on retrouve dans les données simulées:
@@ -410,7 +414,8 @@ Notez qu'on aurait aussi pu directement simuler les valeurs génotypiques additi
 En R, en utilisant la fonction \verb+mvrnorm+ du paquet [MASS](https://cran.r-project.org/web/packages/MASS/), cela aurait donné:
 ```{r simul_a, eval=FALSE}
 a <- mvrnorm(n=1, mu=rep(0, N), Sigma=sigma.a2 * A.mark)
-y.poly <- matrix(1, nrow=N) * mu + a + epsilon
+g <- a
+y.poly <- matrix(1, nrow=N) * mu + g + epsilon
 ```
 
 
