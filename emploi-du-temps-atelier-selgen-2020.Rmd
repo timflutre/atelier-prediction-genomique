@@ -1,6 +1,6 @@
 ---
 title: "Atelier de prédiction et sélection génomique"
-author: "J. David - V. Segura"
+author: "J. David"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
 colorlinks: true
 output:
@@ -14,8 +14,10 @@ output:
     number_sections: TRUE
 mode: selfcontained
 abstract: |
-  Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique. Cet atelier est destiné aux étudiants en spécialisation APIMET et SEPMET de Montpellier SupAgro et PIST d'AgroParisTech.
-  Un peu d'histoire : En 2020, ce sera la 5ème édition de cet atelier construit au départ par Timothée Flûtre, Jacques David, Friedrich Longin et Philippe Brabant, fortement amélioré par Julien Diot pour le jeu sérieux. Il a été encadré par Charlotte Brault,étudiante en thèse et Julie Fiévet. Cette année, Vincent Ségura rejoint l'équipe.
+  Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique pour l'année 2020.
+    Cet atelier est destiné aux étudiants en spécialisation APIMET et SEPMET de Montpellier SupAgro et PIST d'AgroParisTech.  
+  
+  Un peu d'histoire : En 2020, ce sera la 5ème édition de cet atelier construit au départ par Timothée Flûtre, Jacques David, Friedrich Longin et Philippe Brabant, fortement amélioré par Julien Diot pour le jeu sérieux. Il a été encadré par Charlotte Brault,étudiante en thèse et Julie Fiévet. Cette année, Vincent Ségura et Margaux Jullien rejoignent l'équipe.
 ---
 
 
@@ -28,16 +30,17 @@ abstract: |
 * Contact
 [Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte))
   
-***Equipe pédagogique 2020**
-Vincent Ségura ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](https://umr-agap.cirad.fr/recherche/equipes-scientifiques2/diversite-et-amelioration-de-la-vigne/contexte-et-objectifs)  
-Julie Fiévet ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))  
-Friedrich Longin de l'[université d'Hohenheim](https://lsa-weizen.uni-hohenheim.de/)   
-Charlotte Brault de l'[IFV](http://www.vignevin.com/) (en thèse à l'INRA, UMR AGAP, équipe [DAAV](https://umr-agap.cirad.fr/equipes-scientifiques/diversite-adaptation-et-amelioration-de-la-vigne/contexte-et-objectifs))
+**Equipe pédagogique 2020**
 
-*Crédits
-Timothée Flutre ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
-Philippe Brabant
-Julien Diot ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
+Vincent Ségura et Charlottre Brault ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](https://umr-agap.cirad.fr/recherche/equipes-scientifiques2/diversite-et-amelioration-de-la-vigne/contexte-et-objectifs))  
+Margaux Jullien ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))  
+Friedrich Longin de l'[université d'Hohenheim](https://lsa-weizen.uni-hohenheim.de/)  
+[Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte))
+
+**Crédits**  
+Timothée Flutre ([INRAE](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/)), 
+Philippe Brabant, 
+Julien Diot ([Univ. Tokyo](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
 
 
 # Objectifs de l'atelier
@@ -45,20 +48,20 @@ Julien Diot ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
 Il vise à familiariser les étudiants avec la prédiction génomique de caractères quantitatifs et son utilisation dans les programmes de sélection.
 Il se déroule en trois étapes. 
 
-1. "Optimization of breeding schemes with genomic selection in R", par Friedrich Longin (Univ. Hohenheim) 
-+ Présentation (en anglais) de la théorie
-+ Mise en pratique via des simulations de schémas de sélection
-
-2. Les bases de la prédiction génomique, par Timothée Flutre (INRA) et Charlotte Brault (IFV, INRA)
+1. Les bases de la prédiction génomique, par Vincent Ségura (INRAE) et Charlotte Brault (IFV, INRAE)
 + Simulation de données phénotypiques selon différentes architectures génétiques
 + Présentation des principales méthodes d'inférence des effets génétiques
 + Exploration de la qualité des prédictions en fonction de paramètres tels que la structure du matériel végétal, la densité de génotypage, etc.
 
-3. "Jouez au sélectionneur !"
+2. "Jouez au sélectionneur !"
 + Constitution d'équipes de sélection 
 + Elaboration d'une stratégie de sélection mêlant essais au champ, génotypage et prédiction
 + Réalisation du schéma de sélection sur une succession de plusieurs années simulant la temporalité et le budget d'un véritable programme de sélection
 + Mise en commun, examen des résultats et comparaison des stratégies
+
+3. "Optimization of breeding schemes with genomic selection in R", par Friedrich Longin (Univ. Hohenheim) 
++ Présentation (en anglais) de la théorie
++ Mise en pratique via des simulations de schémas de sélection
 
 
 # Pré-requis
@@ -108,26 +111,22 @@ Les étudiants doivent venir chacun avec leur ordinateur portable avec la config
 # Ressources en ligne
 
 Ce document, ainsi que les autres nécessaires à la réalisation de l'atelier, se trouve à l'adresse suivante: https://github.com/timflutre/atelier-prediction-genomique.
-Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
+Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche en Agriculture, Alimentation et l'environnement.
 Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
 Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en cas de doute).
 
 
 # Programme de la semaine
 
-## Lundi
-
-* 9h - 12h: cours "Optimization of breeding schemes with GS in R", par F. Longin (document "Selgain_Montpellier_2018.pdf")
-
-* 14h - 17h: travaux pratiques via des simulations de schémas de sélection (document "Selgain_Montpellier_2018_example.R").
-
-## Mardi
+## Lundi  
+Intervenant : Vincent Ségura
 
 * 9h - 12h: introduction à la modélisation statistique via la simulation en prenant la régression linéaire simple comme exemple, par T. Flutre (document "premiers-pas.pdf")
 
 * 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique, par T. Flutre (document "prediction-genomique.pdf")
-
-## Mercredi
+  
+## Mardi 
+Intervenants : Margaux Jullien - Charlotte Brault - Jacques David
 
 * 9h - 12h: investigation par simulation, en groupes, des aspects influençant la précision de prédiction
 
@@ -135,18 +134,31 @@ Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en c
 
 * 15h30 - 17h: présentation du jeu sérieux sur la sélection, constitution des équipes et réflexions stratégiques
 
-## Jeudi
 
+## Mercredi 
+Intervenants : Margaux Jullien - Charlotte Brault - Jacques David  
+  
 * 9h - 12h: lancement du jeu (1 heure = 1 année)
 
 * 14h - 17h: suite du jeu (1 heure = 1 année)
 
-## Vendredi
 
+## Jeudi  
+Intervenants : Margaux Jullien - Charlotte Brault - Jacques David
+  
 * 9h - 11h40: suite du jeu (40 minutes = 1 année)
 
 * 11h40 - 12h: procédure d'inscription comparant les génotypes proposés des équipes avec les témoins
 
 * 13h30 - 15h: discussion sur les différentes stratégies suivies
 
-* 15h - 16h: discussion sur les acquis réalisés durant l'atelier et les améliorations à apporter
+
+## Vendredi  
+Intervenant : Fridriech Longin
+  
+* 9h - 12h: cours "Optimization of breeding schemes with GS in R", par F. Longin (document "Selgain_Montpellier_2018.pdf")
+
+* 14h - 15h30: travaux pratiques via des simulations de schémas de sélection (document "Selgain_Montpellier_2018_example.R").
+
+
+* 15h30 - 16h: discussion sur les acquis réalisés durant l'atelier et les améliorations à apporter
