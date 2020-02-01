@@ -53,7 +53,7 @@ Il est recommandé d'avoir déjà lu attentivement le document "Premiers pas" de
 De plus, ce document nécessite de charger des paquets additionnels (ceux-ci doivent être installés au préalable sur votre machine, via \verb+install.packages("pkg")+):
 
 ```{r load_pkg}
-suppressPackageStartupMessages(library(QTLRel))
+suppressPackageStartupMessages(library(MM4LMM))
 suppressPackageStartupMessages(library(rrBLUP))
 ```
 
@@ -413,9 +413,11 @@ Ce que l'on retrouve dans les données simulées:
 Notez qu'on aurait aussi pu directement simuler les valeurs génotypiques additives via $\boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 A_{\text{mark}})$.
 En R, en utilisant la fonction \verb+mvrnorm+ du paquet [MASS](https://cran.r-project.org/web/packages/MASS/), cela aurait donné:
 ```{r simul_a, eval=FALSE}
-a <- mvrnorm(n=1, mu=rep(0, N), Sigma=sigma.a2 * A.mark)
-g <- a
-y.poly <- matrix(1, nrow=N) * mu + g + epsilon
+if(requireNamespace("MASS", quietly=TRUE)){
+  a <- MASS::mvrnorm(n=1, mu=rep(0, N), Sigma=sigma.a2 * A.mark)
+  g <- a
+  y.poly <- matrix(1, nrow=N) * mu + g + epsilon
+}
 ```
 
 
@@ -446,36 +448,35 @@ pimage(A.mark, A.mark.reorder)
 
 ## SNP à SNP ("GWAS")
 
-Le paquet [QTLRel](https://cran.r-project.org/web/packages/QTLRel/index.html) implémente une procédure particulière pour ajuster le modèle \eqref{eqn:lmmGwas}.
-Dans une première étape, les composants de la variance, $\sigma_u^2$ et $\sigma^2$, sont estimés, mais sans inclure l'information des génotypes.
-Dans une seconde étape, les effets alléliques sont estimés SNP par SNP et l'hypothèse nulle $\mathcal{H}_0:"\beta_p = 0"$ est testée pour chacun d'eux, en utilisant les estimations des composants de la variance de la première étape.
-
-Sur le plan statistique, il existe une meilleur méthode que cette procédure en deux étapes, mais ce paquet suffit aux besoins de ce document.
-Sur le plan informatique, comme le code de QTLRel n'est pas très rapide, nous allons tester seulement un sous-ensemble des $P =$ `r P` SNPs pour aller plus vite.
-
+Sur le plan informatique, nous allons tester seulement un sous-ensemble des $P =$ `r P` SNPs pour aller plus vite.
 Echantillonnons donc uniformément un sous-ensemble de SNPs à tester (mais incluant le causal):
 ```{r select_subset_snps}
 nb.subset.snps <- 20
 subset.snps <- unique(sort(c(snp.qtl, sample(snps.id, nb.subset.snps))))
 ```
 
+Le paquet [MM4LMM](https://cran.r-project.org/package=MM4LMM) implémente un algorithme MM pour ajuster le modèle \eqref{eqn:lmmGwas} par ML ou ReML.
+
 Ajustons le modèle SNP à SNP \eqref{eqn:lmmGwas} sur les données du caractère monogénique:
 ```{r mono_adjust_gwas}
 res.mono.gwas <- list()
-res.mono.gwas$vc <- estVC(y=y.mono, v=list(AA=A.mark, DD=NULL, HH=NULL, AD=NULL,
-                                           MH=NULL, EE=diag(N)))
-res.mono.gwas$scan <- scanOne(y=y.mono, gdat=X[,subset.snps],
-                              vc=res.mono.gwas$vc, test="F", numGeno=TRUE)
+out.mmest <- MMEst(Y=y.mono[,1], X=X[,subset.snps],
+                    VarList=list(Additive=A.mark, Error=diag(N)))
+out.anovatest <- AnovaTest(out.mmest, Type="TypeI")
+tmp <- t(sapply(out.anovatest, function(x){x["Xeffect",]}))
+res.mono.gwas$scan <- list(pval=setNames(tmp[,"pval"], rownames(tmp)))
 ```
 
 Ajustons ce même modèle sur les données du caractère polygénique:
 ```{r poly_adjust_gwas}
 res.poly.gwas <- list()
-res.poly.gwas$vc <- estVC(y=y.poly, v=list(AA=A.mark, DD=NULL, HH=NULL, AD=NULL,
-                                           MH=NULL, EE=diag(N)))
-res.poly.gwas$scan <- scanOne(y=y.poly, gdat=X[,subset.snps],
-                              vc=res.poly.gwas$vc, test="F", numGeno=TRUE)
+out.mmest <- MMEst(Y=y.poly[,1], X=X[,subset.snps],
+                   VarList=list(Additive=A.mark, Error=diag(N)))
+out.anovatest <- AnovaTest(out.mmest, Type="TypeI")
+tmp <- t(sapply(out.anovatest, function(x){x["Xeffect",]}))
+res.poly.gwas$scan <- list(pval=setNames(tmp[,"pval"], rownames(tmp)))
 ```
+
 
 ## Tous les SNPs conjointement ("ridge")
 
@@ -500,20 +501,20 @@ Dans tous les cas, comme les données sont simulées, nous connaissons le SNP $p
 Il sera indiqué d'un point rouge dans les graphiques ci-dessous.
 
 ```{r eval_manhattan}
-plot(x=1:length(subset.snps), y=-log10(res.mono.gwas$scan$p),
+plot(x=1:length(subset.snps), y=-log10(res.mono.gwas$scan$pval),
      main="Caractère monogénique", las=1, type="n",
      xlab="SNPs", ylab=expression(-log[10](italic(p)~values)))
-idx <- which(names(res.mono.gwas$scan$p) == snp.qtl)
-points(x=idx, y=-log10(res.mono.gwas$scan$p[idx]), col="red", pch=19)
-points(x=which(names(res.mono.gwas$scan$p) != snp.qtl),
-       y=-log10(res.mono.gwas$scan$p[-idx]), col="black", pch=19)
-plot(x=1:length(subset.snps), y=-log10(res.poly.gwas$scan$p),
+idx <- which(names(res.mono.gwas$scan$pval) == snp.qtl)
+points(x=idx, y=-log10(res.mono.gwas$scan$pval[idx]), col="red", pch=19)
+points(x=which(names(res.mono.gwas$scan$pval) != snp.qtl),
+       y=-log10(res.mono.gwas$scan$pval[-idx]), col="black", pch=19)
+plot(x=1:length(subset.snps), y=-log10(res.poly.gwas$scan$pval),
      main="Caractère polygénique", las=1, type="n",
      xlab="SNPs", ylab=expression(-log[10](italic(p)~values)))
-idx <- which(names(res.poly.gwas$scan$p) == names(which.max(beta.poly[subset.snps])))
-points(x=idx, y=-log10(res.poly.gwas$scan$p[idx]), col="red", pch=19)
-points(x=which(names(res.poly.gwas$scan$p) != names(which.max(beta.poly[subset.snps]))),
-       y=-log10(res.poly.gwas$scan$p[-idx]), col="black", pch=19)
+idx <- which(names(res.poly.gwas$scan$pval) == names(which.max(beta.poly[subset.snps])))
+points(x=idx, y=-log10(res.poly.gwas$scan$pval[idx]), col="red", pch=19)
+points(x=which(names(res.poly.gwas$scan$pval) != names(which.max(beta.poly[subset.snps]))),
+       y=-log10(res.poly.gwas$scan$pval[-idx]), col="black", pch=19)
 ```
 
 Le modèle d'inférence SNP à SNP parvient bien à détecter le SNP causal dans le cas du caractère monogénique, mais l'interprétation du *Manhattan plot* est beaucoup moins claire dans le cas du caractère polygénique.
@@ -634,11 +635,13 @@ predict.rr <- function(object, newZ){
 
 Une fois que c'est fait, on peut réaliser la validation croisée comme suit:
 ```{r crossval, eval=FALSE}
-folds <- cvFolds(n=nrow(X), K=5, R=10)
-callRR <- call("rr", y=y.poly, Z=X)
-system.time(
-    out.cv <- cvTool(call=callRR, x=X, y=y.poly, names=c("Z", "y"),
-                     cost=cor, folds=folds))
+if(requireNamespace("cvTools", quietly=TRUE)){
+  folds <- cvTools::cvFolds(n=nrow(X), K=5, R=10)
+  callRR <- call("rr", y=y.poly, Z=X)
+  system.time(
+      out.cv <- cvTools::cvTool(call=callRR, x=X, y=y.poly, names=c("Z", "y"),
+                                cost=cor, folds=folds))
+}
 ```
 
 Regardez le document "Exemple de simulation pour explorer la prédiction génomique" pour plus de détails.
