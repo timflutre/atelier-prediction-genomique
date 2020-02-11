@@ -40,8 +40,7 @@ Friedrich Longin de l'[université d'Hohenheim](https://lsa-weizen.uni-hohenheim
 **Crédits**  
 Timothée Flutre ([INRAE](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/)), 
 Philippe Brabant, 
-Julien Diot ([Univ. Tokyo](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
-
+Julien Diot ([The University of Tokyo, Laboratory of Biometry and Bioinformatics](https://www.u-tokyo.ac.jp))
 
 # Objectifs de l'atelier
 
@@ -102,7 +101,7 @@ Les étudiants doivent venir chacun avec leur ordinateur portable avec la config
 + [knitr](https://cran.r-project.org/package=knitr/), [rmarkdown](https://cran.r-project.org/package=rmarkdown/): pour les rapports dynamiques;
 + [MASS](https://cran.r-project.org/package=MASS/): pour les simulations multivariées;
 + [lme4](https://cran.r-project.org/package=lme4/): pour l'analyse de données phénotypiques via des modèles mixtes
-+ [QTLRel](https://cran.r-project.org/package=QTLRel/), [qqman](https://cran.r-project.org/package=qqman/): pour la génétique d'association;
++ [MM4LMM](https://cran.r-project.org/package=MM4LMM/), [qqman](https://cran.r-project.org/package=qqman/): pour la génétique d'association;
 + [rrBLUP](https://cran.r-project.org/package=rrBLUP/), [BGLR](https://cran.r-project.org/package=BGLR/): pour la prédiction génomique.
 + [cvTools](https://cran.r-project.org/package=cvTools): pour la validation croisée
 + [gtools](https://cran.r-project.org/package=gtools): pour trier de manière alphanumérique
@@ -121,9 +120,9 @@ Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en c
 ## Lundi  
 Intervenant : Vincent Ségura
 
-* 9h - 12h: introduction à la modélisation statistique via la simulation en prenant la régression linéaire simple comme exemple, par T. Flutre (document "premiers-pas.pdf")
+* 9h - 12h: introduction à la modélisation statistique via la simulation en prenant la régression linéaire simple comme exemple, (document "premiers-pas.pdf")
 
-* 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique, par T. Flutre (document "prediction-genomique.pdf")
+* 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique,  (document "prediction-genomique.pdf")
   
 ## Mardi 
 Intervenants : Margaux Jullien - Charlotte Brault - Jacques David
@@ -150,7 +149,7 @@ Intervenants : Margaux Jullien - Charlotte Brault - Jacques David
 
 * 11h40 - 12h: procédure d'inscription comparant les génotypes proposés des équipes avec les témoins
 
-* 13h30 - 15h: discussion sur les différentes stratégies suivies
+* 14h00 - 16h00: discussion sur les différentes stratégies suivies ; compléments d'analyses
 
 
 ## Vendredi  
