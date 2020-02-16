@@ -3170,7 +3170,7 @@ y_i = g_i + \epsilon_i
 </article></slide><slide class=""><hgroup><h2>Décomposition de la valeur génotypique</h2></hgroup><article  id="décomposition-de-la-valeur-génotypique">
 
 <ul>
-<li><p>La valeur génotypique peut également se décomposer en <strong>composantes additive</strong>, <strong>de dominance</strong> et <strong>d’épistasie</strong>: \(g_i = a_i + d_i + \zeta_i\)</p></li>
+<li><p>La valeur génotypique peut également se décomposer en <strong>composantes additive</strong>, <strong>de dominance</strong> et <strong>d’épistasie</strong> : \(g_i = a_i + d_i + \zeta_i\)</p></li>
 <li><p>La <strong>valeur génotypique additive</strong> (<em>breeding value</em>, \(a_i\)) est particulièrement importante car elle correspond à la part de la valeur génotypique qui est héritable, c’est-à-dire transmissible à la descendance</p></li>
 <li><p>On suppose généralement aussi que les composantes de la valeur génotypique ne sont pas corrélées, et donc \(\sigma_g^2 = \sigma_a^2 + \sigma_d^2 + \sigma_\zeta^2\)</p></li>
 <li><p>Ceci amène à définir l’<strong>héritabilité au sens strict</strong> : \(h^2 = \frac{\sigma_a^2}{\sigma_g^2 + \sigma_\epsilon^2}\)</p></li>
@@ -3193,7 +3193,7 @@ y_i = g_i + \epsilon_i
 <li>Si l’on ne considère que les contributions additives, alors \(G = \sigma_a^2 A\)
 
 <div style="position: relative">
-<p>où \(\sigma_a^2\) est estimé et \(A\) est la matrice des relations génétique additives (<strong>matrice d’apparentement</strong>, <em>kinship</em>) calculée à partir de l’arbre généalogique (pédigrée) des individus</p></div></li>
+<p>où \(\sigma_a^2\) est estimé et \(A\) est la <strong>matrice d’apparentement</strong> (<em>kinship</em>) calculée à partir du pédigrée</p></div></li>
 <li>La matrice \(R\) est généralement diagonale, telle que \(R = \sigma_\epsilon^2 I\)
 
 <div style="position: relative">
@@ -3220,10 +3220,10 @@ y_i = g_i + \epsilon_i
 <ul>
 <li><p>La généalogie permet de calculer la matrice d’apparentement <strong>attendue</strong> qui peut diffèrer de la matrice d’apparentement <strong>réalisée</strong></p></li>
 <li><p>De plus, la généalogie seule ne permet pas d’identifier quelles régions du génome ont une variation génétique plus ou moins associée à la variation phénotypique, les fameux <strong>quantitative trait locus</strong> (QTL)</p></li>
-<li>Si on dispose d’information génomique pour l’individu \(i\), par exemple ses génotypes \(\{\boldsymbol{x}_i\}\) à un ensemble de \(P\) marqueurs, le modèle précédent devient: \(y_i = g(\boldsymbol{x}_i) + \epsilon_i\)
+<li>Si on dispose d’information génomique pour l’individu \(i\), par exemple ses génotypes \(\{\boldsymbol{x}_i\}\) à un ensemble de \(P\) marqueurs, le modèle précédent devient : \(y_i = g(\boldsymbol{x}_i) + \epsilon_i\)
 
 <div style="position: relative">
-<p>où la fonction \(g\) correspond à l’<strong>architecture génétique</strong> du caractère d’intérêt, détaillée ci-après</p></div></li>
+<p>où \(g\) correspond à l’<strong>architecture génétique</strong> du caractère (détaillée ci-après)</p></div></li>
 <li><p>On peut donc utiliser les marqueurs pour estimer la matrice d’apparentement plus précisément</p></li>
 </ul>
 
@@ -3272,10 +3272,10 @@ y_i = g_i + \epsilon_i
 
 <ul>
 <li><p><strong>Architecture génétique</strong> (d’un caractère) : fonction mathématique modélisant la relation entre les génotypes des individus de la population et leurs phénotypes (<em>genotype-phenotype map</em>)</p></li>
-<li><p>On se limite au cas simple d’architectures génétiques additives et on considére principalement deux cas extrêmes :</p>
+<li><p>On se limite à une <strong>architecture génétique additive</strong> et à deux cas extrêmes :</p>
 
 <ol>
-<li><p><strong>Caractère monogénique</strong> déterminé un seul SNP a un effet non-nul, par exemple un SNP non-synonyme dans le seul gène causal</p></li>
+<li><p><strong>Caractère monogénique</strong> déterminé par un seul SNP a un effet non-nul, par exemple un SNP non-synonyme dans le seul gène causal</p></li>
 <li><p><strong>Caractère polygénique</strong> déterminé par un très grand nombre de SNPs ayant chacun un effet non-nul</p></li>
 </ol></li>
 </ul>
@@ -3311,7 +3311,7 @@ Var(\boldsymbol{y}) = Var(\boldsymbol{\epsilon}) = \sigma^2 I
 \]
 
 <div style="position: relative; top: 20px">
-<p>où \((\sigma_u^2, \sigma^2)\) sont appelés les <strong>composants de la variance</strong> (<em>variance components</em>).</p></div></li>
+<p>où \((\sigma_u^2, \sigma^2)\) sont les <strong>composantes de la variance</strong></p></div></li>
 <li>En supposant \(Cov(\boldsymbol{u}, \boldsymbol{\epsilon}) = 0\), on obtient : \[
 \begin{align}
 Var(\boldsymbol{y}) = Var(\boldsymbol{u}) + Var(\boldsymbol{\epsilon}) = \sigma_u^2 K + \sigma^2 I
@@ -3352,8 +3352,8 @@ Var(\boldsymbol{y}) = Var(\boldsymbol{u}) + Var(\boldsymbol{\epsilon}) = \sigma_
 
 <div style="position: relative; top: -20px">
 <ul>
-<li><p>Comme il y a vraiment beaucoup de SNPs (\(P &gt;&gt; N\)), l’hypothèse habituelle est que leurs allèles ont tous des effets très faibles, donc chercher à les estimer individuellement n’est pas une stratégie pertinente</p></li>
-<li><p>Il vaut mieux tenter d’estimer leur effet global, par exemple en supposant qu’ils s’additionnent tous: \(\forall i,\; \sum_{p=1}^P x_{ip} \beta_p = \boldsymbol{x}_i^T \boldsymbol{\beta}\)</p></li>
+<li><p>Comme il y a vraiment beaucoup de SNPs (\(P &gt;&gt; N\)), l’hypothèse habituelle est que leurs allèles ont tous des effets très faibles</p></li>
+<li><p>Il vaut mieux tenter d’estimer leur effet global plutôt que leurs effets individuels, par exemple en supposant qu’ils s’additionnent tous : \(\forall i,\; \sum_{p=1}^P x_{ip} \beta_p = \boldsymbol{x}_i^T \boldsymbol{\beta}\)</p></li>
 <li><p>On parle alors d’architecture génétique <strong>additive infinitésimale</strong></p></li>
 <li><p>De plus, sans connaissance plus précise a priori, il est habituel de supposer que les effets alléliques sont tous indépendants les uns des autres</p></li>
 <li>Alors, le modèle mixte s’écrit \(\boldsymbol{y} = \boldsymbol{1} \mu + X \boldsymbol{\beta} + \boldsymbol{\epsilon}\),</li>
@@ -3397,12 +3397,16 @@ Var(M \boldsymbol{\theta}) = M \, Var(\boldsymbol{\theta}) \, M^T
 <ul>
 <li><p>En effet, considérons les génotypes dans \(X\) comme des variables aléatoires et suivons <a href='http://dx.doi.org/10.1534/genetics.107.081190' title=''>Habier <em>et al.</em> (2007)</a> pour calculer l’espérance du produit des génotypes aux marqueurs pour les individus \(i\) et \(j\): \[
 \begin{align}
-\mathbb{E}[\boldsymbol{x}_i^T \, \boldsymbol{x}_j] &amp;= \sum_{p=1}^P \mathbb{E}[X_{ip} \, X_{jp}] \\
- &amp;= \sum_{p=1}^P \left( \text{Cov}[X_{ip}, \, X_{jp}] + \mathbb{E}[X_{ip}] \mathbb{E}[X_{jp}] \right)
+\mathbb{E}[\boldsymbol{x}_i^T \, \boldsymbol{x}_j] &amp;= \sum_{p=1}^P \mathbb{E}[X_{ip} \, X_{jp}] = \sum_{p=1}^P \left( \text{Cov}[X_{ip}, \, X_{jp}] + \mathbb{E}[X_{ip}] \mathbb{E}[X_{jp}] \right)
 \end{align}
 \]</p></li>
-<li><p>Remarquez que \(\text{Cov}[X_{ip}, \, X_{jp}] = A_{ij} \times 2 \, f_p \, (1 - f_p)\), où \(A_{ij}\) est la relation génétique additive entre les individus \(i\) et \(j\), égale à deux fois leur coefficient de simple apparentement (aussi souvent noté \(\phi_A\)), et où les \(f_p\)’s sont les fréquences alléliques des \(P\) SNPs.</p></li>
-<li><p>Par ailleurs, \(\mathbb{E}[X_{ip}] = 2 \, f_p\).</p></li>
+<li>\(\text{Cov}[X_{ip}, \, X_{jp}] = A_{ij} \times 2 \, f_p \, (1 - f_p)\), où :
+
+<ul>
+<li>\(A_{ij}\) est la relation génétique additive entre les individus \(i\) et \(j\), égale à deux fois leur coefficient de simple apparentement (\(\phi_A\)),</li>
+<li>\(f_p\) sont les fréquences alléliques des \(P\) SNPs</li>
+</ul></li>
+<li><p>Par ailleurs, \(\mathbb{E}[X_{ip}] = 2 \, f_p\)</p></li>
 </ul>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article >
@@ -3410,13 +3414,13 @@ Var(M \boldsymbol{\theta}) = M \, Var(\boldsymbol{\theta}) \, M^T
 <div style="position: relative; top: -40px">
 <ul>
 <li><p>Il s’avère donc que l’espérance \(\mathbb{E}[X X^T]\) est égale à \(A_{\text{ped}} \times 2 \sum_p f_p (1 - f_p)\) à une constante près</p></li>
-<li><p>Un estimateur de l’apparentement génétique additif deux-à-deux à partir des génotypes aux SNPs est donc \[
+<li><p>Un estimateur de l’apparentement génétique additif deux-à-deux à partir des génotypes aux SNPs est donc : \[
 \begin{align}
 A_{\text{mark}} = \frac{X X^T}{2 \sum_p f_p (1 - f_p)}
 \label{eqn:Amark}
 \end{align}
 \]</p></li>
-<li><p>Un autre estimateur, celui de <a href='http://dx.doi.org/10.3168/jds.2007-0980' title=''>VanRaden (2008)</a>, centre d’abord la matrice \(X\) avec les fréquences alléliques, de telle sorte que \(A_{\text{mark}}\), sous Hardy-Weinberg, est centrée le long de sa diagonale sur \(1\) et hors de sa diagonale sur \(0\) \[
+<li><p>Un autre estimateur, celui de <a href='http://dx.doi.org/10.3168/jds.2007-0980' title=''>VanRaden (2008)</a>, centre d’abord la matrice \(X\) avec les fréquences alléliques, de telle sorte que \(A_{\text{mark}}\), sous Hardy-Weinberg, est centrée le long de sa diagonale sur \(1\) et hors de sa diagonale sur \(0\) : \[
 \begin{align}
 A_{\text{mark},VR} = \frac{X_\text{centered} \; X_\text{centered}^T}{2 \sum_p f_p (1 - f_p)}
 \end{align}
@@ -3626,7 +3630,7 @@ sigma.g2 &lt;- sigma.a2
 
 <ul>
 <li><p>Notez qu’on aurait aussi pu directement simuler les valeurs génotypiques additives via \(\boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 A_{\text{mark}})\)</p></li>
-<li><p>Sous R, en utilisant la fonction <code>mvrnorm</code> du package <a href='https://cran.r-project.org/web/packages/MASS/' title=''>MASS</a>, cela aurait donné:</p></li>
+<li><p>Sous R, en utilisant la fonction <code>mvrnorm</code> du package <a href='https://cran.r-project.org/web/packages/MASS/' title=''>MASS</a> :</p></li>
 </ul>
 
 <pre class = 'prettyprint lang-r'>if(requireNamespace(&quot;MASS&quot;, quietly=TRUE)){
@@ -3670,18 +3674,6 @@ hist(y.poly, breaks=&quot;FD&quot;, las=1, col=&quot;grey&quot;, border=&quot;wh
 <!-- ``` -->
 
 </article></slide><slide class=""><hgroup><h2>SNP à SNP (&ldquo;GWAS&rdquo;)</h2></hgroup><article  id="snp-à-snp-gwas">
-
-<!-- Sur le plan informatique, nous allons tester seulement un sous-ensemble des $P =$ 5000 SNPs pour aller plus vite. -->
-
-<!-- Echantillonnons donc uniformément un sous-ensemble de SNPs à tester (mais incluant le causal): -->
-
-<!-- ```{r select_subset_snps} -->
-
-<!-- nb.subset.snps <- 20 -->
-
-<!-- subset.snps <- unique(sort(c(snp.qtl, sample(snps.id, nb.subset.snps)))) -->
-
-<!-- ``` -->
 
 <ul>
 <li><p>On utilise le package <a href='https://cran.r-project.org/package=MM4LMM' title=''>MM4LMM</a> qui implémente un algorithme MM pour ajuster le modèle par ML ou ReML</p></li>
@@ -3762,7 +3754,7 @@ points(x=idx, y=-log10(res.poly.gwas[idx]), col=&quot;red&quot;, pch=19)</pre>
 
 <ul>
 <li><p>Le modèle d’inférence SNP à SNP parvient bien à détecter le <strong>SNP causal</strong> dans le cas du <strong>caractère monogénique</strong></p></li>
-<li><p>C’est beaucoup moins clair dans le cas du <strong>caractère polygénique</strong> : aucun SNP ne ressort vraiment et celui avec le plus grand \(\beta\) n’a pas le plus grand \(\hat{\beta}\).</p></li>
+<li><p>C’est beaucoup moins clair dans le cas du <strong>caractère polygénique</strong> : aucun SNP ne ressort vraiment et celui avec le plus grand \(\beta\) n’a pas le plus grand \(\hat{\beta}\)…</p></li>
 </ul>
 
 </article></slide><slide class=""><hgroup><h2>Composantes de la variances et coefficients</h2></hgroup><article  id="composantes-de-la-variances-et-coefficients">
@@ -3848,7 +3840,7 @@ abline(v=0, lty=2); abline(h=0, lty=2); abline(a=0, b=1, lty=2)</pre>
 
 <ul>
 <li><p>Il est important de réaliser que les estimations des effets alléliques ont le risque d’être sur-ajustées aux individus particuliers pour lesquels on dispose de génotypes et phénotypes</p></li>
-<li><p>Un sur-ajustement a pour conséquence de mal généraliser les estimations du jeu d’entraînement pour effectuer des prédictions sur différents jeux de test</p></li>
+<li><p>Un <strong>sur-ajustement</strong> a pour conséquence de mal généraliser les estimations du jeu d’entraînement pour effectuer des prédictions sur différents jeux de test</p></li>
 <li><p>Pour éviter cela, il est courant d’estimer les paramètres du modèle par <strong>validation croisée</strong></p></li>
 </ul>
 
@@ -3866,7 +3858,7 @@ abline(v=0, lty=2); abline(h=0, lty=2); abline(a=0, b=1, lty=2)</pre>
 <li>La validation croisée peut-être aussi utilisée pour :
 
 <ul>
-<li><strong>Sélectionner</strong> le meilleur modèle sur le jeu d’entraînement (modèle monogénique versus modèle additif infinitésimal versus … voir ci-après)</li>
+<li><strong>Sélectionner</strong> le meilleur modèle sur le jeu d’entraînement (modèle monogénique <em>vs.</em> polygénique <em>vs.</em> … voir ci-après)</li>
 <li>Estimer une <strong>précision</strong> de prédiction</li>
 </ul></li>
 <li><p>Chaque individu est en fait prédit une fois (lorsqu’il ne se trouve pas dans le set d’apprentissage), on peut donc calculer à partir des phénotypes observés et prédits une <strong>erreur quadratique moyenne de validation-croisée</strong></p></li>
@@ -3938,8 +3930,8 @@ predict.rr &lt;- function(object, newZ){
 
 <ul>
 <li><p>Afin de capturer la contribution des effets génétiques non-additifs, certains ont proposé d’utiliser le modèle \(\boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{a} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 \, A_{\text{mark}})\)<br> avec \(A_{\text{mark}}\) calculée via un noyau défini dans un <strong>espace de Hilbert à noyau reproduisant</strong> (<em>Reproducing Kernel Hilbert Space</em>, RKHS)</p></li>
-<li><p>Ce terme compliqué peut en fait simplement correspondre un noyau gaussien tel que \(A_{ij} = \exp{\left( - (D_{ij} \, / \, \theta)^2 \right)}\) où \(D_{ij}\) est la distance euclidienne entre \(\boldsymbol{x}_i\) et \(\boldsymbol{x}_j\) normalisée dans l’intervalle \([0,1]\) et \(\theta\) est un paramètre d’échelle (qui doit être estimé par validation croisée).</p></li>
-<li><p>Le package <a href='https://cran.r-project.org/web/packages/rrBLUP/index.html' title=''>rrBLUP</a> permet d’utiliser ce noyau.</p></li>
+<li><p>Ce terme compliqué peut en fait simplement correspondre un noyau gaussien tel que \(A_{ij} = \exp{\left( - (D_{ij} \, / \, \theta)^2 \right)}\) où \(D_{ij}\) est la distance euclidienne entre \(\boldsymbol{x}_i\) et \(\boldsymbol{x}_j\) normalisée dans l’intervalle \([0,1]\) et \(\theta\) est un paramètre d’échelle (qui doit être estimé par validation croisée)</p></li>
+<li><p>Le package <a href='https://cran.r-project.org/web/packages/rrBLUP/index.html' title=''>rrBLUP</a> permet d’utiliser ce noyau</p></li>
 </ul>
 
 </article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>Perspectives</h2></hgroup><article  id="perspectives">
@@ -3956,8 +3948,11 @@ predict.rr &lt;- function(object, newZ){
 </ul></li>
 </ul>
 
-<div class="centered" style="font-size:40px; position: relative; top: 20px">
-<p><strong>C’est à vous de jouer !</strong></p></div>
+<!-- <div class="centered" style="font-size:40px; position: relative; top: 20px"> -->
+
+<!-- **C'est à vous de jouer !** -->
+
+<!-- </div> -->
 
 </article></slide><slide class=""><hgroup><h2>Analyser de vrais jeux de données disponibles</h2></hgroup><article  id="analyser-de-vrais-jeux-de-données-disponibles">
 
@@ -4017,7 +4012,7 @@ predict.rr &lt;- function(object, newZ){
 <div style="position: relative; top: -50px">
 <pre class = 'prettyprint lang-r'>print(sessionInfo(), locale=FALSE)</pre>
 
-<pre >## R version 3.6.1 (2019-07-05)
+<pre >## R version 3.6.2 (2019-12-12)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
 ## Running under: Ubuntu 19.10
 ## 
@@ -4032,11 +4027,11 @@ predict.rr &lt;- function(object, newZ){
 ## [1] rrBLUP_4.6.1 MM4LMM_2.0.1
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.3      lattice_0.20-38 digest_0.6.23   MASS_7.3-51.4  
-##  [5] grid_3.6.1      magrittr_1.5    evaluate_0.14   rlang_0.4.4    
-##  [9] stringi_1.4.5   Matrix_1.2-17   rmarkdown_2.1   tools_3.6.1    
-## [13] stringr_1.4.0   xfun_0.12       yaml_2.2.1      parallel_3.6.1 
-## [17] compiler_3.6.1  htmltools_0.4.0 knitr_1.27</pre></div></article></slide>
+##  [1] Rcpp_1.0.3      lattice_0.20-38 digest_0.6.24   MASS_7.3-51.5  
+##  [5] grid_3.6.2      magrittr_1.5    evaluate_0.14   rlang_0.4.4    
+##  [9] stringi_1.4.5   Matrix_1.2-18   rmarkdown_2.1   tools_3.6.2    
+## [13] stringr_1.4.0   xfun_0.12       yaml_2.2.1      parallel_3.6.2 
+## [17] compiler_3.6.2  htmltools_0.4.0 knitr_1.28</pre></div></article></slide>
 
 
   <slide class="backdrop"></slide>

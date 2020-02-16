@@ -1,6 +1,6 @@
 ---
 title: "Atelier prédiction génomique : <br> premiers pas"
-author: "Vincent Segura (INRAE) <br><br> d'après ['premiers-pas.Rmd'](https://github.com/timflutre/atelier-prediction-genomique/blob/master/prediction-genomique.Rmd) de Timothée Flutre (INRAE) <br>"
+author: "Vincent Segura (INRAE) <br><br> d'après ['premiers-pas.Rmd'](https://github.com/timflutre/atelier-prediction-genomique/raw/master/premiers-pas.Rmd) de Timothée Flutre (INRAE) <br>"
 date: "Lundi 17 février 2020"
 output:
   ioslides_presentation:
@@ -19,7 +19,7 @@ options(digits=3)
 
 - Cette présentation a été générée à partir d'un fichier texte au format Rmd utilisé par le logiciel libre [R](http://www.r-project.org/)
 
-- La fonction **render** du package [rmarkdown](https://cran.r-project.org/web/packages/rmarkdown/index.html) permet de générer le fichier html à partir du fichier Rmd
+- La fonction `render` du package [rmarkdown](https://cran.r-project.org/web/packages/rmarkdown/index.html) permet de générer le fichier html à partir du fichier Rmd
 
 ```{r rmarkdown, eval=FALSE}
 library(rmarkdown)
@@ -38,23 +38,6 @@ render("premiers-pas-slides.Rmd")
 library(MASS)
 library(stats4)
 ```
-
-<!-- ## A propos de modélisation statistique {.build} -->
-
-<!-- <div> -->
-<!-- - “Essentially, all models are wrong, but some are useful.” (Box, 1987) -->
-<!-- </div> -->
-
-<!-- <div> -->
-<!-- - Validité du modèle : vérifier que les données à analyser correspondent bien à la question à laquelle on veut répondre ([Gelman & Hill, 2006](http://www.worldcat.org/isbn/0521867061)) -->
-<!-- </div> -->
-
-<!-- <div> -->
-<!-- - Distinguer le "monde réel" (données) du "monde théorique" (modèles) : <br> -->
-<!-- "When we use a statistical model to make a statistical inference, we implicitly assert that the variation exhibited by data is captured reasonably well by the statistical model, so that the theoretical world corresponds reasonably well to the real world." ([Kass, 2011](http://dx.doi.org/10.1214/10-sts337)) -->
-
-<!-- - Ne pas confondre les données avec des variables aléatoires, même si on fait souvent le raccourci -->
-<!-- </div> -->
 
 ## Notation et vocabulaire {.build}
 
@@ -129,7 +112,7 @@ $y_1$ = `r y[1]`, $y_2$ = `r y[2]`, $y_3$ = `r y[3]`
 
 - Cette distribution de probabilité est caractérisée par deux paramètres, sa **moyenne** que l'on note généralement $\mu$, et sa **variance** que l'on note généralement $\sigma^2$ ($\sigma$ étant l'écart-type)
 
-- En terme de notation, on écrit $Y \sim \mathcal{N}(\mu, \sigma^2)$, et la densité de probabilité de la réalisation $y$ de $Y$ s'écrit:
+- En terme de notation, on écrit $Y \sim \mathcal{N}(\mu, \sigma^2)$, et la densité de probabilité de la réalisation $y$ de $Y$ s'écrit :
 $$
 \begin{align}
 Y \sim \mathcal{N}(\mu, \sigma^2) \; \; \Leftrightarrow \; \; p(Y=y \, | \, \mu, \sigma) = \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y - \mu)^2}{2 \sigma^2} \right)
@@ -173,7 +156,7 @@ legend("topright", legend=c(expression(sigma==1), expression(sigma==3)),
 ----
 
 <div style="position: relative; top: -10px">
-- Revenons à nos trois mesures: `r y`
+- Revenons à nos trois mesures : `r y`
 </div>
 
 <div style="position: relative; top: -20px">
@@ -228,14 +211,14 @@ text(x=-1.6, y=dnorm(x=y[1], mean=5, sd=1), col="red", pos=3,
 
 ----
 
-- Comme on dispose de plusieurs observations, $\{y_1,y_2,y_3\}$, et qu'on suppose qu'elles sont toutes des réalisations de la même variable aléatoire, $Y$, il est pertinent de calculer la vraisemblance de toutes ces observations conjointement plutôt que séparément:
+- Comme on dispose de plusieurs observations, $\{y_1,y_2,y_3\}$, et qu'on suppose qu'elles sont toutes des réalisations de la même variable aléatoire, $Y$, il est pertinent de calculer la vraisemblance de toutes ces observations conjointement plutôt que séparément :
 $$
 \begin{align}
 \mathcal{L}(\mu, \sigma) = p(y_1,y_2,y_3 \, | \, \mu, \sigma)
 \end{align}
 $$
 
-- Si l'on fait aussi l'hypothèse que ces observations sont indépendantes, cela se simplifie en:
+- Si l'on fait aussi l'hypothèse que ces observations sont indépendantes, cela se simplifie en :
 $$
 \begin{align}
 \mathcal{L}(\mu, \sigma) &= p(y_1 \, | \, \mu, \sigma) \times p(y_2 \, | \, \mu, \sigma) \times p(y_3 \, | \, \mu, \sigma) \\
@@ -245,7 +228,7 @@ $$
 
 ----
 
-- Il n'est pas très pratique de maximiser la vraisemblance directement, on préfère passer au log (qui est monotone, donc le maximum de l'un est aussi le maximum de l'autre):
+- Il n'est pas très pratique de maximiser la vraisemblance directement, on préfère passer au log (qui est monotone, donc le maximum de l'un est aussi le maximum de l'autre) :
 $$
 \begin{align}
 l(\mu,\sigma) &= \log \mathcal{L}(\mu, \sigma) \\
@@ -287,50 +270,50 @@ sum(dnorm(x=y, mean=2, sd=1, log=TRUE))
 ## Notations
 
 <div style="position: relative; top: -20px">
-- $n$: nombre d'individus (diploïdes, supposés non-apparentés)
+- $n$ : nombre d'individus (diploïdes, supposés non-apparentés)
 </div>
 
 <div style="position: relative; top: -25px">
-- $i$: indice indiquant le $i$-ème individu, $i \in \{1,\ldots,n\}$
+- $i$ : indice indiquant le $i$-ème individu, $i \in \{1,\ldots,n\}$
 </div>
 
 <div style="position: relative; top: -30px">
-- $y_i$: phénotype de l'individu $i$ pour la caractère d'intérêt
+- $y_i$ : phénotype de l'individu $i$ pour la caractère d'intérêt
 </div>
 
 <div style="position: relative; top: -35px">
-- $\mu$: moyenne globale du phénotype des $n$ individus
+- $\mu$ : moyenne globale du phénotype des $n$ individus
 </div>
 
 <div style="position: relative; top: -40px">
-- $f$: fréquence de l'allèle minoritaire au marqueur SNP d'intérêt
+- $f$ : fréquence de l'allèle minoritaire au marqueur SNP d'intérêt
 </div>
 
 <div style="position: relative; top: -45px">
-- $x_i$: génotype de l'individu $i$ à ce SNP, codé comme le nombre de copie(s) de l'allèle minoritaire, $\forall i \; x_i \in \{0,1,2\}$
+- $x_i$ : génotype de l'individu $i$ à ce SNP, codé comme le nombre de copie(s) de l'allèle minoritaire, $\forall i \; x_i \in \{0,1,2\}$
 </div>
 
 <div style="position: relative; top: -50px">
-- $\beta$: effet additif de chaque copie de l'allèle minoritaire en unité du phénotype
+- $\beta$ : effet additif de chaque copie de l'allèle minoritaire en unité du phénotype
 </div>
 
 <div style="position: relative; top: -55px">
-- $\epsilon_i$: erreur pour l'individu $i$
+- $\epsilon_i$ : erreur pour l'individu $i$
 </div>
 
 <div style="position: relative; top: -60px">
-- $\sigma^2$: variance des erreurs
+- $\sigma^2$ : variance des erreurs
 </div>
 
 ## Notations (suite)
 
-- Données: $\mathcal{D} = \{ (y_1 \, | \, x_1), \ldots, (y_n \, | \, x_n) \}$
+- Données : $\mathcal{D} = \{ (y_1 \, | \, x_1), \ldots, (y_n \, | \, x_n) \}$
 
-- Paramètres: $\Theta = \{ \mu, \beta, \sigma \}$
+- Paramètres : $\Theta = \{ \mu, \beta, \sigma \}$
 
 ## Vraisemblance
 
-- On suppose que le génotype au SNP d'intérêt a un effet additif sur la moyenne du phénotype, ce qui s'écrit généralement:
+- On suppose que le génotype au SNP d'intérêt a un effet additif sur la moyenne du phénotype, ce qui s'écrit généralement :
 $$
 \begin{align}
 \forall i \; \; y_i = \mu + \beta x_i + \epsilon_i \text{ avec } \epsilon_i \overset{\text{i.i.d}}{\sim} \mathcal{N}(0, \sigma^2)
@@ -343,17 +326,6 @@ $$
 \forall i \; \; y_i \, | \, x_i, \mu, \beta, \sigma \; \overset{\text{i.i.d}}{\sim} \mathcal{N}(\mu + \beta x_i, \sigma^2)
 \end{align}
 $$
-
-<!-- ## -->
-
-<!-- On peut écrire la vraisemblance sous forme plus explicite comme une fonction des paramètres $\Theta = \{ \mu, \beta, \sigma \}$: -->
-<!-- $$ -->
-<!-- \begin{align} -->
-<!-- \mathcal{L}(\Theta \, | \, \mathcal{D} ) &= p(\boldsymbol{y} \, | \, \boldsymbol{x}, \Theta) \\ -->
-<!-- &= \prod_{i=1}^n p(y_i \, | \, x_i, \mu, \beta, \sigma) \\ -->
-<!-- &= \prod_{i=1}^n \frac{1}{\sigma \sqrt{2 \pi}} \exp \left( - \frac{(y_i - (\mu + \beta x_i))^2}{2 \sigma^2} \right) -->
-<!-- \end{align} -->
-<!-- $$ -->
 
 # Simuler des données
 
@@ -466,37 +438,9 @@ boxplot(phenotypes ~ genotypes,
 axis(side = 1, at = 0:2, labels = c("0 (AA)", "1 (Aa)", "2 (aa)"))
 ```
 
-<!-- ## Dérivation mathématique -->
-
-<!-- - On travaille avec la log vraisemblance et on utilise les [règles d'analyse](https://en.wikipedia.org/wiki/Differentiation_rules) : -->
-
-<!--     * $\frac{\partial l}{\partial \beta}(\hat{\beta}) = 0 \; \Leftrightarrow \; \hat{\beta} = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}$ -->
-
-<!--     * $\frac{\partial l}{\partial \mu}(\hat{\mu}) = 0 \; \Leftrightarrow \; \hat{\mu} = \bar{y} - \hat{\beta} \bar{x}$ -->
-
-<!--     * $\frac{\partial l}{\partial \sigma}(\hat{\sigma}) = 0 \; \Leftrightarrow \; \hat{\sigma} = \frac{1}{n} \sum_i (y_i - (\hat{\mu} + \hat{\beta} x_i))^2$ -->
-
-<!-- <div style="position:relative; right:-55px"> -->
-<!-- avec $\bar{x} = \frac{1}{n} \sum_i x_i$ et $\bar{y} = \frac{1}{n} \sum_i y_i$. -->
-<!-- </div> -->
-
-<!-- ## Evaluation de la qualité du modèle -->
-
-<!-- - Dans le cas de la régression linéaire simple on peu utiliser le coefficient de détermination ($R^2$), interprété comme la proportion de la variance phénotypique expliquée par les prédicteurs : -->
-<!-- $$ -->
-<!-- \begin{align} -->
-<!-- R^2 = \frac{Var(\hat{\mu} + \hat{\beta} \boldsymbol{x})}{Var(\boldsymbol{y})} = \frac{\hat{\beta}^2 \; Var(\boldsymbol{x})}{\hat{\beta}^2 \; Var(\boldsymbol{x}) + \hat{\sigma}^2} \\ -->
-<!-- \end{align} -->
-<!-- $$ -->
-<!-- $$ -->
-<!-- \begin{align} -->
-<!--  \Leftrightarrow \; \; R^2 = \frac{\sum_i ((\hat{\mu} + \hat{\beta} x_i) - \bar{y})^2}{\sum_i (y_i - \bar{y})^2} -->
-<!-- \end{align} -->
-<!-- $$ -->
-
 ## Implémentation (facile)
 
-- Sous R, la fonction **lm** implémente l'estimation par maximum de vraisemblance :
+- Sous R, la fonction `lm` implémente l'estimation par maximum de vraisemblance
 
 ```{r fit_lm}
 fit <- lm(y ~ x, data=dat)
@@ -564,10 +508,9 @@ negLogLik <- function(mu, beta, sigma){
 }
 ```
 
-- Puis demander à la fonction **mle** de la maximiser (en spécifiant que le paramètre $\sigma$ ne peut pas être négatif ou nul)
+- Puis demander à la fonction `mle` de la maximiser (en spécifiant que le paramètre $\sigma$ ne peut pas être négatif ou nul)
 
 ```{r fit_mle}
-library(stats4)
 fit2 <- mle(negLogLik, start=list(mu=mean(dat$y), beta=0, sigma=1),
             method="L-BFGS-B", nobs=nrow(dat),
             lower=c(-Inf,-Inf,10^(-6)),
@@ -594,11 +537,12 @@ summary(fit)$r.squared
 
 ----
 
-- On peut facilement vérifier que cette valeur renvoyée par la fonction **lm** correspond à la formule :
+- On peut facilement vérifier que cette valeur renvoyée par la fonction `lm` correspond à la formule :
+
 $$
 \begin{align}
 R^2 = \frac{\hat{\beta}^2 \; Var(\boldsymbol{x})}{\hat{\beta}^2 \; Var(\boldsymbol{x}) + \hat{\sigma}^2}
-\end{align}
+\end{align}`
 $$
 ```{r calc_adjust}
 (coefficients(fit)[2]^2 * var(dat$x)) /
@@ -613,7 +557,7 @@ $$
 beta
 ```
 
-- Après avoir ajusté le modèle avec la fonction **lm**, nous pouvons récupérer l'estimation de ce paramètre ($\hat{\beta}$)
+- Après avoir ajusté le modèle avec la fonction `lm`, nous pouvons récupérer l'estimation de ce paramètre ($\hat{\beta}$)
 
 ```{r estim_beta}
 (beta.hat <- coefficients(fit)[2])
@@ -648,7 +592,7 @@ errors <- y - y.hat
 (rmse.y <- sqrt(mean(errors^2)))
 ```
 
-- On peut aussi utiliser la fonction **predict**
+- On peut aussi utiliser la fonction `predict`
 
 ```{r rmse_y}
 errors <- phenotypes - predict(fit)
@@ -706,9 +650,9 @@ abline(a=0, b=1, lty=2)
 legend("topleft", legend="ligne identité", lty=2, bty="n")
 ```
 
-# Explorer les simulations possibles
+# Perspectives
 
-----
+## Explorer les simulations possibles
 
 - La simulation est un outil particulièrement utile pour explorer comment un modèle répond à des changements dans les données et les paramètres
 
@@ -716,11 +660,9 @@ legend("topleft", legend="ligne identité", lty=2, bty="n")
 
 - Idem, que se passe-t-il si, à $n$ et $\sigma$ fixés, on modifie $\beta$ ?
 
-<div class="centered" style="font-size:40px; position: relative; top: 20px">
-**C'est à vous de jouer !**
-</div>
-
-# Perspectives
+<!-- <div class="centered" style="font-size:40px; position: relative; top: 20px"> -->
+<!-- **C'est à vous de jouer !** -->
+<!-- </div> -->
 
 ## Ré-écrire le modèle
 
@@ -761,7 +703,7 @@ $$
 \end{align}
 $$
 
-## Simulations
+----
 
 - On fixe quelques valeurs
 
@@ -778,7 +720,7 @@ Sigma <- matrix(c(var.1, covar.12, covar.12, var.2), nrow=2, ncol=2)
 
 ----
 
-- On simule des vecteurs aléatoires avec la fonction **mvrnorm** du package *MASS*
+- On simule des vecteurs aléatoires avec la fonction `mvrnorm` du package [MASS](https://cran.r-project.org/web/packages/MASS/index.html)
 
 ```{r norm_bivar_simul}
 theta <- mvrnorm(n=100, mu=mu, Sigma=Sigma)
