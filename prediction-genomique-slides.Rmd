@@ -1,0 +1,884 @@
+---
+title: "Atelier prédiction génomique : <br> prédiction génomique"
+author: "Vincent Segura (INRAE) <br><br> d'après ['prediction-genomique.Rmd'](https://github.com/timflutre/atelier-prediction-genomique/blob/master/prediction-genomique.Rmd) de Timothée Flutre (INRAE) <br>"
+date: "Lundi 17 février 2020"
+output:
+  ioslides_presentation:
+    widescreen: yes
+    incremental: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(digits=3)
+```
+
+# Préambule
+
+## Packages
+
+- Cette présentation nécessite le chargement des packages [MM4LMM](https://cran.r-project.org/web/packages/MM4LMM/index.html) et [rrBLUP](https://cran.r-project.org/web/packages/rrBLUP/index.html) (à installer au préalable par exemple via la fonction `install.packages`)
+
+```{r MM4LMM rrBLUP}
+library(MM4LMM)
+library(rrBLUP)
+```
+
+# Introduction | Le modèle de la génétique quantitative
+
+## Le modèle de la génétique quantitative
+
+- Pour chaque individu $i$ parmi les $N$ que compte la population :
+$$
+\begin{align}
+y_i = g_i + \epsilon_i
+\end{align}
+$$
+<div style="position: relative">
+où:
+</div>
+
+    - $y_i$: valeur phénotypique de l'individu $i$ pour le caractère d'intérêt, considérée ici comme continu;
+
+    - $g_i$: **valeur génotypique** de l'individu $i$, en unité du phénotype, interprétée comme étant le phénotype moyen de l'individu s'il était cloné dans tous les environnements possibles;
+
+    - $\epsilon_i$: composante non-génétique pour l'individu $i$ ("déviation environnementale")
+
+## Décomposition de la variance
+
+- Si l'on suppose que les valeur génotypique et la composante non-génétique ne sont pas corrélées, alors :
+    
+    - la variance phénotypique est égale à $\sigma_p^2 = \sigma_g^2 + \sigma_\epsilon^2$
+
+    - l'**héritabilité au sens large** est définie par $H^2 = \frac{\sigma_g^2}{\sigma_g^2 + \sigma_\epsilon^2}$
+
+## Décomposition de la valeur génotypique
+
+- La valeur génotypique peut également se décomposer en **composantes additive**, **de dominance** et **d'épistasie** : $g_i = a_i + d_i + \zeta_i$
+
+- La **valeur génotypique additive** (*breeding value*, $a_i$) est particulièrement importante car elle correspond à la part de la valeur génotypique qui est héritable, c'est-à-dire transmissible à la descendance
+
+- On suppose généralement aussi que les composantes de la valeur génotypique ne sont pas corrélées, et donc $\sigma_g^2 = \sigma_a^2 + \sigma_d^2 + \sigma_\zeta^2$
+
+- Ceci amène à définir l'**héritabilité au sens strict** : $h^2 = \frac{\sigma_a^2}{\sigma_g^2 + \sigma_\epsilon^2}$
+
+## Ecriture matricielle du modèle
+
+$$
+\begin{align}
+\boldsymbol{y} = \boldsymbol{g} + \boldsymbol{\epsilon}
+\end{align}
+$$
+
+- $G$ : matrice de variance-covariance $N \times N$ des valeurs génotypiques
+<div style="position: relative">
+$R$ : matrice de variance-covariance $N \times N$ des composantes non-génétiques
+</div>
+
+- Sous certaines hypothèses (panmixie, etc), la matrice $G$ se décompose aussi en contributions additives, de dominance et d'épistasie
+
+- Si l'on ne considère que les contributions additives, alors $G = \sigma_a^2 A$
+<div style="position: relative">
+où $\sigma_a^2$ est estimé et $A$ est la **matrice d'apparentement** (*kinship*) calculée à partir du pédigrée
+</div>
+
+- La matrice $R$ est généralement diagonale, telle que $R = \sigma_\epsilon^2 I$
+<div style="position: relative">
+où $\sigma_\epsilon^2$ est estimé simultanément à $\sigma_a^2$, et $I$ est la matrice identité.
+</div>
+
+## Notion de BLUP
+
+- Si l'on suppose que $\boldsymbol{g} \sim \mathcal{N}_N(\boldsymbol{0}, G)$ et $\boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, R)$,
+
+- Alors $\hat{\boldsymbol{g}} = E[\boldsymbol{g} | \boldsymbol{y}] = G (G + R)^{-1} \boldsymbol{y}$
+<div style="position: relative; top: 20px">
+où:
+</div>
+
+    - $\hat{\boldsymbol{g}}$ est le **meilleur prédicteur linéaire sans biais** de $\boldsymbol{g}$ (*best linear unbiased predictor*, BLUP)
+
+    - $H = G (G + R)^{-1}$ est une généralisation matricielle de l'héritabilité
+
+## Matrice d'apparentement
+
+- La généalogie permet de calculer la matrice d'apparentement **attendue** qui peut diffèrer de la matrice d'apparentement **réalisée**
+
+- De plus, la généalogie seule ne permet pas d'identifier quelles régions du génome ont une variation génétique plus ou moins associée à la variation phénotypique, les fameux **quantitative trait locus** (QTL)
+
+- Si on dispose d'information génomique pour l'individu $i$, par exemple ses génotypes $\{\boldsymbol{x}_i\}$ à un ensemble de $P$ marqueurs, le modèle précédent devient : $y_i = g(\boldsymbol{x}_i) + \epsilon_i$
+<div style="position: relative">
+où $g$ correspond à l'**architecture génétique** du caractère (détaillée ci-après)
+</div>
+
+- On peut donc utiliser les marqueurs pour estimer la matrice d'apparentement plus précisément
+
+## Estimation de l'effet des allèles aux marqueurs
+
+- On peut aussi être intéressé par inclure les marqueurs explicitement dans le modèle comme variables explicatives pour estimer les effets de leurs allèles
+
+- Mais il est fréquent qu'il y ait beaucoup plus de marqueurs que d'individus: $P >> N$
+
+- Dans de tels cas, le modèle de **régression multiple** correspondant à l'extension de la **régression linéaire simple** présentée lors des "Premiers Pas" ne donne plus de bonnes estimations
+
+- La **vraisemblance** doit être **pénalisée** (on dit aussi **régularisée**), ce qui se traduit par un **rétrécissement des estimations des effets** (*shrinkage*)
+
+# Ecrire le modèle
+
+## Notations
+
+- $N$ : nombre d'individus (diploïdes, plus ou moins apparentés)
+
+- $i$ : indice indiquant le $i$-ème individu, donc $i \in \{1,\ldots,N\}$
+
+- $P$ : nombre de marqueurs génétiques de type SNP (*single nucleotide polymorphism*), tous supposés bi-alléliques
+
+- $p$ : indice indiquant le $p$-ème SNP, donc $p \in \{1,\ldots,P\}$
+
+- $y_i$ : phénotype de l'individu $i$ pour le caractère d'intérêt
+
+- $\mu$ : moyenne globale du phénotype des $N$ individus
+
+- $x_{i,p}$ : génotype de l'individu $i$ au SNP $p$, codé comme le nombre de copie(s) de l'allèle minoritaire à ce SNP chez cet individu ($\forall i,p, \; \; x_{i,p} \in \{0,1,2\}$)
+
+----
+
+<div style="position: relative; top: -20px">
+- $X$ : matrice à $N$ lignes et $P$ colonnes contenant les génotypes de tous les individus à tous les SNPs
+    * les génotypes de l'individu $i$ à tous les SNPs sont dans le vecteur $\boldsymbol{x}_i^T$
+    * les génotypes du SNP $p$ pour tous les individus sont dans le vecteur $\boldsymbol{x}_p$
+
+- $\beta_p$ : effet additif de chaque copie de l'allèle compté du SNP $p$, en unité du phénotype; tous ces effets sont réunis dans le vecteur $\boldsymbol{\beta}$
+
+- $a_i$ : valeur génotypique additive de l'individu $i$
+
+- $\sigma_a^2$ : variance génétique additive
+
+- $A$ : matrice $N \times N$ de variance-covariance des $a_i$, contenant les relations génétique additives entre les $N$ individus deux-à-deux
+
+- $\epsilon_i$ : erreur pour l'individu $i$
+
+- $\sigma^2$ : variance des erreurs
+</div>
+
+## Vraisemblances d'extrêmes d'architecture génétique additive
+
+- **Architecture génétique** (d'un caractère) : fonction mathématique modélisant la relation entre les génotypes des individus de la population et leurs phénotypes (*genotype-phenotype map*)
+
+- On se limite à une **architecture génétique additive** et à deux cas extrêmes :
+
+    1) **Caractère monogénique** déterminé par un seul SNP a un effet non-nul, par exemple un SNP non-synonyme dans le seul gène causal
+    
+    2) **Caractère polygénique** déterminé par un très grand nombre de SNPs ayant chacun un effet non-nul
+
+## Caractère monogénique
+
+- Si l'on teste chaque SNP un par un avec une régression linéaire simple, on devrait pouvoir identifier le SNP causal
+
+$$
+\begin{align}
+\forall p, \; \boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{x}_p \beta_p + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I)
+\end{align}
+$$
+
+- La matrice de variance-covariance phénotypique vaut
+$$
+\begin{align}
+Var(\boldsymbol{y}) = Var(\boldsymbol{\epsilon}) = \sigma^2 I
+\end{align}
+$$
+
+- Toutefois, il faut prendre en compte l'apparentement entre individus puisque des individus apparentés génétiquement ont plus de chance de partager des allèles aux locus causaux, et donc d'avoir des phénotypes similaires
+
+## Le modèle linéaire mixte
+
+- Cela peut se faire en incluant dans le modèle un **effet aléatoire** ($u_i$) pour l'individu $i$, avec $K$ comme matrice de variance-covariance
+$$
+\begin{align}
+\forall p, \; \boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{x}_p \beta_p + \boldsymbol{u} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{u} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_u^2 K)
+\end{align}
+$$
+<div style="position: relative; top: 20px">
+où $(\sigma_u^2, \sigma^2)$ sont les **composantes de la variance**
+</div>
+
+- En supposant $Cov(\boldsymbol{u}, \boldsymbol{\epsilon}) = 0$, on obtient :
+$$
+\begin{align}
+Var(\boldsymbol{y}) = Var(\boldsymbol{u}) + Var(\boldsymbol{\epsilon}) = \sigma_u^2 K + \sigma^2 I
+\end{align}
+$$
+- La matrice $K$ peut-être estimée à partir du pédigrée via par exemple la fonction `kinship` du package [kinship2](https://cran.r-project.org/web/packages/kinship2/) ou bien à partir des génotypes aux marqueurs
+
+<!-- ## Matrice d'apparentement génomique -->
+
+<!-- - Soit $X_0 = X - 1$ la matrice contenant les génotypes codés en $\{-1,0,1\}$ pour faciliter les calculs -->
+
+<!-- - Voici un exemple avec 3 individus et 4 SNPs -->
+<!-- ```{r ex_X_X0, echo=TRUE} -->
+<!-- (X <- matrix(c(0,0,2, 2,2,0, 2,0,1, 1,2,2), nrow=3, ncol=4, -->
+<!--              dimnames=list(paste0("ind", 1:3), paste0("snp", 1:4)))) -->
+<!-- ``` -->
+
+<!-- ---- -->
+
+<!-- - La matrice résultant du [produit matriciel](https://fr.wikipedia.org/wiki/Produit_matriciel) $X X^T$ est alors symmétrique, de dimension $N \times N$, et se calcule de la façon suivante sous R -->
+
+<!-- ```{r ex_X_tX, echo=TRUE} -->
+<!-- X %*% t(X) -->
+<!-- ``` -->
+
+<!-- - L'élément $(i,j)$ de la matrice $XX^T$ contient le nombre de locus homozygotes communs entre les individus $i$ et $j$, auquel a été soustrait le nombre de locus homozygotes opposés (ex. $i$ est \verb+AA+ alors que $j$ est \verb+TT+). -->
+<!-- Sur la diagonale, la matrice contient donc simplement le nombre de locus homozygotes pour chaque individu. -->
+
+## Caractère polygénique
+
+<div style="position: relative; top: -20px">
+- Comme il y a vraiment beaucoup de SNPs ($P >> N$), l'hypothèse habituelle est que leurs allèles ont tous des effets très faibles
+
+- Il vaut mieux tenter d'estimer leur effet global plutôt que leurs effets individuels, par exemple en supposant qu'ils s'additionnent tous : $\forall i,\; \sum_{p=1}^P x_{ip} \beta_p = \boldsymbol{x}_i^T \boldsymbol{\beta}$
+
+- On parle alors d'architecture génétique **additive infinitésimale**
+
+- De plus, sans connaissance plus précise a priori, il est habituel de supposer que les effets alléliques sont tous indépendants les uns des autres
+
+- Alors, le modèle mixte s'écrit $\boldsymbol{y} = \boldsymbol{1} \mu + X \boldsymbol{\beta} + \boldsymbol{\epsilon}$,
+</div>
+
+<div style="position: relative; top: -40px; right: -30px">
+avec $\boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{\beta} \sim \mathcal{N}_P(\boldsymbol{0}, \sigma_\beta^2 I)$
+</div>
+
+<div style="position: relative; top: -40px">
+- En modélisation statistique, ce modèle est connu sous le nom de **régression d’arête** (*ridge regression*)
+</div>
+
+## Régression 'ridge'
+
+- Dans la régression linéaire classique, maximiser la vraisemblance revient à minimiser la somme des carrés des erreurs ($\sum_i \epsilon_i ^2$)
+
+- Sous forme vectorielle, cette somme de carrés s'écrit comme une norme euclidienne au carré ($|| \boldsymbol{\epsilon} ||_2^2$), où la norme $|| \cdot ||_2$ est aussi appelée "norme $L^2$"
+
+- Dans le cas de la régression 'ridge', un terme de pénalité ($\lambda$) est ajouté à la vraisemblance, terme qui dépend aussi de la norme $L^2$ des effets pour la minimiser: $|| \boldsymbol{\epsilon} ||_2^2 + \lambda || \boldsymbol{\beta} ||_2^2$
+
+- C'est cette pénalité qui induit le rétrécissement des estimations des effets vers 0 (*shrinkage*)
+
+- Cela introduit du biais dans les estimations $\hat{\boldsymbol{\beta}}$ mais au bénéfice de réduire leur variance
+
+## De la regression 'ridge' au modèle de génétique quantitative
+
+- En supposant $Cov(X \boldsymbol{\beta}, \boldsymbol{\epsilon}) = 0$, on obtient:
+$$
+\begin{align}
+Var(\boldsymbol{y}) = \sigma_\beta^2 \, X X^T + \sigma^2 I
+\end{align}
+$$
+où nous avons utilisé la formule mathématique
+$$
+\begin{align}
+Var(M \boldsymbol{\theta}) = M \, Var(\boldsymbol{\theta}) \, M^T
+\end{align}
+$$
+
+- $X X^T$ permet de faire le lien entre l'apparentement attendu calculé à partir du pédigrée ($A_\text{ped}$) et l'apparentement réalisé estimé à partir des marqueurs ($A_\text{mark}$).
+
+----
+
+- En effet, considérons les génotypes dans $X$ comme des variables aléatoires et suivons [Habier *et al.* (2007)](http://dx.doi.org/10.1534/genetics.107.081190) pour calculer l'espérance du produit des génotypes aux marqueurs pour les individus $i$ et $j$:
+$$
+\begin{align}
+\mathbb{E}[\boldsymbol{x}_i^T \, \boldsymbol{x}_j] &= \sum_{p=1}^P \mathbb{E}[X_{ip} \, X_{jp}] = \sum_{p=1}^P \left( \text{Cov}[X_{ip}, \, X_{jp}] + \mathbb{E}[X_{ip}] \mathbb{E}[X_{jp}] \right)
+\end{align}
+$$
+
+- $\text{Cov}[X_{ip}, \, X_{jp}] = A_{ij} \times 2 \, f_p \, (1 - f_p)$, où :
+    * $A_{ij}$ est la relation génétique additive entre les individus $i$ et $j$, égale à deux fois leur coefficient de simple apparentement ($\phi_A$),
+    * $f_p$ sont les fréquences alléliques des $P$ SNPs
+
+- Par ailleurs, $\mathbb{E}[X_{ip}] = 2 \, f_p$
+
+----
+
+<div style="position: relative; top: -40px">
+- Il s'avère donc que l'espérance $\mathbb{E}[X X^T]$ est égale à $A_{\text{ped}} \times 2 \sum_p f_p (1 - f_p)$ à une constante près
+
+- Un estimateur de l'apparentement génétique additif deux-à-deux à partir des génotypes aux SNPs est donc :
+$$
+\begin{align}
+A_{\text{mark}} = \frac{X X^T}{2 \sum_p f_p (1 - f_p)}
+\label{eqn:Amark}
+\end{align}
+$$
+
+- Un autre estimateur, celui de [VanRaden (2008)](http://dx.doi.org/10.3168/jds.2007-0980), centre d'abord la matrice $X$ avec les fréquences alléliques, de telle sorte que $A_{\text{mark}}$, sous Hardy-Weinberg, est centrée le long de sa diagonale sur $1$ et hors de sa diagonale sur $0$ :
+$$
+\begin{align}
+A_{\text{mark},VR} = \frac{X_\text{centered} \; X_\text{centered}^T}{2 \sum_p f_p (1 - f_p)}
+\end{align}
+$$
+
+- Parmi plusieurs estimateurs d'apparentement, celui proposé par VanRaden est considéré comme un choix robuste ([Toro *et al.*, 2011](http://www.gsejournal.org/content/43/1/27))
+</div>
+
+----
+
+- Ainsi, le modèle de régression 'ridge' est équivalent au modèle suivant
+$$
+\begin{align}
+\boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{a} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 \, A_{\text{mark}})
+\end{align}
+$$
+
+- Cette équivalence permet d'utiliser le modèle de régression 'ridge' pour :
+
+    * estimer les effets alléliques, $\boldsymbol{\hat{\beta}}$, et leur variance, $\hat{\sigma}_\beta^2$
+
+    * prédire les valeurs génotypiques additives, $\boldsymbol{\hat{a}} = X \boldsymbol{\hat{\beta}}$
+
+    * estimer la composante génétique additive de la variance, $\hat{\sigma}_a^2 = \hat{\sigma}_\beta^2 \times 2 \sum_p f_p (1 - f_p)$
+
+    * estimer l'héritabilité au sens strict,<br> $\hat{h}^2 = \frac{\hat{\sigma}_a^2}{\hat{\sigma}_g^2 + \hat{\sigma}^2}$
+
+# Simuler des données
+
+## Initialisation
+
+- On fixe la graine du générateur de nombres pseudo-aléatoires pour la reproductibilité des simulations
+
+```{r seed}
+set.seed(1953) # année de publication de la découverte de la structure de l'ADN
+```
+
+## Génotypes
+
+Simulons des génotypes, en supposant qu'ils sont tous indépendants (c'est-à-dire sans déséquilibre de liaison)
+```{r simul_X}
+N <- 500
+inds.id <- sprintf(fmt=paste0("ind%0", floor(log10(N))+1, "i"), 1:N)
+head(inds.id)
+P <- 5000
+snps.id <- sprintf(fmt=paste0("snp%0", floor(log10(P))+1, "i"), 1:P)
+head(snps.id)
+```
+
+----
+
+```{r simul_X suite}
+calcGenoFreq <- function(maf){ # assuming Hardy-Weinberg equilibrium
+  c((1 - maf)^2, 2 * (1 - maf) * maf, maf^2)
+}
+X <- matrix(sample(x=c(0,1,2), size=N*P, replace=TRUE, prob=calcGenoFreq(0.3)),
+            nrow=N, ncol=P, dimnames=list(inds.id, snps.id))
+dim(X)
+X[1:5, 1:5]
+```
+
+----
+
+<div style="position: relative; top: -40px; right: -30px">
+- Les fréquences alléliques s'estiment facilement
+```{r freq_all}
+afs <- colMeans(X) / 2
+summary(afs)
+```
+
+- La matrice des relations génétiques additives peut s'estimer avec la formule précédente de $A_{mark}$
+```{r estim_kin}
+A.mark <- (X %*% t(X)) / (2 * sum(afs * (1 - afs)))
+A.mark[1:5, 1:5]
+```
+</div>
+
+----
+
+- Une simulation moins simpliste avec du déséquilibre de liaison nécessiterait un véritable scénario évolutif
+
+- Cela peut se faire par exemple en utilisant le processus stochastique du coalescent avec recombinaison
+
+- Cf. ["Simulations of population structure using the coalescent with recombination"](https://github.com/timflutre/atelier-prediction-genomique/blob/master/ex_simul_coalescent_structure.pdf)
+
+<!-- - On pourrait aussi utiliser des données réelles disponibles, par exemple : -->
+
+<!--     * [Crossa *et al* (Genetics, 2010)](http://dx.doi.org/10.1534/genetics.110.118521): blé (599 lignées, 4 conditions, rendement en grains, pédigrée, 1279 marqueurs DArT) et maïs (300 lignées, 1148 marqueurs SNP, 3 caractères, deux conditions) -->
+
+<!--     * [Resende *et al* (Genetics, 2012)](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3316659/): pin (951 individus de 61 familles, pédigrée, 4853 marqueurs SNP, phénotypes dérégréssés) -->
+
+<!--     * [Cleveland *et al* (G3, 2012)](http://dx.doi.org/10.1534/g3.111.001453): porc (3534 animaux, pédigrée, 5 caractères, 53000 marqueurs SNP) -->
+
+<!-- (par exemple sur le [portail data INRAE](https://data.inra.fr/dataverse/root?q=SNP) ou sur [dryad](https://datadryad.org/)) -->
+
+## Effets additifs des allèles | Caractère monogénique
+
+- On choisi l'unique  SNP causal, de telle sorte que sa fréquence allélique ne soit ni trop faible ni trop élevée
+
+```{r sample_qtl_mono}
+mafs <- apply(rbind(afs, 1 - afs), 2, min) # fréquences de l'allèle minoritaire
+(snp.qtl <- sample(x=snps.id[mafs >= 0.25 & mafs <= 0.35], size=1))
+```
+
+----
+
+- On fixe son effet allélique additif à une valeur élevée, les autres SNPs ayant un effet nul
+
+```{r fix_beta_mono}
+beta.mono <- setNames(rep(0, P), snps.id)
+beta.mono[snp.qtl] <- 3
+head(beta.mono)
+table(beta.mono)
+```
+
+## Effets additifs des allèles | Caractère polygénique
+
+- L'effet allélique additif à chaque marqueur, $\beta_p$, vient de $\mathcal{N}(0, \sigma_\beta^2)$
+
+```{r simul_beta_poly}
+sigma.beta2.poly <- 10^(-3)
+beta.poly <- setNames(rnorm(n=P, mean=0, sd=sqrt(sigma.beta2.poly)), snps.id)
+head(beta.poly)
+```
+
+## Erreurs
+
+- On fixe la moyenne globale, et on simule les erreurs
+
+```{r simul_mu_epsilon}
+mu <- 36
+sigma.epsilon2 <- 3
+epsilon <- matrix(rnorm(n=N, mean=0, sd=sqrt(sigma.epsilon2)))
+```
+
+## Phénotypes
+
+- Les phénotypes, $\boldsymbol{y}$, sont calculés à partir de la formule
+$$
+\begin{align}
+\boldsymbol{y} = \boldsymbol{1} \mu + X \boldsymbol{\beta} + \boldsymbol{\epsilon}
+\end{align}
+$$
+
+- Seul le vecteur des effets alléliques additifs, $\boldsymbol{\beta}$, est différent selon l'architecture génétique concernée
+
+
+```{r simul_y_mono}
+y.mono <- matrix(1, nrow=N) * mu + X %*% beta.mono + epsilon
+```
+
+```{r simul_y_poly}
+y.poly <- matrix(1, nrow=N) * mu + X %*% beta.poly + epsilon
+```
+
+-----
+
+- Dans le cas du caractère polygénique, on s'attend à une héritabilité au sens strict de :
+
+```{r h2}
+sigma.a2 <- sigma.beta2.poly * 2 * sum(afs * (1 - afs))
+sigma.g2 <- sigma.a2
+(h2 <- sigma.a2 / (sigma.g2 + sigma.epsilon2))
+```
+
+- Ce que l'on retrouve dans les données simulées :
+
+```{r h2_obs}
+(var(X %*% beta.poly) / (var(X %*% beta.poly) + var(epsilon)))
+```
+
+-----
+
+- Notez qu'on aurait aussi pu directement simuler les valeurs génotypiques additives via $\boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 A_{\text{mark}})$
+
+- Sous R, en utilisant la fonction `mvrnorm` du package [MASS](https://cran.r-project.org/web/packages/MASS/) :
+
+```{r simul_a, eval=FALSE}
+if(requireNamespace("MASS", quietly=TRUE)){
+  a <- MASS::mvrnorm(n=1, mu=rep(0, N), Sigma=sigma.a2 * A.mark)
+  g <- a
+  y.poly <- matrix(1, nrow=N) * mu + g + epsilon
+}
+```
+
+# Réaliser l'inférence
+
+## Visualisation graphique | Phénotypes
+
+```{r infer_visual, fig.show='hide'}
+par(mfrow = c(1, 2))
+hist(y.mono, breaks="FD", las=1, col="grey", border="white",
+     main="Caractère monogénique", ylab="Nombre d'individus",
+     xlab=expression(paste("Phénotypes, ", bold(y))))
+hist(y.poly, breaks="FD", las=1, col="grey", border="white",
+     main="Caractère polygénique", ylab="Nombre d'individus",
+     xlab=expression(paste("Phénotypes, ", bold(y))))
+```
+
+----
+
+```{r infer_visual plot, echo = F, fig.height=5.5, fig.width=11, fig.align='center', dev.args = list(bg = 'transparent')}
+par(mfrow = c(1, 2))
+hist(y.mono, breaks="FD", las=1, col="grey", border="white",
+     main="Caractère monogénique", ylab="Nombre d'individus",
+     xlab=expression(paste("Phénotypes, ", bold(y))))
+hist(y.poly, breaks="FD", las=1, col="grey", border="white",
+     main="Caractère polygénique", ylab="Nombre d'individus",
+     xlab=expression(paste("Phénotypes, ", bold(y))))
+```
+
+<!-- ## Visualisation graphique | Matrice d'apparentement -->
+
+<!-- ```{r seriation, fig.show='hide'} -->
+<!-- A.mark.reorder <- seriate(A.mark) -->
+<!-- pimage(A.mark, A.mark.reorder, main = expression(paste(italic(A[mark])))) -->
+<!-- ``` -->
+
+<!-- ---- -->
+
+<!-- ```{r seriation plot, echo = F, fig.height=6, fig.width=8, fig.align='center', dev.args = list(bg = 'transparent')} -->
+<!-- pimage(A.mark, A.mark.reorder, main = expression(paste(italic(A[mark])))) -->
+<!-- ``` -->
+
+## SNP à SNP ("GWAS")
+
+- On utilise le package [MM4LMM](https://cran.r-project.org/package=MM4LMM) qui implémente un algorithme MM pour ajuster le modèle par ML ou ReML
+
+- Caractère monogénique
+
+```{r mono_adjust_gwas, cache = TRUE}
+out.mmest <- MMEst(Y=y.mono[,1], X=X,
+                   VarList=list(Additive=A.mark, Error=diag(N)))
+out.anovatest <- AnovaTest(out.mmest, Type="TypeI")
+res.mono.gwas <- sapply(out.anovatest, function(x){x["Xeffect", "pval"]})
+```
+
+- Caractère polygénique
+
+```{r poly_adjust_gwas, cache=TRUE}
+out.mmest <- MMEst(Y=y.poly[,1], X=X,
+                   VarList=list(Additive=A.mark, Error=diag(N)))
+out.anovatest <- AnovaTest(out.mmest, Type="TypeI")
+res.poly.gwas <- sapply(out.anovatest, function(x){x["Xeffect", "pval"]})
+```
+
+## Tous les SNPs conjointement ("ridge")
+
+- On utilise le package [rrBLUP](http://cran.r-project.org/web/packages/rrBLUP/index.html)
+
+- Caractère monogénique
+
+```{r mono_adjust_ridge, cache = TRUE}
+res.mono.ridge <- mixed.solve(y=y.mono, Z=X)
+```
+
+- Caractère polygénique
+
+```{r poly_adjust_ridge, cache = TRUE}
+res.poly.ridge <- mixed.solve(y=y.poly, Z=X)
+```
+
+# Evaluer les résultats
+
+## Manhattan plot
+
+- La manière habituelle de regarder les résultats des tests du modèle d'inférence SNP à SNP (GWAS) est de tracer un *Manhattan plot*
+
+- Comme les données sont simulées, nous connaissons le SNP $p$ avec l'effet $\beta_p$ le plus grand, il sera indiqué d'un point rouge dans les graphiques ci-après
+
+----
+
+- Caractère monogénique
+
+```{r eval_manhattan mono gwas plot, fig.height=3.5, fig.width=7, fig.align='center', dev.args = list(bg = 'transparent')}
+plot(x=1:P, y=-log10(res.mono.gwas),
+     main="Caractère monogénique", las=1, type="n",
+     xlab="SNPs", ylab=expression(-log[10](italic(p)~values)))
+idx <- which(names(res.mono.gwas) == snp.qtl)
+points(x=which(names(res.mono.gwas) != snp.qtl),
+       y=-log10(res.mono.gwas[-idx]), col="grey35", pch=19)
+points(x=idx, y=-log10(res.mono.gwas[idx]), col="red", pch=19)
+```
+
+----
+
+- Caractère polygénique
+
+```{r eval_manhattan gwas poly plot, fig.height=3.5, fig.width=7, fig.align='center', dev.args = list(bg = 'transparent')}
+plot(x=1:P, y=-log10(res.poly.gwas),
+     main="Caractère polygénique", las=1, type="n",
+     xlab="SNPs", ylab=expression(-log[10](italic(p)~values)))
+idx <- which(names(res.poly.gwas) == names(which.max(beta.poly)))
+points(x=which(names(res.poly.gwas) != names(which.max(beta.poly))),
+       y=-log10(res.poly.gwas[-idx]), col="grey35", pch=19)
+points(x=idx, y=-log10(res.poly.gwas[idx]), col="red", pch=19)
+```
+
+----
+
+- Le modèle d'inférence SNP à SNP parvient bien à détecter le **SNP causal** dans le cas du **caractère monogénique**
+
+- C'est beaucoup moins clair dans le cas du **caractère polygénique** : aucun SNP ne ressort vraiment et celui avec le plus grand $\beta$ n'a pas le plus grand $\hat{\beta}$...
+
+## Composantes de la variances et coefficients
+
+- Le modèle d'inférence conjoint estime relativement précisément les composants de la variance et la moyenne globale dans le cas du caractère polygénique
+
+```{r eval_poly_estim_vc_ridge}
+c(mu, res.poly.ridge$beta)
+c(sigma.epsilon2, res.poly.ridge$Ve)
+c(sigma.beta2.poly, res.poly.ridge$Vu)
+```
+
+----
+
+- Les effets aux marqueurs sont relativement mal estimés individuellement (ceci étant dû au rétrécissement opéré par la pénalité $\lambda$)
+
+```{r eval_poly_estim_beta_ridge, fig.show = 'hide'}
+(c <- cor(beta.poly, res.poly.ridge$u))
+par(mar=c(5, 4.5, 4, 2) + 0.1)
+plot(beta.poly, res.poly.ridge$u, las=1, asp=1,
+     xlab=expression(paste("Vrais effets alléliques additifs, ", bold(beta))),
+     ylab=expression(paste("Effets alléliques additifs estimés, ",
+                           hat(beta))),
+     main=bquote(paste("corrélation(", bold(beta), ",", hat(bold(beta)), ") = ",
+                       .(format(c, digits=2)))))
+abline(v=0, lty=2); abline(h=0, lty=2); abline(a=0, b=1, lty=2)
+```
+
+----
+
+<div style="position: relative; top: -60px">
+```{r eval_poly_estim_beta_ridge plot, echo = F, fig.height=7, fig.width=7, fig.align='center', dev.args = list(bg = 'transparent')}
+par(mar=c(5, 4.5, 4, 2) + 0.1)
+plot(beta.poly, res.poly.ridge$u, las=1, asp=1,
+     xlab=expression(paste("Vrais effets alléliques additifs, ", bold(beta))),
+     ylab=expression(paste("Effets alléliques additifs estimés, ",
+                           hat(beta))),
+     main=bquote(paste("corrélation(", bold(beta), ",", hat(bold(beta)), ") = ",
+                       .(format(c, digits=2)))))
+abline(v=0, lty=2); abline(h=0, lty=2); abline(a=0, b=1, lty=2)
+```
+</div>
+
+----
+
+- Par contre, les valeurs génotypiques additives, elles, sont bien mieux prédites
+
+```{r eval_poly_estim_u_ridge, fig.show='hide'}
+(c <- cor(X %*% beta.poly, X %*% res.poly.ridge$u))
+par(mar=c(5, 4.5, 4, 2) + 0.1)
+plot(X %*% beta.poly, X %*% res.poly.ridge$u, las=1, asp=1,
+     xlab=expression(paste("Vraies valeurs génotypiques additives, ", bold(a))),
+     ylab=expression(paste("Valeurs génotypiques additives prédites, ",
+                           hat(bold(a)))),
+     main=bquote(paste("corrélation(", bold(a), ",", hat(bold(a)), ") = ",
+                       .(format(c, digits=2)))))
+abline(v=0, lty=2); abline(h=0, lty=2); abline(a=0, b=1, lty=2)
+```
+
+----
+
+<div style="position: relative; top: -60px">
+```{r eval_poly_estim_u_ridge plot, echo = F, fig.height=7, fig.width=7, fig.align='center', dev.args = list(bg = 'transparent')}
+par(mar=c(5, 4.5, 4, 2) + 0.1)
+plot(X %*% beta.poly, X %*% res.poly.ridge$u, las=1, asp=1,
+     xlab=expression(paste("Vraies valeurs génotypiques additives, ", bold(a))),
+     ylab=expression(paste("Valeurs génotypiques additives prédites, ",
+                           hat(bold(a)))),
+     main=bquote(paste("corrélation(", bold(a), ",", hat(bold(a)), ") = ",
+                       .(format(c, digits=2)))))
+abline(v=0, lty=2); abline(h=0, lty=2); abline(a=0, b=1, lty=2)
+```
+</div>
+
+## Bilan
+
+- Pour les caractères **polygéniques**, le modèle d'inférence SNP à SNP (GWAS) n'est pas efficace car les effets alléliques, pris individuellement, sont trop faibles
+
+- En estimant tous les effets conjointement avec le modèle "ridge", même si chacun d'eux est biaisé, leur somme, elle, est estimée bien plus précisément
+
+- On parle d'**effets alléliques "estimés"** et de **valeurs génotypiques "prédites"**, même si les deux sont des effets aléatoires dans les modèles mixtes
+
+- L'une des raisons vient du fait que dans le modèle $\boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{a} + \boldsymbol{\epsilon}$, les inconnues $\boldsymbol{a}$ sont les *breeding values* et les résultats $\boldsymbol{\hat{a}}$ sont les *BLUPs* des *breeding values*
+
+- C'est la raison pour laquelle on parle de **prédiction génomique**, qui mène ensuite tout naturellement à la **sélection génomique**
+
+# Autres points importants
+
+## Eviter le sur-ajustement
+
+- Il est important de réaliser que les estimations des effets alléliques ont le risque d'être sur-ajustées aux individus particuliers pour lesquels on dispose de génotypes et phénotypes
+
+- Un **sur-ajustement** a pour conséquence de mal généraliser les estimations du jeu d'entraînement pour effectuer des prédictions sur différents jeux de test
+
+- Pour éviter cela, il est courant d'estimer les paramètres du modèle par **validation croisée**
+
+## La validation croisée
+
+- La variante fréquemment utilisée de cette procédure consiste à répartir aléatoirement les individus en $k$ sous-ensembles ("folds") de taille égale
+
+- Pour chaque sous-ensemble $k$, les $k-1$ autres sont utilisés pour estimer les paramètres
+
+- Au final, pour chaque marqueur, on dispose de $k$ estimations de son effet allélique et on peut alors en faire la moyenne pour prédire de nouveaux individus non-phénotypés
+
+----
+
+- La validation croisée peut-être aussi utilisée pour :
+    * **Sélectionner** le meilleur modèle sur le jeu d'entraînement (modèle monogénique *vs.* polygénique *vs.* ... voir ci-après)
+    * Estimer une **précision** de prédiction
+
+- Chaque individu est en fait prédit une fois (lorsqu'il ne se trouve pas dans le set d'apprentissage), on peut donc calculer à partir des phénotypes observés et prédits une **erreur quadratique moyenne de validation-croisée**
+
+- Concernant la **précision** de prédiction, on utilise plutôt la **corrélation** (coefficient de Pearson) entre les valeurs génotypiques additives prédites ($\hat{\boldsymbol{a}}_k$) et les phénotypes corrigés pour les facteurs environnementaux ($\boldsymbol{y}_k$)
+
+- En anglais on parle d'**accuracy** (et de *reliability* pour le carré de la corrélation)
+
+- Il est recommandé de regarder également les estimations des moyenne globale et pente de la régression linéaire simple $\boldsymbol{y}_k = a + b \, \boldsymbol{\hat{a}}_k$
+
+----
+
+<div style="position: relative; top: -30px">
+- Pour faire de la validation croisée sous R on peut utiliser le package [cvTools](https://cran.r-project.org/web/packages/cvTools/index.html)
+
+- Mais il requiert une méthode `predict`, qui n'est pas fournie par [rrBLUP](https://cran.r-project.org/web/packages/rrBLUP/index.html)
+
+- Il faut donc d'abord encapsuler la fonction `mixed.solve` dans une autre fonction pour qu'elle renvoie un objet de classe `"rr"`, puis ajouter la méthode `predict` à cette classe :
+
+```{r prep_rrBLUP_for_crossval, eval=FALSE}
+rr <- function(y, Z, K=NULL, X=NULL, method="REML"){
+  stopifnot(is.matrix(Z))
+  out <- mixed.solve(y=y, Z=Z, K=K, X=X, method=method)
+  return(structure(out, class="rr"))
+}
+predict.rr <- function(object, newZ){
+  stopifnot(is.matrix(newZ))
+  out <- as.vector(newZ %*% object$u)
+  if(! is.null(rownames(newZ)))
+    names(out) <- rownames(newZ)
+  return(out)
+}
+```
+</div>
+
+----
+
+- Une fois que c'est fait, on peut réaliser la validation croisée
+
+```{r crossval, eval=FALSE}
+if(requireNamespace("cvTools", quietly=TRUE)){
+  folds <- cvTools::cvFolds(n=nrow(X), K=5, R=10)
+  callRR <- call("rr", y=y.poly, Z=X)
+  system.time(
+      out.cv <- cvTools::cvTool(call=callRR, x=X, y=y.poly, names=c("Z", "y"),
+                                cost=cor, folds=folds))
+}
+```
+
+- Cf. ["Exemple de simulation pour explorer la prédiction génomique"](https://github.com/timflutre/atelier-prediction-genomique/blob/master/ex_simul_pred-gen.pdf) pour plus de détails
+
+## Intermédiaires d'architecture génétique additive
+
+- On a vu 2 extrêmes d'architecture génétique : monogénique *vs.* polygénique
+
+- Mais avec de "vraies" données on ne connaît généralement pas *a priori* l'architecture génétique des caractères d'intérêt
+
+- Ne pourrait-on donc pas avoir un seul modèle s'adaptant à toutes les architectures ?
+
+- C'est un problème plus compliqué, mais les modèles dits de **sélection de variables** vont dans ce sens en analysant conjointement tous les SNPs tout en testant lesquels ont des effets non-nuls
+
+- C'est le cas par exemple du **Lasso** qui utilise une autre norme, $L^1$, pour pénaliser la vraisemblance ou de l'**Elastic Net** qui combine les normes $L^1$ et $L^2$.
+
+## Au-delà de l'architecture génétique additive
+
+- La matrice $A_{\text{mark}}$ est proportionnelle à $X X^T$
+
+- L'apparentement génétique additif entre deux individus $i$ et $j$ est donc $A_{ij} \propto \sum_p X_{ip} X^T_{pj} = \boldsymbol{x}_i^T \cdot \boldsymbol{x}_j$, appelé **produit scalaire** (*dot product*)
+
+- D'un point de vue géométrique, ce produit scalaire quantifie la distance linéaire entre les deux individus dans l'espace euclidien des génotypes
+
+- Mais on peut bien sûr utiliser d'autres fonctions de distance, non-linéaires cette fois. On utilise alors le terme de **noyau** (*kernel*) pour dénoter ces fonctions
+
+----
+
+- Afin de capturer la contribution des effets génétiques non-additifs, certains ont proposé d'utiliser le modèle $\boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{a} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 \, A_{\text{mark}})$<br> avec $A_{\text{mark}}$ calculée via un noyau défini dans un **espace de Hilbert à noyau reproduisant** (*Reproducing Kernel Hilbert Space*, RKHS)
+
+- Ce terme compliqué peut en fait simplement correspondre un noyau gaussien tel que $A_{ij} = \exp{\left( - (D_{ij} \, / \, \theta)^2 \right)}$ où $D_{ij}$ est la distance euclidienne entre $\boldsymbol{x}_i$ et $\boldsymbol{x}_j$ normalisée dans l'intervalle $[0,1]$ et $\theta$ est un paramètre d'échelle (qui doit être estimé par validation croisée)
+
+- Le package [rrBLUP](https://cran.r-project.org/web/packages/rrBLUP/index.html) permet d'utiliser ce noyau
+
+# Perspectives
+
+## Explorer les simulations possibles
+
+- Voici quelques exemples de questions que vous pouvez vous poser:
+
+    * quel est l'impact de la fréquence allélique sur l'inférence des paramètres et la précision de la prédiction ?
+
+    * quel est l'impact de la taille du jeu d'entraînement sur l'inférence et la prédiction ?
+
+    * quel est l'impact de l'apparentement entre individus du jeu d'entraînement et individus du jeu de test ?
+
+<!-- <div class="centered" style="font-size:40px; position: relative; top: 20px"> -->
+<!-- **C'est à vous de jouer !** -->
+<!-- </div> -->
+
+## Analyser de vrais jeux de données disponibles
+
+- Comme l'a fait justement remarquer Zamir ([plos biology 2013](http://dx.doi.org/10.1371/journal.pbio.1001595), [science 2014](http://dx.doi.org/10.1126/science.1258941)), il est difficile de trouver des jeux de données avec phénotypes en libre accès.
+
+- Cependant, en voici quelques uns:
+
+    * [crossa *et al* (genetics, 2010)](http://dx.doi.org/10.1534/genetics.110.118521): blé (599 lignées, 4 conditions, rendement en grains, pédigrée, 1279 marqueurs dart) et maïs (300 lignées, 1148 marqueurs snp, 3 caractères, deux conditions)
+
+    * [resende *et al* (genetics, 2012)](http://www.ncbi.nlm.nih.gov/pmc/articles/pmc3316659/): pin (951 individus de 61 familles, pédigrée, 4853 marqueurs snp, phénotypes dérégréssés)
+
+    * [cleveland *et al* (g3, 2012)](http://dx.doi.org/10.1534/g3.111.001453): porc (3534 animaux, pédigrée, 5 caractères, 53000 marqueurs snp)
+
+<!-- Les grandes simplifications de ce travail ont été de ne se concentrer que sur un seul caractère, continu de sucroît, et d'ignorer un grand nombre d'éléments tels le déséquilibre de liaison, les interactions génotype-environnement, etc. -->
+
+<!-- Or tout ceci intervient dans la "vraie vie". -->
+
+<!-- C'est bien là le défi des sélectionneurs, qu'ils soient dans des entreprises semencières ou dans des collectifs de paysans: gérér la diversité et créer continuellement de nouvelles variétés combinant plusieurs caractères d'intérêt et adaptées à l'itinéraire technique, à la filière économique, à l'agriculteur, au consommateur, etc. -->
+
+<!-- Mais ce sera pour le cours suivant ! -->
+
+# Références
+
+----
+
+- Lynch, M., and B. Walsh (1998). Genetics and analysis of quantitative traits. Sinauer Associates, 1998.
+
+- Barton, N. H. and P. D. Keightley (2002, January). Understanding quantitative genetic variation. Nature Reviews Genetics 3 (1), 11-21. [DOI](http://dx.doi.org/10.1038/nrg700)
+
+- Weir, B. S., A. D. Anderson, and A. B. Hepler (2006, October). Genetic relatedness analysis: modern data and new challenges. Nature Reviews Genetics 7 (10), 771-780. [DOI](http://dx.doi.org/10.1038/nrg1960)
+
+- Visscher, P. M., W. G. Hill, and N. R. Wray (2008, March). Heritability in the genomics era — concepts and misconceptions. Nature Reviews Genetics 9 (4), 255-266. [DOI](http://dx.doi.org/10.1038/nrg2322)
+
+- Slatkin, M. (2008, June). Linkage disequilibrium — understanding the evolutionary past and mapping the medical future. Nature Reviews Genetics 9 (6), 477-485. [DOI](http://dx.doi.org/10.1038/nrg2361)
+
+----
+
+- Stephens, M. and D. J. Balding (2009, October). Bayesian statistical methods for genetic association studies. Nature Reviews Genetics 10 (10), 681-690. [DOI](http://dx.doi.org/10.1038/nrg2615)
+
+- de los Campos, G., D. Gianola, and D. B. Allison (2010, December). Predicting genetic predisposition in humans: the promise of whole-genome markers. Nature Reviews Genetics 11 (12), 880-886. [DOI](http://dx.doi.org/10.1038/nrg2898)
+
+- Morrell, P. L., E. S. Buckler, and J. Ross-Ibarra (2012, February). Crop genomics: advances and applications. Nature Reviews Genetics 13 (2), 85-96. [DOI](http://dx.doi.org/10.1038/nrg3097)
+
+- Vitezica, Z., L. Varona, and A. Legarra (2013, December). On the additive and dominant variance and covariance of individuals within the genomic selection scope. Genetics 195 (4), 1223-30. [DOI](http://dx.doi.org/10.1534/genetics.113.155176)
+
+- Howard, R., A. Carriquiry, and W. Beavis (2014, June). Parametric and nonparametric statistical methods for genomic selection of traits with additive and epistatic genetic architectures. G3 4 (6), 1027-46. [DOI](http://dx.doi.org/10.1534/g3.114.010298)
+
+----
+
+- Rabier, C.-E., Barre, P., Asp, T., Charmet, G., Mangin, B. (2016, June). On the accuracy of genomic selection. PLoS ONE 11 (6): e0156086. [DOI](https://doi.org/10.1371/journal.pone.0156086)
+
+- Scutari, M., Mackay, I., Balding, D. (2016, September). Using genetic distance to infer the accuracy of genomic prediction. PLoS Genetics 12 (9): e1006288. [DOI](https://doi.org/10.1371/journal.pgen.1006288)
+
+- Huang, W., and T. F. C. Mackay (2016, November). The genetic architecture of quantitative traits cannot be inferred from variance component analysis. PLoS Genetics 12 (11): e1006421. [DOI](http://dx.doi.org/10.1371/journal.pgen.1006421)
+
+# Annexe
+
+----
+
+<div style="position: relative; top: -50px">
+```{r info}
+print(sessionInfo(), locale=FALSE)
+```
+</div>
