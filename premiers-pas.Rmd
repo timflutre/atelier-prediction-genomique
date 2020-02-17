@@ -638,7 +638,7 @@ Ce vecteur aléatoire a deux éléments, $\theta_1$ et $\theta_2$.
 Le vecteur $\boldsymbol{\mu}$ a donc également deux éléments, le premier, $\mu_1$, étant l'espérance de $\theta_1$, et le deuxième, $\mu_2$, étant l'espérance de $\theta_2$.
 La matrice $\Sigma$ contient les variances $\sigma_1^2$ de $\theta_1$ et $\sigma_2^2$ de $\theta_2$ sur la diagonale.
 Mais hors de la diagonale elle contient la covariance $\sigma_{12}^2$ entre $\theta_1$ et $\theta_2$.
-Dans ce cas simple, on retrouve donc la corrélation, $\rho$, entre $\theta_1$ et $\theta_2$ comme étant $\sigma_{12}^2 / \sqrt{\sigma_1^2 \sigma_2^2}$.
+Dans ce cas simple, on retrouve donc la corrélation, $\rho$, entre $\theta_1$ et $\theta_2$ comme étant $\sigma_{12} / \sqrt{\sigma_1^2 \sigma_2^2}$.
 On peut donc écrire:
 \begin{align}
 \begin{bmatrix}
@@ -652,8 +652,8 @@ On peut donc écrire:
 \mu_2
 \end{bmatrix},
 \begin{bmatrix}
-\sigma_1^2 & \sigma_{12}^2 \\
-\sigma_{12}^2 & \sigma_2^2
+\sigma_1^2 & \sigma_{12} \\
+\sigma_{12} & \sigma_2^2
 \end{bmatrix}
 \right)
 \Leftrightarrow
