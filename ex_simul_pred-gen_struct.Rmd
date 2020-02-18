@@ -63,6 +63,10 @@ Afin de faciliter l'utilisation de ces paquets dans ce document, il vous faut au
 ```{r}
 suppressPackageStartupMessages(library(scrm))
 suppressPackageStartupMessages(library(GenomicRanges))
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# 
+# BiocManager::install("GenomicRanges")
 suppressPackageStartupMessages(library(rutilstimflutre))
 suppressPackageStartupMessages(library(adegenet))
 ```
@@ -321,6 +325,20 @@ A.mark.vanraden <- (X.center %*% t(X.center)) / (2 * sum(afs * (1 - afs)))
 hist(diag(A.mark.vanraden), breaks="FD")
 hist(A.mark.vanraden[upper.tri(A.mark.vanraden)])
 ```
+
+## Déséquilibre de liaison
+
+```{r}
+LD <- estimLd(X=X, snp.coords = genomes.nostruct$snp.coords)
+LD$dist <- distSnpPairs(data.frame(loc1=LD$loc1, loc2=LD$loc2),
+                        genomes.nostruct$snp.coords,
+                        nb.cores = 1, verbose = 1)
+
+plotLd(x=LD$dist, y=LD$cor2, xlab="Physical distance (in bp)",
+       main="Linkage disequilibrium")
+```
+
+
 
 ## Valeurs génotypiques additives et variance génétique additive
 
