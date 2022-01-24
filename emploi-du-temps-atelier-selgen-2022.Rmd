@@ -1,0 +1,161 @@
+---
+title: "Atelier de prédiction et sélection génomique"
+author: "J. David and Co :voir liste ci-dessous"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 1
+    number_sections: TRUE
+  html_document:
+    toc: true
+    toc_depth: 1
+    number_sections: TRUE
+mode: selfcontained
+abstract: |
+  L'équipe pédagogique de 2022 : Vincent Segura, Charlotte Brault, Marie Serrie, Sarah Bensadoun, Théo Leprevost, Friedrich Longin, Charlotte Brault, Julie Fievet, Marion Gauthier et Jacques David.  
+  Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique. Cet atelier est destiné aux étudiants en spécialisation APIMET et SEPMET de l'institut AgroMontpellier, PIST d'AgroParisTech et l'option Amélioration des plantes de l'institut Agro Rennes.  
+  Un peu d'histoire : En 2022, ce sera la 7 ème édition de cet atelier construit au départ par Timothée Flûtre, Jacques David, Friedrich Longin et Philippe Brabant, fortement amélioré par Julien Diot pour le jeu sérieux. Cette année, l'institut Agro Rennes nous rejoint. 
+---
+
+
+# Date, lieu et contacts
+
+* Du lundi 14 au vendredi 18 février 2022.
+
+* Ca se passe là :  Institut Agro Montpellier, campus La Gaillarde, salle A sur le campus principal ([plan](https://www.montpellier-supagro.fr/plan-acces)).
+
+* Pour les personnes ne pouvant assister au présentiel, l'atelier se déroulera à l'adresse suivante. [Salle ZOOM](https://zoom.us/j/7954319618)
+
+* Contact
+[Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte)),   
+Equipe pédagogique 2021 :
+
+Vincent Segura ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](https://umr-agap.cirad.fr/recherche/equipes-scientifiques2/diversite-et-amelioration-de-la-vigne/contexte-et-objectifs),
+Julie Fiévet ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/)),
+Friedrich Longin de l'[université d'Hohenheim](https://lsa-weizen.uni-hohenheim.de/),
+Charlotte Brault : charlotte.brault@inra.fr,
+Sarah Bensadoun : sarah.bensadoun@agroparistech.fr,
+Theo Leprevost : theo.leprevost@agrocampus-ouest.fr [IGEPP](https://www6.rennes.inrae.fr/igepp),
+Anne Leperche : anne.leperche@agrocampus-ouest.fr,
+Simon rio : simon.rio@cirad.fr,
+Marion Gauthier : marion.gauthier@agrocampus-ouest.fr,
+
+Crédits
+Timothée Flutre ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
+Philippe Brabant, Jacques David, Julien Diot
+
+
+# Objectifs de l'atelier
+
+Il vise à familiariser les étudiants avec la prédiction génomique de caractères quantitatifs et son utilisation dans les programmes de sélection.
+Il se déroule en trois étapes. 
+
+
+1. Les bases de la prédiction génomique, par Vincent Ségura (INRAE) et Charlotte Brault (IFV, INRAE) et Marie Serrie (INRAE).
++ Simulation de données phénotypiques selon différentes architectures génétiques
++ Présentation des principales méthodes d'inférence des effets génétiques
++ Exploration de la qualité des prédictions en fonction de paramètres tels que la structure du matériel végétal, la densité de génotypage, etc.
+
+2. "Jouez au sélectionneur !"
++ Constitution d'équipes de sélection 
++ Elaboration d'une stratégie de sélection mêlant essais au champ, génotypage et prédiction
++ Réalisation du schéma de sélection sur une succession de plusieurs années simulant la temporalité et le budget d'un véritable programme de sélection
++ Mise en commun, examen des résultats et comparaison des stratégies
+
+3. "Optimization of breeding schemes with genomic selection in R", par Friedrich Longin (Univ. Hohenheim) 
++ Présentation (en anglais) de la théorie
++ Mise en pratique via des simulations de schémas de sélection
+
+
+# Pré-requis
+
+Les étudiants doivent avoir révisé assez sérieusement les notions suivantes.
+
+1. Les bases de la génétique quantitative
++ 1.1. Décomposition de la variance et notion d'héritabilité
++ 1.2. Effets additifs d'un allèle, modèle biallélique de Fisher
++ 1.3. Prédiction de l'effet additif par la régression du nombre d'allèles favorables
++ 1.4. Covariance entre apparentés et construction d'une matrice de simple apparentement
+
+2. Les outils statistiques suivants
++ 2.1 Modèle linéaire mixte (à effets fixes et aléatoires)
++ 2.2 Estimation des composantes de la variance par le modèle mixte
++ 2.3 Utilisation des matrices d'apparentement dans le modèle mixte
+
+3. Avoir revu les TPs
++ 3.1 Estimation des composantes de la variance
++ 3.2 Génétique d'association
++ 3.3 Prédiction génomique
+
+4. Logiciel R
++ 4.1 Bases de la programmation en R
++ 4.2 Boucles et stockage de valeurs dans un objet
++ 4.3 Ecriture d'une fonction
++ 4.4 Ecriture de rapports au format Rmd
+
+
+# Equipement et configuration
+
+Les étudiants doivent venir chacun avec leur ordinateur portable avec la configuration suivante:
+
+1. système d'exploitation Windows, Mac ou GNU/Linux;
+
+2. logiciels [R](https://www.r-project.org/) (version $\geq$ 3) et [RStudio](https://www.rstudio.com/products/rstudio/) (version $\geq$ 1), et au moins les paquets suivants:
++ [selection](https://cran.r-project.org/package=selectiongain): pour la prédiction du gain génétique;
++ [knitr](https://cran.r-project.org/package=knitr/), [rmarkdown](https://cran.r-project.org/package=rmarkdown/): pour les rapports dynamiques;
++ [MASS](https://cran.r-project.org/package=MASS/): pour les simulations multivariées;
++ [lme4](https://cran.r-project.org/package=lme4/): pour l'analyse de données phénotypiques via des modèles mixtes
++ [rrBLUP](https://cran.r-project.org/package=rrBLUP/), [BGLR](https://cran.r-project.org/package=BGLR/): pour la prédiction génomique.
++ [cvTools](https://cran.r-project.org/package=cvTools): pour la validation croisée
++ [gtools](https://cran.r-project.org/package=gtools): pour trier de manière alphanumérique
++ [MM4LMM](https://cran.r-project.org/package=MM4LMM): algorithme MM pour ajuster une régression par ML ou ReML
+
+
+# Ressources en ligne
+
+Ce document, ainsi que les autres nécessaires à la réalisation de l'atelier, se trouve à l'adresse suivante: https://github.com/timflutre/atelier-prediction-genomique.
+Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
+Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
+Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en cas de doute).
+
+
+# Programme de la semaine
+
+## Lundi
+
+* 9h - 12h: introduction à la modélisation statistique via la simulation en prenant la régression linéaire simple comme exemple, par V. Segura (document "premiers-pas.pdf")
+
+* 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique, par V. Segura (document "prediction-genomique.pdf")
+
+## Mardi
+* 9h - 12h: investigation par simulation, en groupes, des aspects influençant la précision de prédiction
+
+* 14h - 15h30: présentation des résultats et discussion
+
+* 15h30 - 17h: présentation du jeu sérieux sur la sélection, constitution des équipes et réflexions stratégiques
+
+
+## Mercredi
+* 9h - 12h: lancement du jeu (1 heure = 1 année)
+
+* 14h - 17h: suite du jeu (1 heure = 1 année)
+
+
+## Jeudi
+* 9h - 11h40: suite du jeu (40 minutes = 1 année)
+
+* 11h40 - 12h: procédure d'inscription comparant les génotypes proposés des équipes avec les témoins
+
+* 13h30 - 15h: discussion sur les différentes stratégies suivies
+
+
+## Vendredi
+
+* 9h - 12h: cours "Optimization of breeding schemes with GS in R", par F. Longin (document "Selgain_Montpellier_2018.pdf")
+
+* 14h - 16h30: travaux pratiques via des simulations de schémas de sélection (document "Selgain_Montpellier_2018_example.R").
+
+
+* 16h30 - 17h: discussion sur les acquis réalisés durant l'atelier et les améliorations à apporter
