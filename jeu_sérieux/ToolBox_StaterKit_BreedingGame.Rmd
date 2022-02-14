@@ -1,0 +1,164 @@
+---
+title: "Boîte à outils sélection génomique pour Plant Breed game"
+author: "Charlotte Brault"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
+linkcolor: blue
+output:
+  html_document:
+    theme: united
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    number_sections: TRUE
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+mode: selfcontained
+editor_options: 
+  markdown: 
+    wrap: sentence
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Télécharger les données initiales
+
+1. Se rendre sur le site [PlantBreedGame](https://195.221.108.57/team/apimet/PlantBreedGame/)
+
+2. Cliquer sur l'onglet **How to play?**
+
+3. Télécharger les différents fichiers de données dans un répertoire spécifique
+
+# Définition du chemin vers les données
+
+Donner le lien vers le répertoire où sont enregistrés les fichiers du jeu Plant Breed Game.
+
+```{r p2f}
+folder <- paste0("~/Cours-TD/SelGen_2022/BreedingGame/")
+stopifnot(file.exists(folder))
+```
+
+
+# Chargement des données
+
+## Données phénotypiques
+
+```{r load}
+p2f <- paste0(folder,"Result_phenos_initialColl.txt.gz") # path to file
+pheno <- read.table(file=gzfile(p2f),sep="\t", 
+                    header=TRUE, fileEncoding = "UTF-8")
+head(pheno)
+dim(pheno)
+```
+
+Nom des génotypes contrôles
+
+```{r}
+Controls <- read.table(file=paste0(folder,"controls.txt"), sep="\t",
+                       header=FALSE)
+(Controls <- c(Controls$V1))
+```
+
+
+## Données génotypiques
+
+```{r load geno data}
+p2f <- paste0(folder,"Result_genos_subset-initialColl-hd.txt.gz")
+geno <- read.table(file=gzfile(p2f),sep="\t", header=TRUE,
+                   fileEncoding = "UTF-8")
+geno[1:5,1:5]
+dim(geno)
+```
+
+## Coordonnées des marqueurs
+
+```{r load marker coordinates}
+p2f <- paste0(folder,"snp_coords_hd.txt.gz")
+snp_map <- read.table(file=gzfile(p2f), sep="\t", header=TRUE)
+head(snp_map)
+dim(snp_map)
+snp_map <- snp_map[order(snp_map$chr, snp_map$pos),]
+```
+
+
+# Exemple de requêtes
+
+## Request plant material
+
+Vous avez sélectionné les variétés les plus prometteuses, par exemple **Coll0001**, **Coll0002**, **Coll0003**, **Coll0004** et **Coll0005**.
+Vous voulez (par exemple) faire tous les croisements possibles entre ces 5 variétés.
+Ce morceau de code vous permet de concevoir ces croisements et de réaliser le fichier de requête.
+
+
+```{r request plant material}
+parents <- c("Coll0001","Coll0002","Coll0003","Coll0004","Coll0005") # => votre sélection de génotypes
+setdiff(parents, pheno$ind) # => bien vérifier que les parents sont dans la collection (ici le tableau de phénotypes s’appelle pheno)
+crosses <- t(combn(x=parents, m=2, simplify = TRUE)) # => crée tous les croisements possibles parmi les parents sans les autofécondations
+head(crosses)
+dim(crosses) # nombre de croisements à réaliser
+# Formatage du fichier pour la requête
+colnames(crosses) <- c("parent1", "parent2")
+crosses <- as.data.frame(crosses)
+crosses$child <- paste0("gen1_", seq(nrow(crosses))) # nom des descendants : gen1_1, …, gen1_6 (peut être changé !)
+crosses$explanations <- "allofecundation"
+head(crosses)
+# écrire le fichier de requête
+p2f <- paste0(folder,"request_plant_material_Coll0001-5.txt")
+write.table(crosses, file=p2f, sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+A vous de voir ce que vous voulez faire avec ces individus F1, issus d'un croisement entre lignées. Phénotypage ? Génotypage ? Nouveau croisement (ex : F2) ? Fixation (ex : SSD, HD) ? 
+
+## Request phenotyping
+
+Par exemple, on veut phénotyper 10 individus (je prendrai les noms précédemment créés), avec les génotypes contrôles.
+Je demande ici 5 plots, soit 5 répétitions par génotype.
+
+```{r request phenotyping}
+dat <- data.frame(ind=c(crosses$child, Controls),
+                  task="pheno-field",
+                  details=5)
+dat
+dim(dat)
+str(dat)
+# écrire le fichier de requête
+p2f <- paste0(folder,"request_phenotyping_controls-gen1.txt")
+write.table(dat, file=p2f, sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+
+
+## Request genotyping
+
+Par exemple, nous voulons génotyper les nouveaux génotypes créés à la génération 1. Les 5 premiers individus auront un génotypage avec grande densité ("hd"), les 5 autres auront un génotypage à faible densité ("ld").
+
+```{r request genotyping}
+dat <- data.frame(ind=crosses$child,
+                  task="geno",
+                  details=c(rep("hd",5),rep("ld",5)))
+dat
+dim(dat)
+str(dat)
+# écrire le fichier de requête
+p2f <- paste0(folder,"request_genotyping_gen1.txt")
+write.table(dat, file=p2f, sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+
+
+# Appendix
+
+```{r info}
+print(sessionInfo(), locale=FALSE)
+```
