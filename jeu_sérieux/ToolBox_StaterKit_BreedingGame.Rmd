@@ -50,10 +50,13 @@ stopifnot(file.exists(folder))
 # Chargement des données
 
 ## Données phénotypiques
+Si le fichier a une extension **.gz**, il pourra être lu dans la fonction `read.table` avec la fonction *gzfile* : `file=gzfile(p2f)`.
 
 ```{r load}
-p2f <- paste0(folder,"Result_phenos_initialColl.txt.gz") # path to file
-pheno <- read.table(file=gzfile(p2f),sep="\t", 
+#p2f <- paste0(folder,"Result_phenos_initialColl.txt.gz") # path to gz file
+p2f <- paste0(folder,"Result_phenos_initialColl.txt") # path to txt file
+
+pheno <- read.table(file=p2f,sep="\t", 
                     header=TRUE, fileEncoding = "UTF-8")
 head(pheno)
 dim(pheno)
@@ -71,9 +74,10 @@ Controls <- read.table(file=paste0(folder,"controls.txt"), sep="\t",
 ## Données génotypiques
 
 ```{r load geno data}
-p2f <- paste0(folder,"Result_genos_subset-initialColl-hd.txt.gz")
-geno <- read.table(file=gzfile(p2f),sep="\t", header=TRUE,
-                   fileEncoding = "UTF-8")
+# p2f <- paste0(folder,"Result_genos_subset-initialColl-hd.txt.gz")
+p2f <- paste0(folder,"Result_genos_subset-initialColl-hd.txt")
+
+geno <- read.table(file=p2f,sep="\t", header=TRUE,fileEncoding = "UTF-8")
 geno[1:5,1:5]
 dim(geno)
 ```
@@ -81,8 +85,10 @@ dim(geno)
 ## Coordonnées des marqueurs
 
 ```{r load marker coordinates}
-p2f <- paste0(folder,"snp_coords_hd.txt.gz")
-snp_map <- read.table(file=gzfile(p2f), sep="\t", header=TRUE)
+#p2f <- paste0(folder,"snp_coords_hd.txt.gz")
+p2f <- paste0(folder,"snp_coords_hd.txt")
+
+snp_map <- read.table(file=p2f, sep="\t", header=TRUE)
 head(snp_map)
 dim(snp_map)
 snp_map <- snp_map[order(snp_map$chr, snp_map$pos),]
