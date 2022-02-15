@@ -1,0 +1,24 @@
+Serveurs de connexion à Plant Breed Game selon les équipes
+
+
+https://195.221.108.57/team/apimet/PlantBreedGame/
+
+Tijopeis_Seed_Corp, Admin
+
+https://195.221.108.57/team/apimet/breedingGame-1/
+
+Seed&Co
+
+ApiSeed
+
+https://195.221.108.57/team/apimet/breedingGame-2/
+
+VOF
+
+ACDSeed
+
+https://195.221.108.57/team/apimet/breedingGame-3/
+
+Limagro
+
+Keep Calm And Breed
