@@ -11,15 +11,9 @@ sessionInfo()
 
 
 # First step - define budget, crop and trait via variance components
-Budget= 1000
-
-## Variance components : AGC, AGCxLoc, AGCxyear, AGCxLocxyear, error
-VCGCAandError= c(14.06,22.27,0,0,24.37)
-
-## Non additive variance : SCA, SCAxLoc , SCAxyear, SCAxLocxYear
+Budget= 5000
+VCGCAandError= c(0.11,0.33,0,0,0.4)
 VCSCA=c(0,0,0,0)
-
-## Number of final selected lines
 Nf = 5
 
 
@@ -34,25 +28,15 @@ Nf = 5
 # Two-stage phenotypic selection with nursery selection
 # Breeding scheme PSstandard in Marulanda et al 2016
 
-multistageoptimum.search (maseff=NA, # GS prediction ability
-						  alpha.nursery = 0.25, # selected fraction in disease nursery
-						  cost.nursery = c(1,0.3), # relative cost of production of HD and nursery eval
-						  VGCAandE=VCGCAandError,
-                          VSCA=VCSCA, 
-                          CostProd = c(0,0,0), # Seed production cost, hybrid prodcution, 0,4,4 
-                          CostTest = c(2,1,1),  # costs of Genomic selection, yield plot 2nd, yield plot 3rd
-                          Nf = Nf , # number of final selected lines
-                          Budget = Budget, # total budget
-                          N2grid = c(Nf, 6011, 50), # exploration grid for N2 effectives : Min (= nf), max,  Nstep
-                          N3grid = c(Nf, 1511, 5),  # exploration grid for N3 effectives :Min (= nf), max,  Nstep
-                          L2grid=c(1,5,1), # exploration grid for the number of locations in first field avaluation Min , max, step
-                          L3grid=c(3,10,1), # exploration grid for varietal field evaluation
-                          T2grid=c(1,1,1), # evaluation of tester 
-                          T3grid=c(1,1,1), # evaluation of tester 
-                          R2=1, # number of repeats first eval
-                          R3=1, # number of repeats second eval
-                          alg = Miwa(),
+multistageoptimum.search (maseff=NA,alpha.nursery = 0.2, cost.nursery = c(1,0.3),VGCAandE=VCGCAandError,
+                          VSCA=VCSCA, CostProd = c(0,0,0), CostTest = c(1.5,1,1),
+                          Nf = 5, Budget = Budget, N2grid = c(Nf, 6011, 50),
+                          N3grid = c(Nf, 1511, 5), L2grid=c(2,4,1), L3grid=c(2,8,1),
+                          T2grid=c(1,1,1), T3grid=c(1,1,1), R2=1, R3=1, alg = Miwa(),
                           detail=FALSE, fig=FALSE)
+
+
+
 
 #### 2. Breeding schemes with GS selection
 
@@ -60,22 +44,15 @@ multistageoptimum.search (maseff=NA, # GS prediction ability
 # Breeding scheme GSrapid in Marulanda et al 2016
 
 
-multistageoptimum.search (maseff=0.3,
-						  alpha.nursery = 0.25, 
-                          VGCAandE=VCGCAandError, 
-                          VSCA=VCSCA, 
-                          cost.nursery = c(1,0.3), 
-                          CostProd = c(0,0,0), 
-                          CostTest = c(2,1,0),
-                          Nf = 5, 
-                          Budget = Budget, 
-                          N2grid = c(Nf, 1011, 10),
-                          N3grid = c(Nf, Nf, 1), 
-                          L2grid=c(1,10,1), 
-                          L3grid=c(1,1,1),
-                          T2grid=c(1,1,1), 
-                          T3grid=c(1,1,1), 
+multistageoptimum.search (maseff=0.4,alpha.nursery = 0.2, 
+                          VGCAandE=VCGCAandError, VSCA=VCSCA, 
+                          cost.nursery = c(1,0.3), CostProd = c(0,0,0), CostTest = c(1.5,1,0),
+                          Nf = 5, Budget = Budget, 
+                          N2grid = c(Nf, 1011, 10), N3grid = c(Nf, Nf, 1), 
+                          L2grid=c(2,8,1), L3grid=c(1,1,1),
+                          T2grid=c(1,1,1), T3grid=c(1,1,1), 
                           R2=1, R3=1, alg = Miwa(),
                           detail=FALSE, fig=F,
                           t2free = T)
+
 
