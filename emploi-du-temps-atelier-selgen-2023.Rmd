@@ -29,17 +29,23 @@ abstract: |
 * Pour les personnes ne pouvant assister au présentiel, l'atelier se déroulera à l'adresse suivante. [Salle ZOOM](https://zoom.us/j/7954319618)
 
 * Contact
-[Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte)),   
-Equipe pédagogique 2021 :
+[Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte))\
+    Equipe pédagogique 2023 :
 
-Vincent Segura ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](https://umr-agap.cirad.fr/recherche/equipes-scientifiques2/diversite-et-amelioration-de-la-vigne/contexte-et-objectifs),
-Julie Fiévet ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/)),
-Friedrich Longin de l'[université d'Hohenheim](https://lsa-weizen.uni-hohenheim.de/),
-Charlotte Brault : charlotte.brault@inra.fr,
-Sarah Bensadoun : sarah.bensadoun@agroparistech.fr,
-[IGEPP](https://www6.rennes.inrae.fr/igepp),
-Anne Leperche : anne.leperche@agrocampus-ouest.fr,
-
+Vincent Segura ([Montpellier SupAgro](http://www.supagro.fr/), [UMR
+AGAP](http://umr-agap.cirad.fr/), équipe
+[DAAV](https://umr-agap.cirad.fr/recherche/equipes-scientifiques2/diversite-et-amelioration-de-la-vigne/contexte-et-objectifs),
+Julie Fiévet ([INRAe](http://www.inra.fr/), UMR
+[GQE](http://moulon.inra.fr/)), Friedrich Longin de l'[université
+d'Hohenheim](https://lsa-weizen.uni-hohenheim.de/), Charlotte Brault :
+[charlotte.brault\@vignevin.com](mailto:charlotte.brault@vignevin.com){.email},
+Sarah Bensadoun :
+[sarah.bensadoun\@agroparistech.fr](mailto:sarah.bensadoun@agroparistech.fr){.email},
+Marianne Laurencon :
+[marianne.laurencon\@agrocampus-ouest.fr](mailto:marianne.laurencon@agrocampus-ouest.fr){.email}
+[IGEPP](https://www6.rennes.inrae.fr/igepp), Anne Leperche :
+[anne.leperche\@agrocampus-ouest.fr](mailto:anne.leperche@agrocampus-ouest.fr){.email},
+Hélène Pidon : [helene.pidon\@inrae.fr](mailto:helene.pidon@inrae.fr){.email},
 Crédits
 Timothée Flutre ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
 Philippe Brabant, Jacques David, Julien Diot
@@ -108,15 +114,17 @@ Les étudiants doivent venir chacun avec leur ordinateur portable avec la config
 + [BiocManager](https://cran.r-project.org/web/packages/BiocManager/BiocManager.pdf) : pour installer des packages de Bioconductor;
 + [GenomicRanges](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html) : pour la simulation de données génomiques;
 + [scrm](https://cran.r-project.org/web/packages/scrm/scrm.pdf) : pour la simulation de données génomiques avec coalescent;
-+ [selection](https://cran.r-project.org/package=selectiongain): pour la prédiction du gain génétique;
-+ [knitr](https://cran.r-project.org/package=knitr/), [rmarkdown](https://cran.r-project.org/package=rmarkdown/): pour les rapports dynamiques;
++ [selectiongain](https://cran.r-project.org/package=selectiongain): pour la prédiction du gain génétique;
++ [knitr](https://cran.r-project.org/package=knitr/), 
++ [rmarkdown](https://cran.r-project.org/package=rmarkdown/): pour les rapports dynamiques;
 + [MASS](https://cran.r-project.org/package=MASS/): pour les simulations multivariées;
 + [lme4](https://cran.r-project.org/package=lme4/): pour l'analyse de données phénotypiques via des modèles mixtes
-+ [rrBLUP](https://cran.r-project.org/package=rrBLUP/), [BGLR](https://cran.r-project.org/package=BGLR/): pour la prédiction génomique.
++ [rrBLUP](https://cran.r-project.org/package=rrBLUP/), 
++ [BGLR](https://cran.r-project.org/package=BGLR/): pour la prédiction génomique.
 + [cvTools](https://cran.r-project.org/package=cvTools): pour la validation croisée
 + [gtools](https://cran.r-project.org/package=gtools): pour trier de manière alphanumérique
 + [MM4LMM](https://cran.r-project.org/package=MM4LMM): algorithme MM pour ajuster une régression par ML ou ReML
-
++ [rutilstimflutre](https://github.com/timflutre/rutilstimflutre): ensemble de fonctions du package de Timothée Flutre.
 
 # Ressources en ligne
 
