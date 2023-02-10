@@ -1,0 +1,249 @@
+---
+title: "Simulations of population structure using the coalescent with recombination"
+author: "Timothée Flutre (INRAE) modified by Jacques David "
+date: "`r format(Sys.time(), '%d/%m/%Y %H:%M:%S')`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: TRUE
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+suppressPackageStartupMessages(library(parallel))
+suppressPackageStartupMessages(library(adegenet))
+suppressPackageStartupMessages(library(rutilstimflutre)) # https://github.com/timflutre/rutilstimflutre
+```
+
+# Computation context
+Set up the parallel computations: If your computer has several cores it will mobilise all cores but one.
+This permits to speed up your analysis.
+
+```{r}
+nb.cores <- max(1, detectCores() - 1)
+cl <- makeCluster(spec=nb.cores, type="PSOCK")
+RNGkind("L'Ecuyer-CMRG")
+clusterSetRNGStream(cl=cl, iseed=1234)
+clusterEvalQ(cl, library(adegenet))
+```
+
+# Aim of the scripts
+
+This script allows to generate diploid genotypes according to different genetic parameters such as genetic effective size, mutation rate, recombination rate and migration rate. It is based on the coalescence process. 
+
+# Simulation of genotypes without structure
+
+## Population genetics parameters  
+In this case, we simulate a single population.  
+The parameters are the genetic effective size *Ne*, the chromosome length in base pairs, the mutation rate per base *µ* , the recombination rate per base *r*.
+So in this situation the  population mutation rate is $\theta = 4N_eµ$, the population recombination rate is $4N_er$. They apply on  chromosomes for which the length in base pair is given.
+The number of chromosomes is realized by repeating the process with the *nb.reps* value. 
+The sample sizes is determined by *nb.genos*, not to be confounded with *Ne*.
+   
+```{r}
+set.seed(1234)
+nb.genos <- 300
+
+# effective size
+Ne <- 10^4
+
+# Chromosome length in base pairs
+chrom.len <- 10^5
+
+# mutation rate per base
+mu <- 10^(-8)
+
+# recombination rate per base ?
+c.rec <- 10^(-8)
+
+# in the function nb.reps is the number of chromosoms 
+genomes.nostruct <- simulCoalescent(nb.inds=nb.genos, nb.reps=10,
+                                    pop.mut.rate=4 * Ne * mu * chrom.len,
+                                    pop.recomb.rate=4 * Ne * c.rec * chrom.len,
+                                    chrom.len=chrom.len,
+                                    nb.pops=1,
+                                    verbose=1)
+
+```
+
+## Data structure
+
+The output is a complex objec containing the command cmd, the coordinates of snp (snp.coords), the haplotypes of the two individual strands (haplos) on each chromosome haplos$chr_i and the genotypes (genos). 
+The table *genos* is frame as usual, genotypes x snp.
+
+```{r}
+dim(genomes.nostruct$genos)
+genomes.nostruct$genos[1:4, 1:10]
+```
+
+# Interconnected network of populations
+## Migration rates
+The Island model is implemended. A new parameter has to be indicated, the number of migrants, $N_e m$. The number of populations has also to be indicated, *nb.pops*.
+
+Parameters are chosen to give consistent results. With low migration, we simulate more chromosomes, and increase the chromosome size in order to have more chance to observe polymorphic sites. The number of populations is nb.pops.
+
+The chromsome lengths vary since it is less likely to observe polymorphisms in populations with low migration rate. 
+
+Three situations are simulated : high, medium and low. 
+
+```{r}
+chrom.lens <- c("high"=10^3, "med"=10^5, "low"=10^5)
+mig.rates <- c("high"=10^4, "med"=10,   "low"=0.5)
+nb.chroms <- c("high"=4,    "med"=4,    "low"=4)
+
+genomes.struct <- list()
+
+for(i in seq_along(mig.rates)){
+  set.seed(1234)
+  genomes.struct[[names(mig.rates)[i]]] <- simulCoalescent(nb.inds=nb.genos, nb.reps=nb.chroms[i],
+                                                           pop.mut.rate=4 * Ne * mu * chrom.lens[i],
+                                                           pop.recomb.rate=4 * Ne * c.rec * chrom.lens[i],
+                                                           chrom.len=chrom.lens[i],
+                                                           nb.pops=3, mig.rate=mig.rates[i],
+                                                           verbose=1)
+}
+
+```
+
+## Data structure
+There is now three lists of 4 objects. Each list is for one of the simulations. The sapply functions give the number of polymorphic SNP in each simulation. Each list is organised as before (cmd, snp.coords, haplos and genos).
+
+```{r}
+summary(genomes.struct)
+
+ 
+sapply(genomes.struct, function(x){dim(x$genos)})
+```
+
+## Visualisation
+### Combine all data into a single data set
+This is a complex programming but can help you to explore rapidly different situations in only one step.
+You can see in the Hands-on chapter to understand the basics.
+
+```{r}
+X.pops <- lapply(names(mig.rates), function(n){
+  tmp <- genomes.struct[[n]]$genos
+  nb.remain.chrs <- 10 - length(unique(genomes.struct[[n]]$snp.coords[colnames(tmp),"chr"]))
+  remain.chrs <- unique(genomes.nostruct$snp.coords[,"chr"])[1:nb.remain.chrs]
+  snps.toadd <- rownames(genomes.nostruct$snp.coords[genomes.nostruct$snp.coords$chr %in%
+                                                       remain.chrs,])
+  X <- cbind(tmp, genomes.nostruct$genos[, snps.toadd])
+  colnames(X)[(ncol(tmp)+1):ncol(X)] <- paste0(colnames(X)[(ncol(tmp)+1):ncol(X)],
+                                               "_nostruct")
+  X
+})
+
+names(X.pops) <- names(mig.rates)
+
+sapply(X.pops, dim)
+
+```
+
+### Relationship heatmap
+```{r}
+tmp <- lapply(names(X.pops), function(n){
+  A <- estimGenRel(X=X.pops[[n]], verbose=0)
+  imageWithScale(A, main=paste0("Additive genetic relationships (migration=", n, ")"))
+})
+```
+
+### PcoA and clustering
+```{r}
+out.pca <- lapply(X.pops, function(X){
+  pca(X=X)
+})
+sapply(out.pca, function(x){x$prop.vars[1:4]})
+tmp <- lapply(names(out.pca), function(x){
+  barplot(out.pca[[x]]$prop.vars,
+          main=paste0("Proportion of variance explained by each PC (migration=", x, ")"),
+          xlim=c(0,10), las=1)
+  plotPca(rotation=out.pca[[x]]$rot.dat,
+          prop.vars=out.pca[[x]]$prop.vars,
+          # cols=c(rep("black", 100), rep("red", 100), rep("green", 100)),
+          main=paste0("PC (migration=", x, ")"))
+})
+```
+
+Need to get the point colors right!
+Let's use adegenet for this.
+
+```{r}
+genlights <- lapply(X.pops, function(X){
+  new("genlight", X)
+})
+fclusts <- parLapply(cl=cl, genlights, function(gl){
+  find.clusters(x=gl, n.pca=100, scale=TRUE, method="kmeans",
+                choose.n.clust=TRUE, n.clust=3)
+                # stat="BIC", choose.n.clust=FALSE, max.n.clust=7, criterion="min")#smoothNgoesup")
+})
+sapply(fclusts, function(x){x$size})
+# tmp <- lapply(names(fclusts), function(x){
+#   plot(fclusts[[x]]$Kstat, xlab="K", ylab="BIC",
+#        main=paste0("Choose the number of clusters (migration=", x, ")"))
+# })
+clusterExport(cl=cl, varlist=c("genlights","fclusts"))
+dapc <- parLapply(cl=cl, 1:length(genlights), function(i){
+  dapc(x=genlights[[i]], pop=fclusts[[i]]$grp, n.pca=10, n.da=5)
+})
+names(dapc) <- names(genlights)
+tmp <- lapply(names(dapc), function(x){
+  print(scatter(x=dapc[[x]],
+                sub=paste0("migration=", x), possub="topleft",
+                scree.pca=FALSE, scree.da=FALSE))
+})
+```
+
+```{r}
+stopCluster(cl)
+```
+
+
+# For your own Hands-on work
+
+Here is a simplified version of the code. You can use it to explore your parameters.
+Be careful, this time *mig.rate* is the proportion of gametes coming from the pool of common gametes from all populations (migrants); So the parameter passed to the function is $4N_em$. 
+
+The expected overall Fst is $F_{st}=\frac{1}{1+(4N_em+µ)}\approx \frac{1}{1+4N_em}$.
+So the number of migrants has to be around 1 for the structuration to start to be high.
+
+
+```{r}
+nb.chr<-4
+nb.genos<-200
+
+chrom.lens<-10^5
+mig<-0.001
+Ne<-5 * 10^3
+mu<-1e-7
+pop<-10
+
+genomes.struct_case <- simulCoalescent(nb.inds=nb.genos, nb.reps=nb.chr,
+             pop.mut.rate=4 * Ne * mu * chrom.lens,
+             pop.recomb.rate=4 * Ne * c.rec * chrom.lens,
+             chrom.len=chrom.lens,
+             nb.pops=pop, mig.rate=4*Ne*mig,
+             verbose=1)
+
+dim(genomes.struct_case$genos)
+
+X<-genomes.struct_case$genos
+A <- estimGenRel(X=X, verbose=0)
+dim(A)
+imageWithScale(A, main="Additive genetic relationships")
+
+
+```
+
+The theoretical Fst value is `r 1/(1+4*Ne*mig+mu)`
+
+Explore the parameters impact and use the data to explore the genomic prediction efficiency.

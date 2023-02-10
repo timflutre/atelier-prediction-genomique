@@ -1,0 +1,527 @@
+---
+title: "Exemple de simulation pour explorer la prédiction génomique"
+author: "Timothée Flutre (INRAE), Charlotte Brault"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
+linkcolor: blue
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: TRUE
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+mode: selfcontained
+abstract: |
+  Ce document a pour but de montrer un exemple de prédiction génomique à partir de données simulées.
+editor_options: 
+  markdown: 
+    wrap: sentence
+  chunk_output_type: console
+---
+
+Ce morceau de code R est utilisé pour vérifier que tout ce dont on a besoin est disponible.
+
+```{r setup, include=FALSE}
+R.v.maj <- as.numeric(R.version$major)
+R.v.min.1 <- as.numeric(strsplit(R.version$minor, "\\.")[[1]][1])
+if(R.v.maj < 2 || (R.v.maj == 2 && R.v.min.1 < 15))
+  stop("requires R >= 2.15", call.=FALSE)
+
+suppressPackageStartupMessages(library(knitr))
+opts_chunk$set(echo=TRUE, warning=TRUE, message=TRUE, cache=FALSE)
+
+options(digits=3)
+```
+
+# Contexte
+
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David, Vincent Segura, Charlotte Brault, Marie Serrie, Sarah Bensadoun, Théo Leprevost, Friedrich Longin, Charlotte Brault, Julie Fievet et Marion Gauthier à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire), la spécialisation [PIST](http://www.agroparistech.fr/Production-et-innovation-dans-les,1633.html) du [Cursus Ingénieur](http://www.agroparistech.fr/Cursus-ingenieurs.html) d'[AgroparisTech](http://www.agroparistech.fr/) et la spécialité d'amélioration des plantes de l'Institut Agro de Rennes.
+
+Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
+Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
+Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en cas de doute).
+
+Les versions du contenu sont gérées avec le logiciel git, et le dépôt central est hébergé sur [GitHub](https://github.com/jacquesdavid/SELGEN2021).
+
+Il est recommandé d'avoir déjà lu attentivement les documents "Premiers pas" et "Prédiction génomique" de l'atelier.
+
+# Installation et chargement des paquets R
+
+De plus, ce document nécessite de charger des paquets additionnels (ceux-ci doivent être installés au préalable sur votre machine, via \verb+install.packages("pkg")+):
+
+```{r load_pkg}
+# Le paquet anyLib permet d'installer les paquets si nécessaire
+# install.packages("anyLib")
+suppressPackageStartupMessages(library(anyLib))
+# anyLib(pkg=c("rrBLUP","cvTools","devtools","scrm",
+#              "adegenet","rutilstimflutre", "RCurl","GenomicRanges"))
+# devtools::install_github("scrm/scrm-r")
+suppressPackageStartupMessages(library(rrBLUP))
+suppressPackageStartupMessages(library(cvTools))
+suppressPackageStartupMessages(library(devtools))
+```
+
+Un certain niveau de déséquilibre de liaison entre génotypes aux SNP est indispensable pour obtenir une précision de prédiction suffisamment élevée en validation croisée.
+Pour cela, on peut utiliser le processus du coalescent avec recombinaison.
+Une bonne approximation de celui-ci est implémenté dans le paquet [scrm](https://cran.r-project.org/package=scrm).
+Par ailleurs, afin de tracer le déséquilibre de liaison en fonction de la distance physique, il vous faut aussi le paquet [GenomicRanges](https://doi.org/doi:10.18129/B9.bioc.GenomicRanges) de Bioconductor.
+Afin de faciliter l'utilisation de ces paquets dans ce document, il vous faut aussi avoir mon paquet de travail, [rutilstimflutre](https://github.com/timflutre/rutilstimflutre), disponible sur GitHub.
+
+```{r}
+suppressPackageStartupMessages(library(scrm))
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+# BiocManager::install("GenomicRanges")
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(rutilstimflutre))
+suppressPackageStartupMessages(library(adegenet))
+```
+
+
+Si l'installation de `rutilstimflutre` pose problème, vous pouvez utiliser un condensé de ses fonctions en chargeant le fichier source `rutils_like.R`.
+
+Sourcer le fichier `rutils_like.R`, aller sur le GitHub de Jacques David (https://github.com/jacquesdavid/SELGEN2021), puis dans le répertoire **Approche_par_simulation**, cliquer sur le fichier "rutils_like.R" et copier le code (onglet **raw**) dans un nouveau script R.
+
+* Option 1 : aller dans l'onglet rutils_like.R dans Rstudio et cliquer sur le bouton "Source"
+
+* Option 2 : appliquer la fonction "source" en mettant le chemin d'accès vers ce script R.
+
+Vérifier que les fonctions sont bien chargées dans l'environnement.
+
+```{r}
+#source("/rutils_like.R", encoding = "UTF-8")
+```
+
+
+
+Il est également utile de savoir combien de temps est nécessaire pour exécuter tout le code R de ce document (voir l'annexe):
+
+```{r time_0}
+t0 <- proc.time()
+```
+
+
+# Modèle
+
+En se limitant à une architecture additive infinitésimale:
+
+```{=tex}
+\begin{align*}
+\boldsymbol{y} &= \boldsymbol{1} \, \mu + X \, \boldsymbol{\beta} + \boldsymbol{\epsilon} \\
+ &= \boldsymbol{1} \, \mu + \boldsymbol{a} + \boldsymbol{\epsilon}
+\end{align*}
+```
+avec:
+
+-   $\boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 \, \text{Id})$;
+
+-   $\boldsymbol{\beta} \sim \mathcal{N}_P(\boldsymbol{0}, \sigma_\beta^2 \, \text{Id})$;
+
+-   $\boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 \, A_{\text{mark}})$ avec $A_{\text{mark}} = \frac{X X^T}{2 \sum_{p} f_p (1 - f_p)}$.
+
+Cet estimateur de $A_{\text{mark}}$ est décrit dans [Habier et coll. (2007)](http://dx.doi.org/10.1534/genetics.107.081190), mais un meilleur estimateur, centré, est proposé dans [VanRaden (2008)](http://dx.doi.org/10.3168/jds.2007-0980): pour plus de détails, lire [Toro et coll. (2011)](http://www.gsejournal.org/content/43/1/27) et [Vitezica et coll. (2013)](http://dx.doi.org/10.1534/genetics.113.155176).
+
+# Simulation des données
+
+```{r seed}
+set.seed(111)
+```
+
+## Simulation des génotypes
+
+Pour simuler une structure, on peut utiliser une fonction de Timothée Flutre (rutilstimflutre) : `SimulCoalescent`.
+
+Voici un exemple de code pour appliquer cette fonction, disponible sur [Github](https://github.com/timflutre/rutilstimflutre/blob/master/misc/simul-pop-struct.Rmd)
+
+### Génotypes aux SNP
+
+Paramètres du Coalescent
+
+```{r param}
+nb.genos <- 500 # nombre de génotypes
+nb.chroms <- 5
+Ne <- 10^4 # taille efficace
+chrom.len <- 5*10^5 # longueur de chaque chromosome
+mu <- 10^(-8) # taux de mutation
+c.rec <- 10^(-8) # taux de recombinaison
+```
+
+#### Coalescent séquentiel avec recombinaison **sans** structure
+
+```{r simul_pop_no_struct}
+genomes <- simulCoalescent(nb.inds=nb.genos, nb.reps=nb.chroms,
+                           pop.mut.rate=4 * Ne * mu * chrom.len,
+                           pop.recomb.rate=4 * Ne * c.rec * chrom.len,
+                           chrom.len=chrom.len,
+                           #mig.rate=5, # => valeur par défaut sans structure
+                           nb.pops=1,
+                           verbose=1)
+dim(genomes$genos)
+genomes$genos[1:8,1:8]
+```
+
+#### Coalescent séquentiel avec recombinaison et **avec** structure
+
+La structure est ici simulée avec des taux de migration : plus le taux de migration est faible, plus les populations seront différenciées entre elles.
+
+```{r simul_pop_struct}
+mig.rates <- 10^-4 # faible migration => forte structure
+nb.pops <- 3 # nombre de populations (+/- différenciées)
+chrom.len <- 10^5
+nb.genos2 <- 300
+
+genomes.struct <- simulCoalescent(nb.inds=nb.genos2,
+                                  nb.reps=nb.chroms,
+                                  pop.mut.rate=4 * Ne * mu * chrom.len,
+                                  pop.recomb.rate=4 * Ne * c.rec * chrom.len,
+                                  chrom.len=chrom.len,
+                                  nb.pops=nb.pops,
+                                  mig.rate=4*Ne*mig.rates,
+                                  verbose=1)
+dim(genomes.struct$genos)
+genomes.struct$genos[1:8,1:8]
+```
+
+### Echantillonnage des SNP
+
+On sous-échantillonne des SNP parmi les bases du génome simulées
+
+```{r sample snp}
+dim(genomes$genos)
+dim(genomes.struct$genos)
+P <- 1000 # nombre de SNP à échantillonner
+# on s'assure d'abord qu'il y a assez de marqueurs
+stopifnot(ncol(genomes.struct$genos) >= P,
+          ncol(genomes$genos) >= P)
+# sans structure
+idx.snps.tokeep <- sample.int(n=ncol(genomes$genos), size=P, replace=FALSE)
+X <- genomes$genos[, idx.snps.tokeep]
+# avec structure
+idx.snps.tokeep <- sample.int(n=ncol(genomes.struct$genos), size=P, replace=FALSE)
+X.struct <- genomes.struct$genos[, idx.snps.tokeep]
+
+dim(X)
+X[1:8, 1:8]
+snp.coords <- genomes$snp.coords[colnames(X),]
+#rm(genomes)
+```
+
+### Visualisation de la structure
+
+Représentation graphique de la structure
+
+```{r additive relationship}
+A.nostruct <- estimGenRel(X=X, verbose=0)
+imageWithScale(A.nostruct, main="Additive genetic relationships with no structure")
+rm(A.nostruct)
+A.struct <- estimGenRel(X=X.struct, verbose=0)
+imageWithScale(A.struct, main="Additive genetic relationships with structure")
+rm(A.struct)
+```
+
+Affichage des groupes de structure génétique avec une **Analyse en Composantes Principales**.
+
+```{r plot pca, fig.width=8, fig.height=7}
+# Sans structure
+out.pca.nostruct <- pca(X=X,plot="points")
+out.pca.nostruct$prop.vars[1:4]
+barplot(out.pca.nostruct$prop.vars[1:10],
+        main="Proportion of variance explained by each PC, without structure",
+        xlim=c(0,10), las=1)
+plotPca(rotation=out.pca.nostruct$rot.dat,
+        prop.vars=out.pca.nostruct$prop.vars,
+        main="PCA without structure")
+
+# Avec structure
+out.pca.struct <- pca(X=X.struct)
+out.pca.struct$prop.vars[1:4]
+barplot(out.pca.struct$prop.vars,
+        main="Proportion of variance explained by each PC, with structure",
+        xlim=c(0,10), las=1)
+plotPca(rotation=out.pca.struct$rot.dat,
+        prop.vars=out.pca.struct$prop.vars,
+        main="PCA without structure")
+```
+
+## Simulation des phénotypes
+
+### Effets additifs des SNP
+
+On peut simuler 2 types d'architecture génétique :
+
+-   Modèle infinitésimal : chaque marqueur a un effet faible sur le phénotype.
+
+-   Modèle polygénique : certains marqueurs à effet nuls et certains à effet non nul (QTL).
+
+```{r simul_beta_inf}
+is.infinitesimal <- TRUE
+if(is.infinitesimal){
+  # Modèle infinitésimal : chaque marqueur a un effet faible sur le phénotype
+  sigma.beta2 <- 10^(-3) # chosen arbitrarily
+  beta <- rnorm(n=P, mean=0, sd=sqrt(sigma.beta2)) # effet du marqueur, tiré dans une loi normale
+} else {
+  # Simulation avec certains marqueurs à effet nuls et certains à effet non nul (QTL).
+  nb_QTL <- 10
+  QTL <- sample(P, nb_QTL) # échantillonnage des marqueurs à effet non nul (QTL)
+  beta <- rep(0, P) # effet associé au marqueur égal à 0
+  beta[QTL] <- rnorm(n=nb_QTL, mean=0, sd=sqrt(sigma.beta2)) # sauf pour les QTL
+}
+# variance et moyenne comparables
+beta <- scale(beta, center=TRUE, scale=TRUE)
+```
+
+On obtient un vecteur $\beta$ des vrais effets des marqueurs.
+
+### Valeurs génotypiques additives et variance génétique additive
+
+Ici on a gardé la matrice des génotypes aux marqueurs issue de la simulation **sans structure**.
+Notez que $X$ est initialement codé en $\{0,1,2\}$, mais que dans la suite on peut le centrer à l'aide des fréquences alléliques comme dans l'estimateur de VanRaden:
+
+```{r compute genotypic value}
+N <- nb.genos # nombre d'individus
+afs <- colMeans(X) / 2
+tmp <- matrix(rep(1, N)) %*% (2 * afs)
+X.center <- X - tmp
+# Effet génétique additif
+a <- X.center %*% beta
+# Variance génétique additive
+(sigma.a2 <- 1  * 2 * sum(afs * (1 - afs)))
+```
+
+### Erreurs
+
+```{r h2}
+h2 <- 0.7 # héritabilité au sens strict
+(sigma2 <- ((1 - h2) / h2) * sigma.a2) # variance d'erreur calculée à partir de h^2 et de sigma.a2
+epsilon <- rnorm(n=N, mean=0, sd=sqrt(sigma2)) # vecteur d'erreurs 
+```
+
+### Phénotypes
+
+```{r phenotypes}
+mu <- 36 # chosen arbitrarily
+y <- mu + X.center %*% beta + epsilon
+summary(y)
+hist(y, breaks="FD", main="Phenotypes", col="grey", border="white")
+```
+
+# Description des données simulées
+
+## Fréquences alléliques
+
+```{r allelic freq}
+afs <- colMeans(X) / 2
+hist(afs, xlim=c(0, 1), main="Allele frequencies without structure", col="grey", border="white")
+
+afs.struct <- colMeans(X.struct) / 2
+hist(afs.struct, xlim=c(0, 1), main="Allele frequencies with structure", col="grey", border="white")
+```
+
+## Relations génétiques additives
+
+Estimateur de Habier et coll.
+(2007):
+
+```{r estim gen rel habier}
+A.mark.habier <- (X %*% t(X)) / (2 * sum(afs * (1 - afs)))
+hist(diag(A.mark.habier), breaks="FD")
+hist(A.mark.habier[upper.tri(A.mark.habier)])
+```
+
+Estimateur de VanRaden (2008):
+
+```{r vanraden gen rel}
+A.mark.vanraden <- (X.center %*% t(X.center)) / (2 * sum(afs * (1 - afs)))
+hist(diag(A.mark.vanraden), breaks="FD")
+hist(A.mark.vanraden[upper.tri(A.mark.vanraden)])
+```
+
+## Déséquilibre de liaison
+
+```{r LD}
+for(chr in unique(snp.coords$chr)){
+  LD <- estimLd(X=X, snp.coords = snp.coords, only.chr =chr)
+  LD$dist <- distSnpPairs(data.frame(loc1=LD$loc1, loc2=LD$loc2),
+                          genomes$snp.coords,
+                          nb.cores = 1, verbose = 1)
+  
+  plotLd(x=LD$dist, y=LD$cor2, xlab="Physical distance (in bp)",
+         main=paste("Linkage disequilibrium for ", chr),
+         add.ohta.kimura=TRUE, Ne=Ne, c=c.rec)
+}
+```
+
+# Distinction des sous-population
+
+Une des problématiques en prédiction génomique est la distance génétique entre la population d'entraînement, qui a servi à ajuster le modèle (c'est-à-dire à estimer les effets associés aux marqueurs $\hat \beta$).
+Si la population est structurée, alors il y a de la distance génétique entre les différentes sous-populations.
+Vous pourrez voir comment évolue la précision de prédiction lorsque la population de validation fait partie d'une sous-population différente de la population d'entraînement.
+
+```{r distinct_pop}
+sub_pop <- find.clusters(x=X.struct, n.pca=100, scale=TRUE, method="kmeans",
+                         choose.n.clust=TRUE, n.clust=6)
+levels(sub_pop$grp)
+sub_pop$size
+```
+
+# Evaluation de la précision de prédiction
+
+Pour évaluer la qualité de notre modèle et l'influence des paramètres de simulation, nous allons utiliser la validation croisée.
+l'ensemble des génotypes ($X$) et des phénotypes ($y$) va être divisé en ensembles d'entraînement et de test: $X_{train}, y_{train}$ et $X_{test}, y_{test}$ .
+
+Le modèle de prédiction va être ajusté sur l'ensemble d'entraînement pour estimer les effets associés aux marqueurs ($\hat\beta$), puis ces effets des marqueurs vont être utilisés pour prédire des nouveaux génotypes, comme dans la vraie vie, en appliquant $\hat y_{test} = X_{test} \hat \beta$.
+Puisque nous avons accès aux phénotypes de l'ensemble de validation, nous pouvons vérifier la qualité de prédiction en faisant la corrélation entre la valeur prédite ($\hat y_{test}$) et la valeur "observée" ($y_{test}$)
+
+## Définition des ensembles d'entraînement et de test
+
+Création de vecteurs logiques (TRUE / FALSE) pour indiquer quels individus sont contenus dans la population d'entrainement et lesquels sont dans la population de validation.
+Pour l'exemple, on fait ici un ajustement du modèle sur les individus du jeu d'entraînement (`in.train`), on compare les effets estimés avec la simulation et on prédit sur les individus du jeu de validation (`in.test`).
+
+Dans la pratique, on utilise des fonctions de **validation croisée** qui vont, pour chaque partition, estimer directement la qualité de la prédiction sur le jeu de validation.
+
+```{r}
+prop <- 0.8
+in.train <- sample(c(TRUE,FALSE), size=N, replace=TRUE, prob=c(prop, 1-prop))
+sum(in.train)
+in.test <- (! in.train)
+sum(in.test)
+stopifnot(xor(in.train, in.test)) # vérification que chaque individu est soit dans l'ensemble d'entrainement, soit dans l'ensemble de validation
+```
+
+### Entraînement
+
+Ajuster le modèle:
+
+```{r fit_ridge_regression}
+fit <- rrBLUP::mixed.solve(y=y[in.train], Z=X[in.train,])
+str(fit)
+```
+
+Comparer les estimations des paramètres avec les valeurs utilisées pour simuler les données:
+
+```{r}
+# Moyenne
+mu.hat <- fit$beta 
+c(mu, mu.hat)
+# Variance génétique 
+sigma.beta2.hat <- fit$Vu
+c(1, sigma.beta2.hat)
+# Variance d'erreur
+sigma2.hat <- fit$Ve
+c(sigma2, sigma2.hat)
+# Variance génétique additive
+sigma.a2.hat <- sigma.beta2.hat * 2 * sum(afs * (1 - afs))
+c(sigma.a2, sigma.a2.hat)
+# Héritabilité au sens strict
+h2.hat <- sigma.a2.hat / (sigma.a2.hat + sigma2)
+c(h2, h2.hat)
+# Effet des marqueurs
+beta.hat <- fit$u
+# Ici on connait la "vérité", on peut comparer les effets estimés avec les effets simulés
+(tmp <- cor(beta, beta.hat))
+plot(beta, beta.hat, main=paste0("cor = ", round(tmp, 3)))
+abline(lm(beta.hat ~ beta), col="red")
+a.pred.train <- X[in.train,] %*% beta.hat # breeding values pop entrainement = valeurs génotypiques additives
+(tmp <- cor(a[in.train], a.pred.train))
+plot(a[in.train], a.pred.train, main=paste0("cor = ", round(tmp, 3)))
+abline(lm(a.pred.train ~ a[in.train]), col="red")
+```
+
+### Test
+
+Prédire les valeurs génotypiques sur l'ensemble de test à partir des effets alléliques estimés sur l'ensemble d'entraînement:
+
+```{r valid}
+a.pred.test <- X[in.test,] %*% beta.hat  # breeding values pop test
+(tmp <- cor(a[in.test], a.pred.test)) # précision de prédiction ou predictive ability
+plot(a[in.test], a.pred.test, main=paste0("cor = ", round(tmp, 3)))
+abline(lm(a.pred.test ~ a[in.test]), col="red")
+```
+
+On obtient ici une valeur de précision de prédiction. Cette valeur peut varier selon les individus sélectionnés dans la population d'entraînement et de validation. C'est pourquoi, on fait de la validation croisée, en changeant plusieurs fois les populations d'entraînement et de validation.
+
+## Validation croisée
+
+En pratique, on définit de façon automatique toutes les partitions pour la validation croisée et on affiche directement les résultats des KxR précisions de prédiction.
+
+### Fonctions
+
+Définir des fonctions supplémentaires est nécessaire pour utiliser le paquet `cvTools` avec la fonction `mixed.solve` du paquet `rrBLUP`:
+
+```{r fonction cv}
+rr <- function(y, Z, K=NULL, X=NULL, method="REML"){
+  stopifnot(is.matrix(Z))
+  out <- rrBLUP::mixed.solve(y=y, Z=Z, K=K, X=X, method=method)
+  return(structure(out, class="rr"))
+}
+predict.rr <- function(object, newZ){
+  stopifnot(is.matrix(newZ))
+  out <- as.vector(newZ %*% object$u)
+  if(! is.null(rownames(newZ)))
+    names(out) <- rownames(newZ)
+  return(out)
+}
+```
+
+### Partitions
+
+La fonction `cvFolds` va permettre de définir les jeux d'entraînement et de validation de la validation croisée.
+
+-   K = 5 : nombre de partitions voulues, le jeu d'entraînement comportera alors 4/5e des individus
+
+-   R = 10 : nombre de fois que la validation croisée est répétée, à chaque fois on rééchantillonne des individus différents dans les populations d'entraînement et de validation.
+
+```{r define folds}
+folds <- cvFolds(n=nrow(X), K=5, R=10)
+dim(folds$subsets)
+```
+
+A la fin nous aurons donc 50 valeurs de précision de prédiction, correspondant à 50 ajustements du modèle, c'est ce que fait la fonction suivante, `cvTool`.
+La fonction ne renvoie que la moyenne des précision de prédiction par réplicat.
+
+### Validation
+
+```{r cross_val}
+callRR <- call("rr", y=y, Z=X)
+system.time(
+    out.cv <- cvTool(call=callRR, x=X, y=y, names=c("Z", "y"),
+                     cost=cor, folds=folds))
+out.cv # one row per replicate
+mean(out.cv[,"CV"])
+sd(out.cv[,"CV"])
+```
+
+A vous de jouer !
+Modifiez les paramètres par défauts et mesurez leur impact sur la précision de prédiction.
+Vous choisirez une représentation graphique qui illustrera vos conclusions.
+
+### Validation croisée bis avec les vraies valeurs génétiques
+
+```{r}
+out.cv <- matrix(nrow=folds$K, ncol=folds$R,NA)
+
+for(r in 1:folds$R){
+  for(k in 1:folds$K){
+    in.tst <- rownames(X)[folds$subsets[,r][folds$which == k]]
+    in.train <- setdiff(rownames(X),in.tst)
+    fit <- rrBLUP::mixed.solve(y=y[in.train,],Z=X[in.train,])
+    pred <-  X[in.train,] %*% as.matrix(fit$u) 
+    out.cv[k,r] <- cor(pred,a[in.train,])
+  }
+}
+```
+
+
+
+
+# Annexe
+
+```{r info}
+t1 <- proc.time(); t1 - t0
+print(sessionInfo(), locale=FALSE)
+```
