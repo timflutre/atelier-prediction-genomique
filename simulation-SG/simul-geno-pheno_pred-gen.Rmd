@@ -63,6 +63,7 @@ suppressPackageStartupMessages(library(anyLib))
 suppressPackageStartupMessages(library(rrBLUP))
 suppressPackageStartupMessages(library(cvTools))
 suppressPackageStartupMessages(library(devtools))
+suppressPackageStartupMessages(library(apercu))
 ```
 
 Un certain niveau de déséquilibre de liaison entre génotypes aux SNP est indispensable pour obtenir une précision de prédiction suffisamment élevée en validation croisée.
@@ -140,11 +141,11 @@ Voici un exemple de code pour appliquer cette fonction, disponible sur [Github](
 
 ### Génotypes aux SNP
 
-Paramètres du Coalescent
+Paramètres du Coalescent qui vont déterminer l'histoire génétique des individus simulés.
 
 ```{r param}
 nb.genos <- 500 # nombre de génotypes
-nb.chroms <- 5
+nb.chroms <- 5 # nombre de chromosomes
 Ne <- 10^4 # taille efficace
 chrom.len <- 5*10^5 # longueur de chaque chromosome
 mu <- 10^(-8) # taux de mutation
@@ -152,6 +153,7 @@ c.rec <- 10^(-8) # taux de recombinaison
 ```
 
 #### Coalescent séquentiel avec recombinaison **sans** structure
+Une population sans structure est une population uniforme, avec des apparentements génétiques similaires entre tous les individus.
 
 ```{r simul_pop_no_struct}
 genomes <- simulCoalescent(nb.inds=nb.genos, nb.reps=nb.chroms,
@@ -215,13 +217,18 @@ snp.coords <- genomes$snp.coords[colnames(X),]
 
 Représentation graphique de la structure
 
-```{r additive relationship}
+```{r additive relationship,fig.width=7, fig.height=7}
+# par(mfrow=c(1,1))
+# graphics.off()
 A.nostruct <- estimGenRel(X=X, verbose=0)
-imageWithScale(A.nostruct, main="Additive genetic relationships with no structure")
+ap(as.matrix(A.nostruct))
+#graphics.off()
+imageWithScale(A.nostruct, main="No structure")
 rm(A.nostruct)
 A.struct <- estimGenRel(X=X.struct, verbose=0)
-imageWithScale(A.struct, main="Additive genetic relationships with structure")
+imageWithScale(A.struct, main="With structure")
 rm(A.struct)
+#graphics.off()
 ```
 
 Affichage des groupes de structure génétique avec une **Analyse en Composantes Principales**.
@@ -245,7 +252,7 @@ barplot(out.pca.struct$prop.vars,
         xlim=c(0,10), las=1)
 plotPca(rotation=out.pca.struct$rot.dat,
         prop.vars=out.pca.struct$prop.vars,
-        main="PCA without structure")
+        main="PCA with structure")
 ```
 
 ## Simulation des phénotypes
@@ -262,7 +269,7 @@ On peut simuler 2 types d'architecture génétique :
 is.infinitesimal <- TRUE
 if(is.infinitesimal){
   # Modèle infinitésimal : chaque marqueur a un effet faible sur le phénotype
-  sigma.beta2 <- 10^(-3) # chosen arbitrarily
+  sigma.beta2 <- 10^(-3) # choisi arbitrairement, variance effet marqueur
   beta <- rnorm(n=P, mean=0, sd=sqrt(sigma.beta2)) # effet du marqueur, tiré dans une loi normale
 } else {
   # Simulation avec certains marqueurs à effet nuls et certains à effet non nul (QTL).
@@ -284,10 +291,16 @@ Notez que $X$ est initialement codé en $\{0,1,2\}$, mais que dans la suite on p
 
 ```{r compute genotypic value}
 N <- nb.genos # nombre d'individus
-afs <- colMeans(X) / 2
+afs <- colMeans(X) / 2 # fréquence allélique
 tmp <- matrix(rep(1, N)) %*% (2 * afs)
+# centrage sur les fréquences alléliques
 X.center <- X - tmp
-# Effet génétique additif
+
+```
+
+Les vraies valeurs génétiques additives ($a$) sont définies comme suit : $a = X \beta$
+```{r simul TBV}
+# Vecteur des valeurs génétiques additives vraies = true breeding values
 a <- X.center %*% beta
 # Variance génétique additive
 (sigma.a2 <- 1  * 2 * sum(afs * (1 - afs)))
@@ -302,6 +315,8 @@ epsilon <- rnorm(n=N, mean=0, sd=sqrt(sigma2)) # vecteur d'erreurs
 ```
 
 ### Phénotypes
+Le vecteur des phénotypes correspond à la formule : $y = \mu + X\beta + \epsilon$.
+Nous avons simulé $X$, $\beta$, $\epsilon$. Il reste à déterminer $\mu$ (moyenne du caractère) pour calculer $y$.
 
 ```{r phenotypes}
 mu <- 36 # chosen arbitrarily
@@ -344,6 +359,7 @@ hist(A.mark.vanraden[upper.tri(A.mark.vanraden)])
 ## Déséquilibre de liaison
 
 ```{r LD}
+## X correspond à la matrice génotypique pour les SNP échantillonnés
 for(chr in unique(snp.coords$chr)){
   LD <- estimLd(X=X, snp.coords = snp.coords, only.chr =chr)
   LD$dist <- distSnpPairs(data.frame(loc1=LD$loc1, loc2=LD$loc2),
@@ -356,7 +372,7 @@ for(chr in unique(snp.coords$chr)){
 }
 ```
 
-# Distinction des sous-population
+## Distinction des sous-population
 
 Une des problématiques en prédiction génomique est la distance génétique entre la population d'entraînement, qui a servi à ajuster le modèle (c'est-à-dire à estimer les effets associés aux marqueurs $\hat \beta$).
 Si la population est structurée, alors il y a de la distance génétique entre les différentes sous-populations.
@@ -369,7 +385,38 @@ levels(sub_pop$grp)
 sub_pop$size
 ```
 
-# Evaluation de la précision de prédiction
+
+# Sauvegarde des données
+
+Pour tester différents paramètres, vous pouvez sauvegarder à ce stade les données simulées et faire tourner la sélection génomique par validation croisée à part.
+Pour sauvegarder les objets sous forme de liste dans R, on peut utiliser la fonction `save`et enregistrer le fichier sous format `.Rdata`. La fonction pour charger le fichier est `load`.
+
+Exemple pour sauvegarder les données ensemble sous la forme d'une liste :
+
+```{r save}
+save_list <- list(
+  ## complétez par vos paramètres !
+  ###
+  param.h2=h2,
+  param.struct="nostruct",
+  ###
+  y.pheno=y,
+  X.geno=X.center
+)
+##save(save_list, file.choose()) # ne pas oublier l'extension .Rdata
+```
+
+Pour accéder au fichier sauvegardé :
+```{r load}
+# load(file.choose()) # choisir le bon fichier, il aura le même nom que la liste enregistrée
+# y <- save_list$y.pheno
+# X <- save_list$X.center
+```
+
+
+# Sélection génomique 
+
+## Evaluation pour une partition
 
 Pour évaluer la qualité de notre modèle et l'influence des paramètres de simulation, nous allons utiliser la validation croisée.
 l'ensemble des génotypes ($X$) et des phénotypes ($y$) va être divisé en ensembles d'entraînement et de test: $X_{train}, y_{train}$ et $X_{test}, y_{test}$ .
@@ -377,7 +424,7 @@ l'ensemble des génotypes ($X$) et des phénotypes ($y$) va être divisé en ens
 Le modèle de prédiction va être ajusté sur l'ensemble d'entraînement pour estimer les effets associés aux marqueurs ($\hat\beta$), puis ces effets des marqueurs vont être utilisés pour prédire des nouveaux génotypes, comme dans la vraie vie, en appliquant $\hat y_{test} = X_{test} \hat \beta$.
 Puisque nous avons accès aux phénotypes de l'ensemble de validation, nous pouvons vérifier la qualité de prédiction en faisant la corrélation entre la valeur prédite ($\hat y_{test}$) et la valeur "observée" ($y_{test}$)
 
-## Définition des ensembles d'entraînement et de test
+### Définition des ensembles d'entraînement et de test
 
 Création de vecteurs logiques (TRUE / FALSE) pour indiquer quels individus sont contenus dans la population d'entrainement et lesquels sont dans la population de validation.
 Pour l'exemple, on fait ici un ajustement du modèle sur les individus du jeu d'entraînement (`in.train`), on compare les effets estimés avec la simulation et on prédit sur les individus du jeu de validation (`in.test`).
@@ -395,7 +442,7 @@ stopifnot(xor(in.train, in.test)) # vérification que chaque individu est soit d
 
 ### Entraînement
 
-Ajuster le modèle:
+Ajuster le modèle avec la méthode de **ridge regression** :
 
 ```{r fit_ridge_regression}
 fit <- rrBLUP::mixed.solve(y=y[in.train], Z=X[in.train,])
@@ -432,7 +479,7 @@ plot(a[in.train], a.pred.train, main=paste0("cor = ", round(tmp, 3)))
 abline(lm(a.pred.train ~ a[in.train]), col="red")
 ```
 
-### Test
+###  Test
 
 Prédire les valeurs génotypiques sur l'ensemble de test à partir des effets alléliques estimés sur l'ensemble d'entraînement:
 
@@ -449,27 +496,6 @@ On obtient ici une valeur de précision de prédiction. Cette valeur peut varier
 
 En pratique, on définit de façon automatique toutes les partitions pour la validation croisée et on affiche directement les résultats des KxR précisions de prédiction.
 
-### Fonctions
-
-Définir des fonctions supplémentaires est nécessaire pour utiliser le paquet `cvTools` avec la fonction `mixed.solve` du paquet `rrBLUP`:
-
-```{r fonction cv}
-rr <- function(y, Z, K=NULL, X=NULL, method="REML"){
-  stopifnot(is.matrix(Z))
-  out <- rrBLUP::mixed.solve(y=y, Z=Z, K=K, X=X, method=method)
-  return(structure(out, class="rr"))
-}
-predict.rr <- function(object, newZ){
-  stopifnot(is.matrix(newZ))
-  out <- as.vector(newZ %*% object$u)
-  if(! is.null(rownames(newZ)))
-    names(out) <- rownames(newZ)
-  return(out)
-}
-```
-
-### Partitions
-
 La fonction `cvFolds` va permettre de définir les jeux d'entraînement et de validation de la validation croisée.
 
 -   K = 5 : nombre de partitions voulues, le jeu d'entraînement comportera alors 4/5e des individus
@@ -481,43 +507,35 @@ folds <- cvFolds(n=nrow(X), K=5, R=10)
 dim(folds$subsets)
 ```
 
-A la fin nous aurons donc 50 valeurs de précision de prédiction, correspondant à 50 ajustements du modèle, c'est ce que fait la fonction suivante, `cvTool`.
-La fonction ne renvoie que la moyenne des précision de prédiction par réplicat.
+A la fin nous aurons donc 50 valeurs de précision de prédiction, correspondant à 50 ajustements du modèle, c'est ce que fait la boucle suivante.
 
-### Validation
 
-```{r cross_val}
-callRR <- call("rr", y=y, Z=X)
-system.time(
-    out.cv <- cvTool(call=callRR, x=X, y=y, names=c("Z", "y"),
-                     cost=cor, folds=folds))
-out.cv # one row per replicate
-mean(out.cv[,"CV"])
-sd(out.cv[,"CV"])
+```{r}
+out.cv <- expand.grid(K=seq(folds$K), R=seq(folds$R))
+out.cv$PA <- NA
+for(r in 1:folds$R){
+  for(k in 1:folds$K){
+    ## in.tst = set de validation
+    in.tst <- rownames(X)[folds$subsets[,r][folds$which == k]]
+    ## in.train = set d'entrainement
+    in.train <- setdiff(rownames(X),in.tst)
+    ## ajustement du modèle
+    fit <- rrBLUP::mixed.solve(y=y[in.train,],Z=X[in.train,])
+    ## prédiction sur la population de validation
+    pred <-  X[in.tst,] %*% as.matrix(fit$u) 
+    ## calcul de la précision de prédiction
+    out.cv[out.cv$K == k & out.cv$R == r,"PA"] <- cor(pred,y[in.tst,])
+  }
+}
+out.cv
+mean(out.cv$PA)
+sd(out.cv$PA)
 ```
+
 
 A vous de jouer !
 Modifiez les paramètres par défauts et mesurez leur impact sur la précision de prédiction.
 Vous choisirez une représentation graphique qui illustrera vos conclusions.
-
-### Validation croisée bis avec les vraies valeurs génétiques
-
-```{r}
-out.cv <- matrix(nrow=folds$K, ncol=folds$R,NA)
-
-for(r in 1:folds$R){
-  for(k in 1:folds$K){
-    in.tst <- rownames(X)[folds$subsets[,r][folds$which == k]]
-    in.train <- setdiff(rownames(X),in.tst)
-    fit <- rrBLUP::mixed.solve(y=y[in.train,],Z=X[in.train,])
-    pred <-  X[in.train,] %*% as.matrix(fit$u) 
-    out.cv[k,r] <- cor(pred,a[in.train,])
-  }
-}
-```
-
-
-
 
 # Annexe
 
