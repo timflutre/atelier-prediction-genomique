@@ -142,6 +142,7 @@ Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en c
 
 * 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique, par V. Segura (document "prediction-genomique.pdf")
 Cette année, pour la première fois, introduction à la prédiction phénomique. 
+Accès au dépôt Github de Renaud Rincent pour télécharger le script et les données : [Github](https://github.com/rrincent/PhenomicSelectionPractical). 
 
 ## Mardi
 * 9h - 12h: investigation par simulation, en groupes, des aspects influençant la précision de prédiction
