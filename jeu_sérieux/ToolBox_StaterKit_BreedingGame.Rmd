@@ -40,10 +40,12 @@ knitr::opts_chunk$set(echo = TRUE)
 # Définition du chemin vers les données
 
 Donner le lien vers le répertoire où sont enregistrés les fichiers du jeu Plant Breed Game.
+Pour cela, naviguer vers votre répertoire dans l'onglet "Files", quand vous êtes au bon endroit, cliquer sur la roue crantée, puis sur "Set as working directory". Coller la ligne dans votre code. Tous les fichiers à charger doivent se situer dans ce répertoire.
 
 ```{r p2f}
-folder <- paste0("~/Cours-TD/SelGen_2022/BreedingGame/")
-stopifnot(file.exists(folder))
+setwd("~/Cours-TD/SelGen_2023/NotesScriptsPlantBreedGame/BreedingGame/data")
+stopifnot(file.exists(getwd()))
+knitr::opts_knit$set(root.dir = getwd())
 ```
 
 
@@ -53,10 +55,7 @@ stopifnot(file.exists(folder))
 Si le fichier a une extension **.gz**, il pourra être lu dans la fonction `read.table` avec la fonction *gzfile* : `file=gzfile(p2f)`.
 
 ```{r load}
-#p2f <- paste0(folder,"Result_phenos_initialColl.txt.gz") # path to gz file
-p2f <- paste0(folder,"Result_phenos_initialColl.txt") # path to txt file
-
-pheno <- read.table(file=p2f,sep="\t", 
+pheno <- read.table(file=gzfile("Result_phenos_initialColl.txt.gz"),sep="\t", 
                     header=TRUE, fileEncoding = "UTF-8")
 head(pheno)
 dim(pheno)
@@ -65,8 +64,7 @@ dim(pheno)
 Nom des génotypes contrôles
 
 ```{r}
-Controls <- read.table(file=paste0(folder,"controls.txt"), sep="\t",
-                       header=FALSE)
+Controls <- read.table(file="controls.txt", sep="\t",header=FALSE)
 (Controls <- c(Controls$V1))
 ```
 
@@ -74,10 +72,8 @@ Controls <- read.table(file=paste0(folder,"controls.txt"), sep="\t",
 ## Données génotypiques
 
 ```{r load geno data}
-# p2f <- paste0(folder,"Result_genos_subset-initialColl-hd.txt.gz")
-p2f <- paste0(folder,"Result_genos_subset-initialColl-hd.txt")
-
-geno <- read.table(file=p2f,sep="\t", header=TRUE,fileEncoding = "UTF-8")
+geno <- read.table(file="Result_genos_subset-initialColl-hd.txt",
+                   sep="\t", header=TRUE,fileEncoding = "UTF-8")
 geno[1:5,1:5]
 dim(geno)
 ```
@@ -85,10 +81,7 @@ dim(geno)
 ## Coordonnées des marqueurs
 
 ```{r load marker coordinates}
-#p2f <- paste0(folder,"snp_coords_hd.txt.gz")
-p2f <- paste0(folder,"snp_coords_hd.txt")
-
-snp_map <- read.table(file=p2f, sep="\t", header=TRUE)
+snp_map <- read.table(file="snp_coords_hd.txt", sep="\t", header=TRUE)
 head(snp_map)
 dim(snp_map)
 snp_map <- snp_map[order(snp_map$chr, snp_map$pos),]
@@ -107,18 +100,20 @@ Ce morceau de code vous permet de concevoir ces croisements et de réaliser le f
 ```{r request plant material}
 parents <- c("Coll0001","Coll0002","Coll0003","Coll0004","Coll0005") # => votre sélection de génotypes
 setdiff(parents, pheno$ind) # => bien vérifier que les parents sont dans la collection (ici le tableau de phénotypes s’appelle pheno)
-crosses <- t(combn(x=parents, m=2, simplify = TRUE)) # => crée tous les croisements possibles parmi les parents sans les autofécondations
+
+# crée toutes les combinaisons entre les parents = tous les croisements possibles parmi les parents 
+crosses <- expand.grid(parent1=parents, parent2=parents)
+## enlever les lignes correspondant aux autofécondations
+crosses <- crosses[-which(crosses$parent1 == crosses$parent2, arr.ind=TRUE),]
 head(crosses)
 dim(crosses) # nombre de croisements à réaliser
-# Formatage du fichier pour la requête
-colnames(crosses) <- c("parent1", "parent2")
-crosses <- as.data.frame(crosses)
+
 crosses$child <- paste0("gen1_", seq(nrow(crosses))) # nom des descendants : gen1_1, …, gen1_6 (peut être changé !)
 crosses$explanations <- "allofecundation"
 head(crosses)
 # écrire le fichier de requête
-p2f <- paste0(folder,"request_plant_material_Coll0001-5.txt")
-write.table(crosses, file=p2f, sep="\t", col.names=TRUE, 
+write.table(crosses, file="request_plant_material_Coll0001-5.txt",
+            sep="\t", col.names=TRUE, 
             row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
 ```
 
@@ -137,8 +132,8 @@ dat
 dim(dat)
 str(dat)
 # écrire le fichier de requête
-p2f <- paste0(folder,"request_phenotyping_controls-gen1.txt")
-write.table(dat, file=p2f, sep="\t", col.names=TRUE, 
+write.table(dat, file="request_phenotyping_controls-gen1.txt",
+            sep="\t", col.names=TRUE, 
             row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
 ```
 
@@ -156,8 +151,8 @@ dat
 dim(dat)
 str(dat)
 # écrire le fichier de requête
-p2f <- paste0(folder,"request_genotyping_gen1.txt")
-write.table(dat, file=p2f, sep="\t", col.names=TRUE, 
+write.table(dat, file="request_genotyping_gen1.txt", 
+            sep="\t", col.names=TRUE, 
             row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
 ```
 

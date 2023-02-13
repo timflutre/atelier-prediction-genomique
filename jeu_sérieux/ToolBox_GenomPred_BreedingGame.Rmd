@@ -43,8 +43,9 @@ suppressPackageStartupMessages(library(MM4LMM))
 Donner le lien vers le répertoire où sont enregistrés les fichiers du jeu Breeding Game.
 
 ```{r p2f}
-folder <- paste0("~/Documents/Cours-TD/SelGen_2022/BreedingGame/")
-stopifnot(file.exists(folder))
+setwd("~/Cours-TD/SelGen_2023/NotesScriptsPlantBreedGame/BreedingGame/data")
+stopifnot(file.exists(getwd()))
+knitr::opts_knit$set(root.dir = getwd())
 ```
 
 
@@ -53,8 +54,7 @@ stopifnot(file.exists(folder))
 ## Données phénotypiques
 
 ```{r load}
-p2f <- paste0(folder,"Result_phenos_initialColl.txt.gz") # path to file
-pheno <- read.table(file=gzfile(p2f),sep="\t", 
+pheno <- read.table(file=gzfile("Result_phenos_initialColl.txt.gz"),sep="\t", 
                     header=TRUE, fileEncoding = "UTF-8")
 head(pheno)
 dim(pheno)
@@ -63,8 +63,8 @@ dim(pheno)
 ## Données génotypiques
 
 ```{r load geno data}
-p2f <- paste0(folder,"Result_genos_subset-initialColl-hd.txt.gz")
-geno <- read.table(file=gzfile(p2f),sep="\t", header=TRUE,
+geno <- read.table(file=gzfile("Result_genos_subset-initialColl-hd.txt.gz"),
+                   sep="\t", header=TRUE,
                    fileEncoding = "UTF-8")
 geno[1:5,1:5]
 dim(geno)
@@ -73,8 +73,8 @@ dim(geno)
 ## Coordonnées des marqueurs
 
 ```{r load marker coordinates}
-p2f <- paste0(folder,"snp_coords_hd.txt.gz")
-snp_map <- read.table(file=gzfile(p2f), sep="\t", header=TRUE)
+snp_map <- read.table(file=gzfile("snp_coords_hd.txt.gz"),
+                      sep="\t", header=TRUE)
 head(snp_map)
 dim(snp_map)
 snp_map <- snp_map[order(snp_map$chr, snp_map$pos),]
@@ -112,7 +112,7 @@ A faire : concevoir un modèle avec différents effets estimables pour prédire 
 
 ## Trait 1
 
-A vous de déterminer les variables à intégrer dans le modèle mixte ...
+**A vous de déterminer les variables à intégrer dans le modèle mixte !**
 
 ```{r}
 fit <- lmer(trait1 ~ (1|ind) + ..., data=pheno)
