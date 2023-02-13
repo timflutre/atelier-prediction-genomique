@@ -83,14 +83,13 @@ suppressPackageStartupMessages(library(rutilstimflutre))
 suppressPackageStartupMessages(library(adegenet))
 ```
 
-
 Si l'installation de `rutilstimflutre` pose problème, vous pouvez utiliser un condensé de ses fonctions en chargeant le fichier source `rutils_like.R`.
 
-Sourcer le fichier `rutils_like.R`, aller sur le GitHub de Jacques David (https://github.com/jacquesdavid/SELGEN2021), puis dans le répertoire **Approche_par_simulation**, cliquer sur le fichier "rutils_like.R" et copier le code (onglet **raw**) dans un nouveau script R.
+Sourcer le fichier `rutils_like.R`, aller sur le GitHub de Jacques David (<https://github.com/jacquesdavid/SELGEN2021>), puis dans le répertoire **Approche_par_simulation**, cliquer sur le fichier "rutils_like.R" et copier le code (onglet **raw**) dans un nouveau script R.
 
-* Option 1 : aller dans l'onglet rutils_like.R dans Rstudio et cliquer sur le bouton "Source"
+-   Option 1 : aller dans l'onglet rutils_like.R dans Rstudio et cliquer sur le bouton "Source"
 
-* Option 2 : appliquer la fonction "source" en mettant le chemin d'accès vers ce script R.
+-   Option 2 : appliquer la fonction "source" en mettant le chemin d'accès vers ce script R.
 
 Vérifier que les fonctions sont bien chargées dans l'environnement.
 
@@ -98,14 +97,11 @@ Vérifier que les fonctions sont bien chargées dans l'environnement.
 #source("/rutils_like.R", encoding = "UTF-8")
 ```
 
-
-
 Il est également utile de savoir combien de temps est nécessaire pour exécuter tout le code R de ce document (voir l'annexe):
 
 ```{r time_0}
 t0 <- proc.time()
 ```
-
 
 # Modèle
 
@@ -153,6 +149,7 @@ c.rec <- 10^(-8) # taux de recombinaison
 ```
 
 #### Coalescent séquentiel avec recombinaison **sans** structure
+
 Une population sans structure est une population uniforme, avec des apparentements génétiques similaires entre tous les individus.
 
 ```{r simul_pop_no_struct}
@@ -235,7 +232,7 @@ Affichage des groupes de structure génétique avec une **Analyse en Composantes
 
 ```{r plot pca, fig.width=8, fig.height=7}
 # Sans structure
-out.pca.nostruct <- pca(X=X,plot="points")
+out.pca.nostruct <- pca(X=X)
 out.pca.nostruct$prop.vars[1:4]
 barplot(out.pca.nostruct$prop.vars[1:10],
         main="Proportion of variance explained by each PC, without structure",
@@ -255,6 +252,19 @@ plotPca(rotation=out.pca.struct$rot.dat,
         main="PCA with structure")
 ```
 
+## Distinction des sous-population
+
+Une des problématiques en prédiction génomique est la distance génétique entre la population d'entraînement, qui a servi à ajuster le modèle (c'est-à-dire à estimer les effets associés aux marqueurs $\hat \beta$).
+Si la population est structurée, alors il y a de la distance génétique entre les différentes sous-populations.
+Vous pourrez voir comment évolue la précision de prédiction lorsque la population de validation fait partie d'une sous-population différente de la population d'entraînement.
+
+```{r distinct_pop}
+sub_pop <- find.clusters(x=X.struct, n.pca=2, scale=TRUE, method="kmeans",
+                         choose.n.clust=TRUE, n.clust=3)
+levels(sub_pop$grp)
+sub_pop$size
+```
+
 ## Simulation des phénotypes
 
 ### Effets additifs des SNP
@@ -263,22 +273,19 @@ On peut simuler 2 types d'architecture génétique :
 
 -   Modèle infinitésimal : chaque marqueur a un effet faible sur le phénotype.
 
--   Modèle polygénique : certains marqueurs à effet nuls et certains à effet non nul (QTL).
+-   Modèle oligogénique : certains marqueurs à effet nuls et certains à effet non nul (SNP causal).
 
-```{r simul_beta_inf}
-is.infinitesimal <- TRUE
-if(is.infinitesimal){
-  # Modèle infinitésimal : chaque marqueur a un effet faible sur le phénotype
-  sigma.beta2 <- 10^(-3) # choisi arbitrairement, variance effet marqueur
-  beta <- rnorm(n=P, mean=0, sd=sqrt(sigma.beta2)) # effet du marqueur, tiré dans une loi normale
-} else {
-  # Simulation avec certains marqueurs à effet nuls et certains à effet non nul (QTL).
-  nb_QTL <- 10
-  QTL <- sample(P, nb_QTL) # échantillonnage des marqueurs à effet non nul (QTL)
-  beta <- rep(0, P) # effet associé au marqueur égal à 0
-  beta[QTL] <- rnorm(n=nb_QTL, mean=0, sd=sqrt(sigma.beta2)) # sauf pour les QTL
-}
-# variance et moyenne comparables
+```{r simul_beta}
+nb_QTL <- P # modèle infinitésimal
+## nb_QTL <- 5 # modèle oligogénique
+sigma.beta2 <- 10^(-3) # choisi arbitrairement, variance effet marqueur
+# échantillonnage des marqueurs à effet non nul (QTL)
+QTL <- sample(P, nb_QTL) 
+# effet associé au marqueur égal à 0
+beta <- rep(0, P)
+# pour les QTL, effet tiré dans une loi normale
+beta[QTL] <- rnorm(n=nb_QTL, mean=0, sd=sqrt(sigma.beta2)) 
+# centrage et réduction pour avoir variance et moyenne comparables
 beta <- scale(beta, center=TRUE, scale=TRUE)
 ```
 
@@ -295,10 +302,10 @@ afs <- colMeans(X) / 2 # fréquence allélique
 tmp <- matrix(rep(1, N)) %*% (2 * afs)
 # centrage sur les fréquences alléliques
 X.center <- X - tmp
-
 ```
 
 Les vraies valeurs génétiques additives ($a$) sont définies comme suit : $a = X \beta$
+
 ```{r simul TBV}
 # Vecteur des valeurs génétiques additives vraies = true breeding values
 a <- X.center %*% beta
@@ -315,8 +322,10 @@ epsilon <- rnorm(n=N, mean=0, sd=sqrt(sigma2)) # vecteur d'erreurs
 ```
 
 ### Phénotypes
+
 Le vecteur des phénotypes correspond à la formule : $y = \mu + X\beta + \epsilon$.
-Nous avons simulé $X$, $\beta$, $\epsilon$. Il reste à déterminer $\mu$ (moyenne du caractère) pour calculer $y$.
+Nous avons simulé $X$, $\beta$, $\epsilon$.
+Il reste à déterminer $\mu$ (moyenne du caractère) pour calculer $y$.
 
 ```{r phenotypes}
 mu <- 36 # chosen arbitrarily
@@ -344,16 +353,14 @@ Estimateur de Habier et coll.
 
 ```{r estim gen rel habier}
 A.mark.habier <- (X %*% t(X)) / (2 * sum(afs * (1 - afs)))
-hist(diag(A.mark.habier), breaks="FD")
-hist(A.mark.habier[upper.tri(A.mark.habier)])
+hist(diag(A.mark.habier), breaks="FD",col="grey", border="white")
 ```
 
 Estimateur de VanRaden (2008):
 
 ```{r vanraden gen rel}
 A.mark.vanraden <- (X.center %*% t(X.center)) / (2 * sum(afs * (1 - afs)))
-hist(diag(A.mark.vanraden), breaks="FD")
-hist(A.mark.vanraden[upper.tri(A.mark.vanraden)])
+hist(diag(A.mark.vanraden), breaks="FD",col="grey", border="white")
 ```
 
 ## Déséquilibre de liaison
@@ -372,24 +379,11 @@ for(chr in unique(snp.coords$chr)){
 }
 ```
 
-## Distinction des sous-population
-
-Une des problématiques en prédiction génomique est la distance génétique entre la population d'entraînement, qui a servi à ajuster le modèle (c'est-à-dire à estimer les effets associés aux marqueurs $\hat \beta$).
-Si la population est structurée, alors il y a de la distance génétique entre les différentes sous-populations.
-Vous pourrez voir comment évolue la précision de prédiction lorsque la population de validation fait partie d'une sous-population différente de la population d'entraînement.
-
-```{r distinct_pop}
-sub_pop <- find.clusters(x=X.struct, n.pca=100, scale=TRUE, method="kmeans",
-                         choose.n.clust=TRUE, n.clust=6)
-levels(sub_pop$grp)
-sub_pop$size
-```
-
-
 # Sauvegarde des données
 
 Pour tester différents paramètres, vous pouvez sauvegarder à ce stade les données simulées et faire tourner la sélection génomique par validation croisée à part.
-Pour sauvegarder les objets sous forme de liste dans R, on peut utiliser la fonction `save`et enregistrer le fichier sous format `.Rdata`. La fonction pour charger le fichier est `load`.
+Pour sauvegarder les objets sous forme de liste dans R, on peut utiliser la fonction `save`et enregistrer le fichier sous format `.Rdata`.
+La fonction pour charger le fichier est `load`.
 
 Exemple pour sauvegarder les données ensemble sous la forme d'une liste :
 
@@ -407,14 +401,14 @@ save_list <- list(
 ```
 
 Pour accéder au fichier sauvegardé :
+
 ```{r load}
 # load(file.choose()) # choisir le bon fichier, il aura le même nom que la liste enregistrée
 # y <- save_list$y.pheno
 # X <- save_list$X.center
 ```
 
-
-# Sélection génomique 
+# Sélection génomique
 
 ## Evaluation pour une partition
 
@@ -479,7 +473,7 @@ plot(a[in.train], a.pred.train, main=paste0("cor = ", round(tmp, 3)))
 abline(lm(a.pred.train ~ a[in.train]), col="red")
 ```
 
-###  Test
+### Test
 
 Prédire les valeurs génotypiques sur l'ensemble de test à partir des effets alléliques estimés sur l'ensemble d'entraînement:
 
@@ -490,11 +484,16 @@ plot(a[in.test], a.pred.test, main=paste0("cor = ", round(tmp, 3)))
 abline(lm(a.pred.test ~ a[in.test]), col="red")
 ```
 
-On obtient ici une valeur de précision de prédiction. Cette valeur peut varier selon les individus sélectionnés dans la population d'entraînement et de validation. C'est pourquoi, on fait de la validation croisée, en changeant plusieurs fois les populations d'entraînement et de validation.
+On obtient ici une valeur de précision de prédiction.
+Cette valeur peut varier selon les individus sélectionnés dans la population d'entraînement et de validation.
+C'est pourquoi, on fait de la validation croisée, en changeant plusieurs fois les populations d'entraînement et de validation.
 
 ## Validation croisée
 
-En pratique, on définit de façon automatique toutes les partitions pour la validation croisée et on affiche directement les résultats des KxR précisions de prédiction.
+En pratique, on définit toutes les partitions pour que tous les individus fassent partie de la population de validation au moins une fois.
+On répète le processus plusieurs fois et on étudie les moyennes des précisions de prédiction sur toutes les partitions.
+
+![Schéma validation-croisée](kfold.webp)
 
 La fonction `cvFolds` va permettre de définir les jeux d'entraînement et de validation de la validation croisée.
 
@@ -509,8 +508,7 @@ dim(folds$subsets)
 
 A la fin nous aurons donc 50 valeurs de précision de prédiction, correspondant à 50 ajustements du modèle, c'est ce que fait la boucle suivante.
 
-
-```{r}
+```{r cross_val}
 out.cv <- expand.grid(K=seq(folds$K), R=seq(folds$R))
 out.cv$PA <- NA
 for(r in 1:folds$R){
@@ -531,7 +529,6 @@ out.cv
 mean(out.cv$PA)
 sd(out.cv$PA)
 ```
-
 
 A vous de jouer !
 Modifiez les paramètres par défauts et mesurez leur impact sur la précision de prédiction.
