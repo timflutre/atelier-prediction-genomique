@@ -61,6 +61,17 @@ head(pheno)
 dim(pheno)
 ```
 
+```{r}
+
+
+pheno3 <- read.table(file=gzfile("Result_phenos_initialCollpheno2023.txt.gz"),sep="\t", 
+                    header=TRUE, fileEncoding = "UTF-8")
+head(pheno3)
+dim(pheno3)
+identical(pheno, pheno3)
+```
+
+
 Nom des génotypes contrôles
 
 ```{r}
@@ -74,6 +85,9 @@ Controls <- read.table(file="controls.txt", sep="\t",header=FALSE)
 ```{r load geno data}
 geno <- read.table(file="Result_genos_subset-initialColl-hd.txt",
                    sep="\t", header=TRUE,fileEncoding = "UTF-8")
+geno <- data.table::fread("Result_genos_subset-initialColl-hd.txt")
+
+
 geno[1:5,1:5]
 dim(geno)
 ```
@@ -92,30 +106,78 @@ snp_map <- snp_map[order(snp_map$chr, snp_map$pos),]
 
 ## Request plant material
 
+### Allofecundation
+
 Vous avez sélectionné les variétés les plus prometteuses, par exemple **Coll0001**, **Coll0002**, **Coll0003**, **Coll0004** et **Coll0005**.
 Vous voulez (par exemple) faire tous les croisements possibles entre ces 5 variétés.
 Ce morceau de code vous permet de concevoir ces croisements et de réaliser le fichier de requête.
 
 
-```{r request plant material}
+```{r request plant material allofecund}
 parents <- c("Coll0001","Coll0002","Coll0003","Coll0004","Coll0005") # => votre sélection de génotypes
 setdiff(parents, pheno$ind) # => bien vérifier que les parents sont dans la collection (ici le tableau de phénotypes s’appelle pheno)
 
 # crée toutes les combinaisons entre les parents = tous les croisements possibles parmi les parents 
 crosses <- expand.grid(parent1=parents, parent2=parents)
+
 ## enlever les lignes correspondant aux autofécondations
-crosses <- crosses[-which(crosses$parent1 == crosses$parent2, arr.ind=TRUE),]
+if(length(intersect(crosses$parent1, crosses$parent2)) > 0){
+  crosses <- crosses[-which(crosses$parent1 == crosses$parent2, arr.ind=TRUE),]
+}
 head(crosses)
 dim(crosses) # nombre de croisements à réaliser
-
-crosses$child <- paste0("gen1_", seq(nrow(crosses))) # nom des descendants : gen1_1, …, gen1_6 (peut être changé !)
+# nom des descendants (peut être changé !)
+crosses$child <- paste0("gen1_", crosses$parent1, "x", crosses$parent2) 
+## vérification de l'unicité des noms des descendants
+stopifnot(!any(duplicated(crosses$child)))
 crosses$explanations <- "allofecundation"
 head(crosses)
+
 # écrire le fichier de requête
-write.table(crosses, file="request_plant_material_Coll0001-5.txt",
+write.table(crosses, file="request_plant_material_allofecund_Coll0001-5.txt",
             sep="\t", col.names=TRUE, 
             row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
 ```
+
+
+NB : si vous voulez croiser deux listes de variétés de taille variée, vous pouvez toujours utiliser la fonction `expand.grid` en donnant les deux listes au lieu de deux fois la même liste.
+
+```{r}
+## on échantillonne 10 individus (au hasard ici)
+parents <- sample(rownames(geno), 10)
+## on détermine tous les croisements entre une liste de 2 parents et une liste de 8 parents
+crosses <- expand.grid(parent1=parents[1:2], parent2=parents[3:10])
+head(crosses)
+dim(crosses) # nombre de croisements à réaliser
+# nom des descendants (peut être changé !)
+crosses$child <- paste0("gen1_", crosses$parent1, "x", crosses$parent2) 
+stopifnot(!any(duplicated(crosses$child)))
+crosses$explanations <- "allofecundation"
+head(crosses)
+
+# écrire le fichier de requête
+write.table(crosses, file="request_plant_material_allofecund_v2.txt",
+            sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+### HD
+
+Ici on veut par exemple 3 haploïdes doublés pour chaque individu. 
+
+```{r}
+crossesHD <- data.frame(parent1=rep(crosses$child, each=3), parent2="",
+                      child=NA, explanations="haplodiploidization")
+crossesHD$child=paste0("HD_",crossesHD$parent1,"_",seq(3))
+crossesHD
+dim(crossesHD)
+stopifnot(!any(duplicated(crossesHD$child)))
+# écrire le fichier de requête
+write.table(crossesHD, file="request_plant_material_HD.txt",
+            sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
 
 A vous de voir ce que vous voulez faire avec ces individus F1, issus d'un croisement entre lignées. Phénotypage ? Génotypage ? Nouveau croisement (ex : F2) ? Fixation (ex : SSD, HD) ? 
 
@@ -131,6 +193,10 @@ dat <- data.frame(ind=c(crosses$child, Controls),
 dat
 dim(dat)
 str(dat)
+## vérification de l'unicité des individus
+stopifnot(!any(duplicated(dat$ind)))
+
+
 # écrire le fichier de requête
 write.table(dat, file="request_phenotyping_controls-gen1.txt",
             sep="\t", col.names=TRUE, 

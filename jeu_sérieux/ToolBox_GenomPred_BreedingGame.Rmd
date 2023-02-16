@@ -119,7 +119,8 @@ fit <- lmer(trait1 ~ (1|ind) + ..., data=pheno)
 fixef(fit)
 randEf <- ranef(fit)
 BLUP1 <- randEf$ind
-best_tr1 <- rownames(BLUP1)[order(BLUP1$`(Intercept)`)[1:25]]
+# sélection des 25 génotypes avec les valeurs génotypiques les plus élevées
+best_tr1 <- rownames(BLUP1)[order(BLUP1$`(Intercept)`, decreasing=TRUE)[1:25]]
 ```
 
 ## Trait 2

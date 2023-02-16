@@ -4,14 +4,14 @@ author: "Jacques David, Philippe Brabant et Timothée Flutre"
 date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
 colorlinks: true
 output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
   html_document:
     toc: true
     toc_depth: 3
     toc_float: true
-    number_sections: TRUE
-  pdf_document:
-    toc: true
-    toc_depth: 3
     number_sections: TRUE
 mode: selfcontained
 abstract: |
@@ -54,7 +54,7 @@ Découverte récemment aux confins de la vallée supérieure de l'Aghromonpe, *A
 Elle produit des fleurs qui contiennent un composé alcaloïde, la *sepmetine*, consommée par les étudiants pour éviter les maux de tête lors d'efforts intellectuels trop intenses.
 Le marché est donc très important et se développe rapidement. 
 *Apimeta* peut être sensible à quelques maladies, dont la redoutable rouille fluorescente, *Putrida psychedelica*.
-Les producteurs sont payés à la quantité produite, les rendements étant de l'ordre de 40 kg de fleurs par ha, mais les transformateurs ont réussi à exiger que la teneur moyenne en sepmetine des lots commerciaux soit au dessus de 14 pour mille. 
+Les producteurs sont payés à la quantité produite, les rendements étant de l'ordre de 40 kg de fleurs par ha, mais les transformateurs ont réussi à exiger que la teneur moyenne en sepmetine des lots commerciaux soit au dessus de 15 pour mille. 
 
 ## Biologie de l'espèce
 
@@ -62,7 +62,7 @@ Les producteurs sont payés à la quantité produite, les rendements étant de l
 Elle est produite sous forme de lignées pures, et se croise facilement.
 On peut produire en serre jusqu'à deux générations par an pour accélerer la fixation et le retour à l'homozygotie.
 Il est également possible de produire des haploïdes doublés.
-Le taux de multiplication de l'espèce est très élevé, chaque plante étant capable de produire plus de 1000 graines.
+Le taux de multiplication de l'espèce est très élevé, chaque plante étant capable de produire plus de 10000 graines.
 
 ## Génome et ressources génomiques
 
@@ -94,8 +94,7 @@ Pour les `r (nb.PEs/2)` lignées expérimentées la dernière année, les donné
 ## Réseau d'expérimentation
 
 Il y a un site expérimental possible, Agrom-sur-Lez (AZ), qui a `r nb.PEs` parcelles.
-L'implantation d'une parcelle nécessite environ 500 graines.
-Le coût unitaire d'une parcelle expérimentale (semis, phénotypage des trois caractères et récolte), 1 PE, est de `r (cost.PE <- 50)` Mendels.
+Le coût unitaire d'une parcelle expérimentale (PE) (semis, phénotypage des trois caractères et récolte), 1 PE, est de `r (cost.PE <- 50)` Mendels.
 
 ## Serre
 
@@ -109,7 +108,7 @@ La culture et récolte d'une plante individuelle est de 1/25 PE, soit `r cost.PE
 La production d'une graine haploïde fonctionne comme sur le maïs, la pollinisation de la plante donneuse se fait par le pollen d'un génotype inducteur de gynogénèse.
 Les graines haploïdes se repèrent facilement.
 Le doublement du stock chromosomique de la plante haploïde prend une génération également. 
-Au final, l'obtention de la récolte de 1000 graines d'un haploïde doublé prend six mois et coûte 1/5 PE, soit `r cost.PE / 5` Mendels.
+Au final, l'obtention de la récolte d'un haploïde doublé prend douze mois et coûte 1/5 PE, soit `r cost.PE / 5` Mendels.
 
 ## Récapitulatif des coûts
 
@@ -125,7 +124,7 @@ génotypage simple-SNP     | `r cost.PE / 50`         | 1/50
 
 ## Budget total
 
-Chaque équipe dispose d'un capital maximum de 150 000 Mendels sur 10 ans, soit de quoi phénotyper sur toutes les parcelles chaque année.
+Chaque équipe dispose d'un capital maximum de 195 000 Mendels sur 10 ans, soit de quoi phénotyper sur toutes les parcelles chaque année.
 
 <!--
 Chaque équipe dispose d'un capital maximum de `r (cost.PE * nb.PEs * 10)` Mendels sur 10 ans, soit de quoi phénotyper sur toutes les parcelles chaque année.
@@ -140,7 +139,7 @@ Le coût de dépôt à l'inscription est de 200 Mendels par variété.
 Elles devront satisfaire aux critères DHS qui seront évalués essentiellement sur le taux d'hétérozygotie de la variété proposée: $\le$ 3 %.
 
 Elles devront aussi satisfaire aux critères VATE correspondant à un minimum de 103 % de la productivité brute moyenne des lignées témoins disponibles pour tous en début de programme.
-Les variétés en-dessous du seuil de 14 pour mille de sepmetine seront éliminées.
+Les variétés en-dessous du seuil de 15 pour mille de sepmetine seront éliminées.
 Les variétés résistantes auront un bonus.
 
 La disponibilité en semence devra être suffisante.

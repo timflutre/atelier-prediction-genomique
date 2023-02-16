@@ -181,7 +181,7 @@ genomes.struct <- simulCoalescent(nb.inds=nb.genos2,
                                   chrom.len=chrom.len,
                                   nb.pops=nb.pops,
                                   mig.rate=4*Ne*mig.rates,
-                                  verbose=1)
+                                  verbose=2)
 dim(genomes.struct$genos)
 genomes.struct$genos[1:8,1:8]
 ```
@@ -214,16 +214,18 @@ snp.coords <- genomes$snp.coords[colnames(X),]
 
 Représentation graphique de la structure
 
-```{r additive relationship,fig.width=7, fig.height=7}
+```{r additive relationship,fig.width=12, fig.height=12}
 # par(mfrow=c(1,1))
 # graphics.off()
 A.nostruct <- estimGenRel(X=X, verbose=0)
 ap(as.matrix(A.nostruct))
-#graphics.off()
-imageWithScale(A.nostruct, main="No structure")
+graphics.off()
+#imageWithScale(A.nostruct, main="No structure")
+ image(A.nostruct)
 rm(A.nostruct)
 A.struct <- estimGenRel(X=X.struct, verbose=0)
-imageWithScale(A.struct, main="With structure")
+#imageWithScale(A.struct, main="With structure")
+image(A.struct)
 rm(A.struct)
 #graphics.off()
 ```
