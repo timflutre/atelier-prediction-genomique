@@ -14,9 +14,9 @@ output:
     number_sections: TRUE
 mode: selfcontained
 abstract: |
-  L'équipe pédagogique de 2022 : Vincent Segura, Charlotte Brault, Marie Serrie, Sarah Bensadoun, Théo Leprevost, Friedrich Longin, Charlotte Brault, Julie Fievet, Marion Gauthier et Jacques David.  
   Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique. Cet atelier est destiné aux étudiants en spécialisation APIMET et SEPMET de l'institut AgroMontpellier, PIST d'AgroParisTech et l'option Amélioration des plantes de l'institut Agro Rennes.  
-  Un peu d'histoire : En 2022, ce sera la 7 ème édition de cet atelier construit au départ par Timothée Flûtre, Jacques David, Friedrich Longin et Philippe Brabant, fortement amélioré par Julien Diot pour le jeu sérieux. Cette année, l'institut Agro Rennes nous rejoint. 
+  L'équipe pédagogique de 2022 : Vincent Segura, Charlotte Brault, Marie Serrie, Sarah Bensadoun, Théo Leprevost, Friedrich Longin, Charlotte Brault, Julie Fievet, Marion Gauthier et Jacques David.  
+  Un peu d'histoire : En 2022, ce sera la 7 ème édition de cet atelier construit au départ par Timothée Flutre, Jacques David, Friedrich Longin et Philippe Brabant, fortement amélioré par Julien Diot pour le jeu sérieux. Cette année, l'institut Agro Rennes nous rejoint. 
 ---
 
 
@@ -33,9 +33,9 @@ abstract: |
 Equipe pédagogique 2021 :
 
 Vincent Segura ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](https://umr-agap.cirad.fr/recherche/equipes-scientifiques2/diversite-et-amelioration-de-la-vigne/contexte-et-objectifs),
-Julie Fiévet ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/)),
+Julie Fiévet ([INRAe](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/)),
 Friedrich Longin de l'[université d'Hohenheim](https://lsa-weizen.uni-hohenheim.de/),
-Charlotte Brault : charlotte.brault@inra.fr,
+Charlotte Brault : charlotte.brault@vignevin.com,
 Sarah Bensadoun : sarah.bensadoun@agroparistech.fr,
 Theo Leprevost : theo.leprevost@agrocampus-ouest.fr [IGEPP](https://www6.rennes.inrae.fr/igepp),
 Anne Leperche : anne.leperche@agrocampus-ouest.fr,
@@ -43,7 +43,7 @@ Simon rio : simon.rio@cirad.fr,
 Marion Gauthier : marion.gauthier@agrocampus-ouest.fr,
 
 Crédits
-Timothée Flutre ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
+Timothée Flutre ([INRAe](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
 Philippe Brabant, Jacques David, Julien Diot
 
 
@@ -53,7 +53,7 @@ Il vise à familiariser les étudiants avec la prédiction génomique de caract�
 Il se déroule en trois étapes. 
 
 
-1. Les bases de la prédiction génomique, par Vincent Ségura (INRAE) et Charlotte Brault (IFV, INRAE) et Marie Serrie (INRAE).
+1. Les bases de la prédiction génomique, par Vincent Ségura (INRAE) et Charlotte Brault (IFV) et Marie Serrie (INRAE).
 + Simulation de données phénotypiques selon différentes architectures génétiques
 + Présentation des principales méthodes d'inférence des effets génétiques
 + Exploration de la qualité des prédictions en fonction de paramètres tels que la structure du matériel végétal, la densité de génotypage, etc.
@@ -102,7 +102,7 @@ Les étudiants doivent venir chacun avec leur ordinateur portable avec la config
 
 1. système d'exploitation Windows, Mac ou GNU/Linux;
 
-2. logiciels [R](https://www.r-project.org/) (version $\geq$ 3) et [RStudio](https://www.rstudio.com/products/rstudio/) (version $\geq$ 1), et au moins les paquets suivants:
+2. logiciels [R](https://www.r-project.org/) (version $\geq$ 4) et [RStudio](https://www.rstudio.com/products/rstudio/) (version $\geq$ 1), et au moins les paquets suivants:
 + [selection](https://cran.r-project.org/package=selectiongain): pour la prédiction du gain génétique;
 + [knitr](https://cran.r-project.org/package=knitr/), [rmarkdown](https://cran.r-project.org/package=rmarkdown/): pour les rapports dynamiques;
 + [MASS](https://cran.r-project.org/package=MASS/): pour les simulations multivariées;
@@ -111,7 +111,7 @@ Les étudiants doivent venir chacun avec leur ordinateur portable avec la config
 + [cvTools](https://cran.r-project.org/package=cvTools): pour la validation croisée
 + [gtools](https://cran.r-project.org/package=gtools): pour trier de manière alphanumérique
 + [MM4LMM](https://cran.r-project.org/package=MM4LMM): algorithme MM pour ajuster une régression par ML ou ReML
-
++ [rutilstimflutre](https://github.com/timflutre/rutilstimflutre): ensemble de fonctions du package de Timothée Flutre.
 
 # Ressources en ligne
 
