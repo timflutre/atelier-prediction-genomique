@@ -1,7 +1,7 @@
 ---
 title: "Atelier prédiction génomique : <br> prédiction génomique"
 author: "Vincent Segura (INRAE) <br><br> d'après ['prediction-genomique.Rmd'](https://github.com/timflutre/atelier-prediction-genomique/blob/master/prediction-genomique.Rmd) de Timothée Flutre (INRAE) <br>"
-date: "Lundi 17 février 2020"
+date: ""
 output:
   ioslides_presentation:
     widescreen: yes
@@ -38,15 +38,15 @@ $$
 où:
 </div>
 
-    - $y_i$: valeur phénotypique de l'individu $i$ pour le caractère d'intérêt, considérée ici comme continu;
+    - $y_i$: **valeur phénotypique** de l'individu $i$ pour le caractère d'intérêt, considérée ici comme continu;
 
     - $g_i$: **valeur génotypique** de l'individu $i$, en unité du phénotype, interprétée comme étant le phénotype moyen de l'individu s'il était cloné dans tous les environnements possibles;
 
-    - $\epsilon_i$: composante non-génétique pour l'individu $i$ ("déviation environnementale")
+    - $\epsilon_i$: **composante non-génétique** pour l'individu $i$ ("déviation environnementale")
 
 ## Décomposition de la variance
 
-- Si l'on suppose que les valeur génotypique et la composante non-génétique ne sont pas corrélées, alors :
+- Si l'on suppose que les valeurs génotypique et la composante non-génétique ne sont pas corrélées, alors :
     
     - la variance phénotypique est égale à $\sigma_p^2 = \sigma_g^2 + \sigma_\epsilon^2$
 
@@ -785,29 +785,29 @@ if(requireNamespace("cvTools", quietly=TRUE)){
 
 - C'est le cas par exemple du **Lasso** qui utilise une autre norme, $L^1$, pour pénaliser la vraisemblance ou de l'**Elastic Net** qui combine les normes $L^1$ et $L^2$.
 
-## Au-delà de l'architecture génétique additive
+<!-- ## Au-delà de l'architecture génétique additive -->
 
-- La matrice $A_{\text{mark}}$ est proportionnelle à $X X^T$
+<!-- - La matrice $A_{\text{mark}}$ est proportionnelle à $X X^T$ -->
 
-- L'apparentement génétique additif entre deux individus $i$ et $j$ est donc $A_{ij} \propto \sum_p X_{ip} X^T_{pj} = \boldsymbol{x}_i^T \cdot \boldsymbol{x}_j$, appelé **produit scalaire** (*dot product*)
+<!-- - L'apparentement génétique additif entre deux individus $i$ et $j$ est donc $A_{ij} \propto \sum_p X_{ip} X^T_{pj} = \boldsymbol{x}_i^T \cdot \boldsymbol{x}_j$, appelé **produit scalaire** (*dot product*) -->
 
-- D'un point de vue géométrique, ce produit scalaire quantifie la distance linéaire entre les deux individus dans l'espace euclidien des génotypes
+<!-- - D'un point de vue géométrique, ce produit scalaire quantifie la distance linéaire entre les deux individus dans l'espace euclidien des génotypes -->
 
-- Mais on peut bien sûr utiliser d'autres fonctions de distance, non-linéaires cette fois. On utilise alors le terme de **noyau** (*kernel*) pour dénoter ces fonctions
+<!-- - Mais on peut bien sûr utiliser d'autres fonctions de distance, non-linéaires cette fois. On utilise alors le terme de **noyau** (*kernel*) pour dénoter ces fonctions -->
 
-----
+<!-- ---- -->
 
-- Afin de capturer la contribution des effets génétiques non-additifs, certains ont proposé d'utiliser le modèle $\boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{a} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 \, A_{\text{mark}})$<br> avec $A_{\text{mark}}$ calculée via un noyau défini dans un **espace de Hilbert à noyau reproduisant** (*Reproducing Kernel Hilbert Space*, RKHS)
+<!-- - Afin de capturer la contribution des effets génétiques non-additifs, certains ont proposé d'utiliser le modèle $\boldsymbol{y} = \boldsymbol{1} \mu + \boldsymbol{a} + \boldsymbol{\epsilon} \text{ avec } \boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 I) \text{ et } \boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 \, A_{\text{mark}})$<br> avec $A_{\text{mark}}$ calculée via un noyau défini dans un **espace de Hilbert à noyau reproduisant** (*Reproducing Kernel Hilbert Space*, RKHS) -->
 
-- Ce terme compliqué peut en fait simplement correspondre un noyau gaussien tel que $A_{ij} = \exp{\left( - (D_{ij} \, / \, \theta)^2 \right)}$ où $D_{ij}$ est la distance euclidienne entre $\boldsymbol{x}_i$ et $\boldsymbol{x}_j$ normalisée dans l'intervalle $[0,1]$ et $\theta$ est un paramètre d'échelle (qui doit être estimé par validation croisée)
+<!-- - Ce terme compliqué peut en fait simplement correspondre un noyau gaussien tel que $A_{ij} = \exp{\left( - (D_{ij} \, / \, \theta)^2 \right)}$ où $D_{ij}$ est la distance euclidienne entre $\boldsymbol{x}_i$ et $\boldsymbol{x}_j$ normalisée dans l'intervalle $[0,1]$ et $\theta$ est un paramètre d'échelle (qui doit être estimé par validation croisée) -->
 
-- Le package [rrBLUP](https://cran.r-project.org/web/packages/rrBLUP/index.html) permet d'utiliser ce noyau
+<!-- - Le package [rrBLUP](https://cran.r-project.org/web/packages/rrBLUP/index.html) permet d'utiliser ce noyau -->
 
 # Perspectives
 
 ## Explorer les simulations possibles
 
-- Voici quelques exemples de questions que vous pouvez vous poser:
+- Voici quelques exemples de questions que vous pourriez vous poser:
 
     * quel est l'impact de la fréquence allélique sur l'inférence des paramètres et la précision de la prédiction ?
 
@@ -819,17 +819,17 @@ if(requireNamespace("cvTools", quietly=TRUE)){
 <!-- **C'est à vous de jouer !** -->
 <!-- </div> -->
 
-## Analyser de vrais jeux de données disponibles
+<!-- ## Analyser de vrais jeux de données disponibles -->
 
-- Comme l'a fait justement remarquer Zamir ([plos biology 2013](http://dx.doi.org/10.1371/journal.pbio.1001595), [science 2014](http://dx.doi.org/10.1126/science.1258941)), il est difficile de trouver des jeux de données avec phénotypes en libre accès.
+<!-- - Comme l'a fait justement remarquer Zamir ([plos biology 2013](http://dx.doi.org/10.1371/journal.pbio.1001595), [science 2014](http://dx.doi.org/10.1126/science.1258941)), il est difficile de trouver des jeux de données avec phénotypes en libre accès. -->
 
-- Cependant, en voici quelques uns:
+<!-- - Cependant, en voici quelques uns: -->
 
-    * [crossa *et al* (genetics, 2010)](http://dx.doi.org/10.1534/genetics.110.118521): blé (599 lignées, 4 conditions, rendement en grains, pédigrée, 1279 marqueurs dart) et maïs (300 lignées, 1148 marqueurs snp, 3 caractères, deux conditions)
+<!--     * [crossa *et al* (genetics, 2010)](http://dx.doi.org/10.1534/genetics.110.118521): blé (599 lignées, 4 conditions, rendement en grains, pédigrée, 1279 marqueurs dart) et maïs (300 lignées, 1148 marqueurs snp, 3 caractères, deux conditions) -->
 
-    * [resende *et al* (genetics, 2012)](http://www.ncbi.nlm.nih.gov/pmc/articles/pmc3316659/): pin (951 individus de 61 familles, pédigrée, 4853 marqueurs snp, phénotypes dérégréssés)
+<!--     * [resende *et al* (genetics, 2012)](http://www.ncbi.nlm.nih.gov/pmc/articles/pmc3316659/): pin (951 individus de 61 familles, pédigrée, 4853 marqueurs snp, phénotypes dérégréssés) -->
 
-    * [cleveland *et al* (g3, 2012)](http://dx.doi.org/10.1534/g3.111.001453): porc (3534 animaux, pédigrée, 5 caractères, 53000 marqueurs snp)
+<!--     * [cleveland *et al* (g3, 2012)](http://dx.doi.org/10.1534/g3.111.001453): porc (3534 animaux, pédigrée, 5 caractères, 53000 marqueurs snp) -->
 
 <!-- Les grandes simplifications de ce travail ont été de ne se concentrer que sur un seul caractère, continu de sucroît, et d'ignorer un grand nombre d'éléments tels le déséquilibre de liaison, les interactions génotype-environnement, etc. -->
 

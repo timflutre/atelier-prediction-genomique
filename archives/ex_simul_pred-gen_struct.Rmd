@@ -69,6 +69,7 @@ suppressPackageStartupMessages(library(GenomicRanges))
 # BiocManager::install("GenomicRanges")
 suppressPackageStartupMessages(library(rutilstimflutre))
 suppressPackageStartupMessages(library(adegenet))
+suppressPackageStartupMessages(library(apercu))
 ```
 
 Il est également utile de savoir combien de temps est nécessaire pour exécuter tout le code R de ce document (voir l'annexe):
@@ -107,7 +108,7 @@ set.seed(111)
 
 ```{r parameters}
 is.infinitesimal <- TRUE
-is.structure <- FALSE
+is.structure <- TRUE
 
 nb.genos <- 300
 Ne <- 10^4
@@ -143,7 +144,11 @@ Voici un exemple de code pour appliquer cette fonction, disponible sur [Github](
 
 ## Génotypes aux SNP
 
+Comparaison des génotypes aux SNP pour une simulation sans et avec structure (comprenant elle-même 3 niveaux de structure).
+
 ### Coalescent séquentiel avec recombinaison **sans** structure
+
+Une population sans structure est une population uniforme, avec des apparentements génétiques similaires entre tous les individus.
 
 ```{r simul_pop_no_struct}
 set.seed(1234)
@@ -189,15 +194,16 @@ Combiner les simulations issues des 3 taux de migration dans une seule liste.
 ```{r}
 if(is.structure){
   X.pops <- lapply(names(mig.rates), function(n){
-    tmp <- genomes.struct[[n]]$genos
-    nb.remain.chrs <- 10 - length(unique(genomes.struct[[n]]$snp.coords[colnames(tmp),"chr"]))
-    remain.chrs <- unique(genomes.nostruct$snp.coords[,"chr"])[1:nb.remain.chrs]
-    snps.toadd <- rownames(genomes.nostruct$snp.coords[genomes.nostruct$snp.coords$chr %in%
-                                                         remain.chrs,])
-    X <- cbind(tmp, genomes.nostruct$genos[, snps.toadd])
-    colnames(X)[(ncol(tmp)+1):ncol(X)] <- paste0(colnames(X)[(ncol(tmp)+1):ncol(X)],
-                                                 "_nostruct")
-    X
+    genomes.struct[[n]]$genos
+    # tmp <- genomes.struct[[n]]$genos
+    # nb.remain.chrs <- 10 - length(unique(genomes.struct[[n]]$snp.coords[colnames(tmp),"chr"]))
+    # remain.chrs <- unique(genomes.nostruct$snp.coords[,"chr"])[1:nb.remain.chrs]
+    # snps.toadd <- rownames(genomes.nostruct$snp.coords[genomes.nostruct$snp.coords$chr %in%
+    #                                                      remain.chrs,])
+    # X <- cbind(tmp, genomes.nostruct$genos[, snps.toadd])
+    # colnames(X)[(ncol(tmp)+1):ncol(X)] <- paste0(colnames(X)[(ncol(tmp)+1):ncol(X)],
+    #                                              "_nostruct")
+    # X
   })
   names(X.pops) <- names(mig.rates)
   sapply(X.pops, dim)
@@ -280,6 +286,7 @@ Attention, le chunk prend du temps à tourner ...
 ### Echantillonnage des SNP
 
 ```{r}
+P # paramètre pour le nombre de SNP à échantillonner dans le génome
 if(is.structure){
   #Si on garde la simulation des 10 populations avec un taux de migration bas (forte structure) :
   struct.to.keep <- "low"
@@ -328,10 +335,14 @@ hist(A.mark.vanraden[upper.tri(A.mark.vanraden)])
 
 ## Déséquilibre de liaison
 
-```{r}
-LD <- estimLd(X=X, snp.coords = genomes.nostruct$snp.coords)
+On étudie ici le déséquilibre de liaison pour la simulation sans structure. A vous de tester avec la simulation avec structure.
+```{r estim ld}
+## X correspond à la matrice génotypique pour les SNP échantillonnés pour la simulation avec faible structure
+ap(X)
+LD <- estimLd(X=genomes.struct[[struct.to.keep]]$genos, 
+              snp.coords = genomes.struct[[struct.to.keep]]$snp.coords)
 LD$dist <- distSnpPairs(data.frame(loc1=LD$loc1, loc2=LD$loc2),
-                        genomes.nostruct$snp.coords,
+                        genomes.struct[[struct.to.keep]]$snp.coords,
                         nb.cores = 1, verbose = 1)
 
 plotLd(x=LD$dist, y=LD$cor2, xlab="Physical distance (in bp)",
@@ -343,9 +354,9 @@ plotLd(x=LD$dist, y=LD$cor2, xlab="Physical distance (in bp)",
 ## Valeurs génotypiques additives et variance génétique additive
 
 Notez que $X$ est initialement codé en $\{0,1,2\}$, mais que dans la suite on peut le centrer à l'aide des fréquences alléliques comme dans l'estimateur de VanRaden:
-```{r}
+```{r simul breeding val}
 X <- X.center
-# Effet génétique additif
+# Effet génétique additif = breeding values
 a <- X %*% beta
 # Variance génétique additive
 (sigma.a2 <- sigma.beta2 * 2 * sum(afs * (1 - afs)))
@@ -353,7 +364,7 @@ a <- X %*% beta
 
 ## Erreurs
 
-```{r}
+```{r simul error}
 h2 <- 0.7 # héritabilité au sens strict
 (sigma2 <- ((1 - h2) / h2) * sigma.a2) # variance d'erreur calculée à partir de h^2 et de sigma.a2
 epsilon <- rnorm(n=N, mean=0, sd=sqrt(sigma2)) # vecteur d'erreurs 
@@ -361,6 +372,8 @@ epsilon <- rnorm(n=N, mean=0, sd=sqrt(sigma2)) # vecteur d'erreurs
 
 ## Phénotypes
 
+Le vecteur des phénotypes correspond à la formule : $y = \mu + X\beta + \epsilon$.
+Nous avons simulé $X$, $\beta$, $\epsilon$. Il reste à déterminer $\mu$ (moyenne du caractère) pour calculer $y$.
 ```{r}
 mu <- 36 # chosen arbitrarily
 y <- mu + X %*% beta + epsilon
