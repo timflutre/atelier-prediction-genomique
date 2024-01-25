@@ -54,6 +54,9 @@ knitr::opts_knit$set(root.dir = getwd())
 ## Données phénotypiques
 Si le fichier a une extension **.gz**, il pourra être lu dans la fonction `read.table` avec la fonction *gzfile* : `file=gzfile(p2f)`.
 
+### Collection de génotypes disponibles initialement
+Chaque génotype est phénotypé pendant 2 années successives.
+
 ```{r load}
 pheno <- read.table(file=gzfile("Result_phenos_initialColl.txt.gz"),sep="\t", 
                     header=TRUE, fileEncoding = "UTF-8")
@@ -61,16 +64,7 @@ head(pheno)
 dim(pheno)
 ```
 
-```{r}
-
-
-pheno3 <- read.table(file=gzfile("Result_phenos_initialCollpheno2023.txt.gz"),sep="\t", 
-                    header=TRUE, fileEncoding = "UTF-8")
-head(pheno3)
-dim(pheno3)
-identical(pheno, pheno3)
-```
-
+### Génotypes contrôles 
 
 Nom des génotypes contrôles
 
@@ -79,14 +73,19 @@ Controls <- read.table(file="controls.txt", sep="\t",header=FALSE)
 (Controls <- c(Controls$V1))
 ```
 
+Tous les génotypes contrôles ont été phénotypés pendant 4 années.
+
+```{r load pheno control}
+pheno_ctl <- read.table(file=gzfile("Result_phenos_controls.txt.gz"),sep="\t", 
+                    header=TRUE, fileEncoding = "UTF-8")
+head(pheno_ctl)
+```
 
 ## Données génotypiques
 
 ```{r load geno data}
 geno <- read.table(file="Result_genos_subset-initialColl-hd.txt",
                    sep="\t", header=TRUE,fileEncoding = "UTF-8")
-geno <- data.table::fread("Result_genos_subset-initialColl-hd.txt")
-
 
 geno[1:5,1:5]
 dim(geno)
@@ -207,12 +206,12 @@ write.table(dat, file="request_phenotyping_controls-gen1.txt",
 
 ## Request genotyping
 
-Par exemple, nous voulons génotyper les nouveaux génotypes créés à la génération 1. Les 5 premiers individus auront un génotypage avec grande densité ("hd"), les 5 autres auront un génotypage à faible densité ("ld").
+Par exemple, nous voulons génotyper les nouveaux génotypes créés à la génération 1. Les 8 premiers individus auront un génotypage avec grande densité ("hd"), les 8 autres auront un génotypage à faible densité ("ld").
 
 ```{r request genotyping}
 dat <- data.frame(ind=crosses$child,
                   task="geno",
-                  details=c(rep("hd",5),rep("ld",5)))
+                  details=c(rep("hd",8),rep("ld",8)))
 dat
 dim(dat)
 str(dat)
