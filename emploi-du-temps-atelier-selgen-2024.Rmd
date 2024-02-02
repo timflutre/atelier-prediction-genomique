@@ -14,33 +14,35 @@ output:
     number_sections: TRUE
 mode: selfcontained
 abstract: |
-  L'équipe pédagogique de 2023 : Vincent Segura, Charlotte Brault, Sarah Bensadoun, Friedrich Longin, Charlotte Brault, Anne Laperche et Jacques David.  
-  Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique. Cet atelier est destiné aux étudiants en spécialisation APIMET et SEPMET de l'institut AgroMontpellier, PIST d'AgroParisTech et l'option Amélioration des plantes de l'institut Agro Rennes.  
-  Un peu d'histoire : En 2023, ce sera la 8 ème édition de cet atelier construit au départ par Timothée Flûtre, Jacques David, Friedrich Longin et Philippe Brabant, fortement amélioré par Julien Diot pour le jeu sérieux. Cette année encore, nous aurons les étudiants des 3 écoles, AgroParisTech, l'institut Agro de Montpellier et de Rennes. 
+  Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique. Cet atelier est destiné aux étudiants en spécialisation APIMET et SEPMET de l'institut Agro Montpellier, PIST d'AgroParisTech et l'option Amélioration des plantes de l'institut Agro Rennes-Angers.  
+  L'équipe pédagogique de 2024 : Renaud Rincent, Marianne Larencon, Marion Gauthier, Mathieu Tiret, Sarah Bensadoun, Nicolas SALAS, Christopher Sauvage, Anne Laperche et Jacques David.  
+  Un peu d'histoire : En 2024, ce sera la 9 ème édition de cet atelier construit au départ par Timothée Flûtre, Jacques David, Friedrich Longin et Philippe Brabant, fortement amélioré par Julien Diot pour le jeu sérieux. Cette année encore, nous aurons les étudiants des 3 écoles, AgroParisTech, l'institut Agro de Montpellier et de Rennes. 
 ---
 
 
 # Date, lieu et contacts
 
-* Du lundi 13 au vendredi 17 février 2023.
+* Du lundi 12 au vendredi 16 février 2024.
 
-* Ca se passe là :  Institut Agro Montpellier, campus La Gaillarde, salle A sur le campus principal ([plan](https://www.montpellier-supagro.fr/plan-acces)).
-
-* Pour les personnes ne pouvant assister au présentiel, l'atelier se déroulera à l'adresse suivante. [Salle ZOOM](https://zoom.us/j/7954319618)
+* Ca se passe là :  Institut Agro Rennes-Angers, bat 8 Oryza, (https://www.institut-agro-rennes-angers.fr/campus/environnement-et-acces/plans-dacces-et-des-campus)
 
 * Contact
-[Jacques David](mailto:jacques.david@supagro.fr) ([Montpellier SupAgro](http://www.supagro.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte)),   
-Equipe pédagogique 2021 :
+[Jacques David](mailto:jacques.david@supagro.fr) ([Institut Agro Montpellier](https://www.institut-agro-montpellier.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte)),
 
-Vincent Segura ([Montpellier SupAgro](http://www.supagro.fr/), [UMR AGAP](http://umr-agap.cirad.fr/), équipe [DAAV](https://umr-agap.cirad.fr/recherche/equipes-scientifiques2/diversite-et-amelioration-de-la-vigne/contexte-et-objectifs),
-Julie Fiévet ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/)),
-Friedrich Longin de l'[université d'Hohenheim](https://lsa-weizen.uni-hohenheim.de/),
-Charlotte Brault : charlotte.brault@inra.fr,
-Sarah Bensadoun : sarah.bensadoun@agroparistech.fr,
-[IGEPP](https://www6.rennes.inrae.fr/igepp),
-Anne Leperche : anne.leperche@agrocampus-ouest.fr,
+Equipe pédagogique 2024 :
+
+Renaud Rincent : renaud.rincent@inrae.fr ([INRAE](https://www.inrae.fr/), [GQE](http://moulon.inra.fr/))
+Julie Fiévet ([INRAE](https://www.inrae.fr/), [GQE](http://moulon.inra.fr/)),
+Marianne Larencon : marianne.laurencon@inrae.fr ([IGEPP](https://www6.rennes.inrae.fr/igepp)),
+Marion Gauthier : marion.gauthier@agrocampus-ouest.fr ([Institut Agro Rennes-Angers](https://www.institut-agro-rennes-angers.fr/),
+Mathieu Tiret : mathieu.tiret@inrae.fr ,([INRAE](https://www.inrae.fr/))
+Nicolas SALAS : nicolas.salas@supagro.fr ([Institut Agro Montpellier](https://www.institut-agro-montpellier.fr/),
+Sarah Bensadoun : sarah.bensadoun@agroparistech.fr([IGEPP](https://www6.rennes.inrae.fr/igepp)),
+Anne Laperche : anne.laperche@agrocampus-ouest.fr ([Institut Agro Rennes-Angers](https://www.institut-agro-rennes-angers.fr/),
+Christopher Sauvage : Christopher.Sauvage@syngenta.com ([Syngenta](https://www.syngenta.fr/),
 
 Crédits
+
 Timothée Flutre ([INRA](http://www.inra.fr/), UMR [GQE](http://moulon.inra.fr/))
 Philippe Brabant, Jacques David, Julien Diot
 
@@ -51,7 +53,7 @@ Il vise à familiariser les étudiants avec la prédiction génomique de caract�
 Il se déroule en trois étapes. 
 
 
-1. Les bases de la prédiction génomique, par Vincent Ségura (INRAE) et Charlotte Brault (IFV, INRAE).
+1. Les bases de la prédiction génomique, par Renaud Rincent (INRAE, GQE).
 + Simulation de données phénotypiques selon différentes architectures génétiques
 + Présentation des principales méthodes d'inférence des effets génétiques
 + Exploration de la qualité des prédictions en fonction de paramètres tels que la structure du matériel végétal, la densité de génotypage, etc.
@@ -62,8 +64,12 @@ Il se déroule en trois étapes.
 + Réalisation du schéma de sélection sur une succession de plusieurs années simulant la temporalité et le budget d'un véritable programme de sélection
 + Mise en commun, examen des résultats et comparaison des stratégies
 
-3. "Optimization of breeding schemes with genomic selection in R", par Friedrich Longin (Univ. Hohenheim) 
-+ Présentation (en anglais) de la théorie
+3. "Utilisation de la sélection génomique par les sélectionneurs", par Christopher Sauvage (Syngenta) 
++ Présentation des méthodes d'utilisation de la sélection génomique par les sélectionneurs
++ Les avantages et les limites en pratique de la sélection génomique
+
+4. "Optimization of breeding schemes with genomic selection in R", par Jacques David (Institut Agro Montpellier)
++ Présentation de la théorie
 + Mise en pratique via des simulations de schémas de sélection
 
 
@@ -114,18 +120,18 @@ Les étudiants doivent venir chacun avec leur ordinateur portable avec la config
 # Ressources en ligne
 
 Ce document, ainsi que les autres nécessaires à la réalisation de l'atelier, se trouve à l'adresse suivante: https://github.com/timflutre/atelier-prediction-genomique.
-Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
+Le copyright appartient à l'Institut Agro Montpellier  et à l'nstitut national de recherche pour l'agriculture, l'alimentation et l'environnement.
 Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
 Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en cas de doute).
 
 
-# Programme de la semaine
+# Programme de la semaine (les horaires sont susceptible de varier)
 
 ## Lundi
 
-* 9h - 12h: introduction à la modélisation statistique via la simulation en prenant la régression linéaire simple comme exemple, par V. Segura (document "premiers-pas.pdf")
+* 9h30 - 12h: introduction à la modélisation statistique via la simulation en prenant la régression linéaire simple comme exemple, par R. Rincent (document "premiers-pas.pdf")
 
-* 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique, par V. Segura (document "prediction-genomique.pdf")
+* 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique, par R.Rincent (document "prediction-genomique.pdf")
 Cette année, pour la première fois, introduction à la prédiction phénomique. 
 
 ## Mardi
@@ -147,16 +153,15 @@ Cette année, pour la première fois, introduction à la prédiction phénomique
 
 * 11h40 - 12h: procédure d'inscription comparant les génotypes proposés des équipes avec les témoins
 
-* 13h30 - 15h: discussion sur les différentes stratégies suivies (Charlotte Brault)
+* 13h30 - 15h: discussion sur les différentes stratégies suivies
 
 
 ## Vendredi
 
-* 9h - 11h: cours "Optimization of breeding schemes with GS in R", par F. Longin (document "Selgain_Montpellier_2018.pdf")
+* 9h - 12h: « De la théorie à la routine, comment la sélection génomique est devenue essentielle en sélection variétale – exemples de succès et de limites ». Christopher Sauvage (PhD) – Scientifique en Génétique Appliquée - Syngenta SA France
 
-* 11h30 - 13h15: travaux pratiques via des simulations de schémas de sélection (document "Selgain_Montpellier_2018_example.R").
+* Cours "Optimization of breeding schemes with GS in R", par J. David (document "Selgain_Montpellier_2022.pdf")
 
+* Travaux pratiques via des simulations de schémas de sélection (document "Example_selgain_students_Supagro.R").
 
-* 13h15 - 13h45: discussion sur les acquis réalisés durant l'atelier et les améliorations à apporter
-
-Départ pour les trains 
+* Discussion sur les acquis réalisés durant l'atelier et les améliorations à apporter
