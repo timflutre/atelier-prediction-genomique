@@ -37,7 +37,7 @@ Marianne Larencon : marianne.laurencon@inrae.fr ([IGEPP](https://www6.rennes.inr
 Marion Gauthier : marion.gauthier@agrocampus-ouest.fr ([Institut Agro Rennes-Angers](https://www.institut-agro-rennes-angers.fr/),
 Mathieu Tiret : mathieu.tiret@inrae.fr ,([INRAE](https://www.inrae.fr/))
 Nicolas SALAS : nicolas.salas@supagro.fr ([Institut Agro Montpellier](https://www.institut-agro-montpellier.fr/),
-Sarah Bensadoun : sarah.bensadoun@agroparistech.fr([IGEPP](https://www6.rennes.inrae.fr/igepp)),
+Sarah Ben-sadoun : sarah.ben-sadoun@agroparistech.fr ([AgroParisTech](https://www.agroparistech.fr/)),
 Anne Laperche : anne.laperche@agrocampus-ouest.fr ([Institut Agro Rennes-Angers](https://www.institut-agro-rennes-angers.fr/),
 Christopher Sauvage : Christopher.Sauvage@syngenta.com ([Syngenta](https://www.syngenta.fr/),
 
@@ -137,7 +137,7 @@ Cette année, pour la première fois, introduction à la prédiction phénomique
 ## Mardi
 * 9h - 12h: investigation par simulation, en groupes, des aspects influençant la précision de prédiction
 
-* 14h - 15h30: présentation des résultats et discussion (Sarah BenSadoun)
+* 14h - 15h30: présentation des résultats et discussion (Sarah BenSadoun et Mathieu Tiret)
 
 * 15h30 - 17h: présentation du jeu sérieux sur la sélection, constitution des équipes et réflexions stratégiques
 
