@@ -94,7 +94,7 @@ dim(geno)
 ## Coordonnées des marqueurs
 
 ```{r load marker coordinates}
-snp_map <- read.table(file="snp_coords_hd.txt", sep="\t", header=TRUE)
+snp_map <- read.table(file="snp_coords_hd.txt.gz", sep="\t", header=TRUE)
 head(snp_map)
 dim(snp_map)
 snp_map <- snp_map[order(snp_map$chr, snp_map$pos),]
