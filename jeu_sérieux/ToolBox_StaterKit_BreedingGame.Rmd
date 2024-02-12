@@ -84,7 +84,7 @@ head(pheno_ctl)
 ## Données génotypiques
 
 ```{r load geno data}
-geno <- read.table(file="Result_genos_subset-initialColl-hd.txt",
+geno <- read.table(file="Result_genos_subset-initialColl-hd.txt.gz",
                    sep="\t", header=TRUE,fileEncoding = "UTF-8")
 
 geno[1:5,1:5]
