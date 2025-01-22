@@ -1499,7 +1499,7 @@ font-size: 0.95em;
 <h1 class="title toc-ignore">Boîte à outils sélection génomique pour
 Plant Breed game</h1>
 <h4 class="author">Charlotte Brault</h4>
-<h4 class="date">13/02/2023</h4>
+<h4 class="date">25/01/2024</h4>
 
 </div>
 
@@ -1523,7 +1523,8 @@ l’onglet “Files”, quand vous êtes au bon endroit, cliquer sur la roue
 crantée, puis sur “Set as working directory”. Coller la ligne dans votre
 code. Tous les fichiers à charger doivent se situer dans ce
 répertoire.</p>
-<pre class="r"><code>setwd(&quot;~/Cours-TD/SelGen_2023/NotesScriptsPlantBreedGame/BreedingGame/data&quot;)
+<pre class="r"><code># setwd(&quot;~/Cours-TD/SelGen_2023/NotesScriptsPlantBreedGame/BreedingGame/data&quot;)
+setwd(&quot;InitialData&quot;)
 stopifnot(file.exists(getwd()))
 knitr::opts_knit$set(root.dir = getwd())</code></pre>
 </div>
@@ -1536,6 +1537,10 @@ phénotypiques</h2>
 <p>Si le fichier a une extension <strong>.gz</strong>, il pourra être lu
 dans la fonction <code>read.table</code> avec la fonction
 <em>gzfile</em> : <code>file=gzfile(p2f)</code>.</p>
+<div id="collection-de-génotypes-disponibles-initialement" class="section level3" number="3.1.1">
+<h3><span class="header-section-number">3.1.1</span> Collection de
+génotypes disponibles initialement</h3>
+<p>Chaque génotype est phénotypé pendant 2 années successives.</p>
 <pre class="r"><code>pheno &lt;- read.table(file=gzfile(&quot;Result_phenos_initialColl.txt.gz&quot;),sep=&quot;\t&quot;, 
                     header=TRUE, fileEncoding = &quot;UTF-8&quot;)
 head(pheno)</code></pre>
@@ -1548,16 +1553,33 @@ head(pheno)</code></pre>
 ## 6 Coll0003 2005    6     TRUE  80.98501 17.16381      1</code></pre>
 <pre class="r"><code>dim(pheno)</code></pre>
 <pre><code>## [1] 3000    7</code></pre>
+</div>
+<div id="génotypes-contrôles" class="section level3" number="3.1.2">
+<h3><span class="header-section-number">3.1.2</span> Génotypes
+contrôles</h3>
 <p>Nom des génotypes contrôles</p>
 <pre class="r"><code>Controls &lt;- read.table(file=&quot;controls.txt&quot;, sep=&quot;\t&quot;,header=FALSE)
 (Controls &lt;- c(Controls$V1))</code></pre>
 <pre><code>## [1] &quot;Coll0598&quot; &quot;Coll0389&quot; &quot;Coll0611&quot; &quot;Coll0758&quot; &quot;Coll0163&quot;</code></pre>
+<p>Tous les génotypes contrôles ont été phénotypés pendant 4 années.</p>
+<pre class="r"><code>pheno_ctl &lt;- read.table(file=gzfile(&quot;Result_phenos_controls.txt.gz&quot;),sep=&quot;\t&quot;, 
+                    header=TRUE, fileEncoding = &quot;UTF-8&quot;)
+head(pheno_ctl)</code></pre>
+<pre><code>##        ind year plot pathogen   trait1   trait2 trait3
+## 1 Coll0163 2011  301     TRUE 47.48253 14.76052      1
+## 2 Coll0163 2011  302     TRUE 66.15471 14.21812      1
+## 3 Coll0163 2011  303     TRUE 71.27185 13.66871      1
+## 4 Coll0163 2011  304     TRUE 79.69900 13.42876      1
+## 5 Coll0163 2011  305     TRUE 78.01501 13.67759      1
+## 6 Coll0389 2011  306     TRUE 80.72949 15.71015      0</code></pre>
+</div>
 </div>
 <div id="données-génotypiques" class="section level2" number="3.2">
 <h2><span class="header-section-number">3.2</span> Données
 génotypiques</h2>
 <pre class="r"><code>geno &lt;- read.table(file=&quot;Result_genos_subset-initialColl-hd.txt&quot;,
                    sep=&quot;\t&quot;, header=TRUE,fileEncoding = &quot;UTF-8&quot;)
+
 geno[1:5,1:5]</code></pre>
 <pre><code>##          snp02319 snp01972 snp30195 snp02919 snp24766
 ## Coll0301        0        2        0        0        0
@@ -1591,6 +1613,9 @@ requêtes</h1>
 <div id="request-plant-material" class="section level2" number="4.1">
 <h2><span class="header-section-number">4.1</span> Request plant
 material</h2>
+<div id="allofecundation" class="section level3" number="4.1.1">
+<h3><span class="header-section-number">4.1.1</span>
+Allofecundation</h3>
 <p>Vous avez sélectionné les variétés les plus prometteuses, par exemple
 <strong>Coll0001</strong>, <strong>Coll0002</strong>,
 <strong>Coll0003</strong>, <strong>Coll0004</strong> et
@@ -1603,8 +1628,11 @@ setdiff(parents, pheno$ind) # =&gt; bien vérifier que les parents sont dans la 
 <pre><code>## character(0)</code></pre>
 <pre class="r"><code># crée toutes les combinaisons entre les parents = tous les croisements possibles parmi les parents 
 crosses &lt;- expand.grid(parent1=parents, parent2=parents)
+
 ## enlever les lignes correspondant aux autofécondations
-crosses &lt;- crosses[-which(crosses$parent1 == crosses$parent2, arr.ind=TRUE),]
+if(length(intersect(crosses$parent1, crosses$parent2)) &gt; 0){
+  crosses &lt;- crosses[-which(crosses$parent1 == crosses$parent2, arr.ind=TRUE),]
+}
 head(crosses)</code></pre>
 <pre><code>##    parent1  parent2
 ## 2 Coll0002 Coll0001
@@ -1615,23 +1643,173 @@ head(crosses)</code></pre>
 ## 8 Coll0003 Coll0002</code></pre>
 <pre class="r"><code>dim(crosses) # nombre de croisements à réaliser</code></pre>
 <pre><code>## [1] 20  2</code></pre>
-<pre class="r"><code>crosses$child &lt;- paste0(&quot;gen1_&quot;, seq(nrow(crosses))) # nom des descendants : gen1_1, …, gen1_6 (peut être changé !)
+<pre class="r"><code># nom des descendants (peut être changé !)
+crosses$child &lt;- paste0(&quot;gen1_&quot;, crosses$parent1, &quot;x&quot;, crosses$parent2) 
+## vérification de l&#39;unicité des noms des descendants
+stopifnot(!any(duplicated(crosses$child)))
 crosses$explanations &lt;- &quot;allofecundation&quot;
 head(crosses)</code></pre>
-<pre><code>##    parent1  parent2  child    explanations
-## 2 Coll0002 Coll0001 gen1_1 allofecundation
-## 3 Coll0003 Coll0001 gen1_2 allofecundation
-## 4 Coll0004 Coll0001 gen1_3 allofecundation
-## 5 Coll0005 Coll0001 gen1_4 allofecundation
-## 6 Coll0001 Coll0002 gen1_5 allofecundation
-## 8 Coll0003 Coll0002 gen1_6 allofecundation</code></pre>
+<pre><code>##    parent1  parent2                  child    explanations
+## 2 Coll0002 Coll0001 gen1_Coll0002xColl0001 allofecundation
+## 3 Coll0003 Coll0001 gen1_Coll0003xColl0001 allofecundation
+## 4 Coll0004 Coll0001 gen1_Coll0004xColl0001 allofecundation
+## 5 Coll0005 Coll0001 gen1_Coll0005xColl0001 allofecundation
+## 6 Coll0001 Coll0002 gen1_Coll0001xColl0002 allofecundation
+## 8 Coll0003 Coll0002 gen1_Coll0003xColl0002 allofecundation</code></pre>
 <pre class="r"><code># écrire le fichier de requête
-write.table(crosses, file=&quot;request_plant_material_Coll0001-5.txt&quot;,
+write.table(crosses, file=&quot;request_plant_material_allofecund_Coll0001-5.txt&quot;,
+            sep=&quot;\t&quot;, col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding=&quot;UTF-8&quot;)</code></pre>
+<p>NB : si vous voulez croiser deux listes de variétés de taille variée,
+vous pouvez toujours utiliser la fonction <code>expand.grid</code> en
+donnant les deux listes au lieu de deux fois la même liste.</p>
+<pre class="r"><code>## on échantillonne 10 individus (au hasard ici)
+parents &lt;- sample(rownames(geno), 10)
+## on détermine tous les croisements entre une liste de 2 parents et une liste de 8 parents
+crosses &lt;- expand.grid(parent1=parents[1:2], parent2=parents[3:10])
+head(crosses)</code></pre>
+<pre><code>##    parent1  parent2
+## 1 Coll0526 Coll0756
+## 2 Coll0773 Coll0756
+## 3 Coll0526 Coll0349
+## 4 Coll0773 Coll0349
+## 5 Coll0526 Coll0790
+## 6 Coll0773 Coll0790</code></pre>
+<pre class="r"><code>dim(crosses) # nombre de croisements à réaliser</code></pre>
+<pre><code>## [1] 16  2</code></pre>
+<pre class="r"><code># nom des descendants (peut être changé !)
+crosses$child &lt;- paste0(&quot;gen1_&quot;, crosses$parent1, &quot;x&quot;, crosses$parent2) 
+stopifnot(!any(duplicated(crosses$child)))
+crosses$explanations &lt;- &quot;allofecundation&quot;
+head(crosses)</code></pre>
+<pre><code>##    parent1  parent2                  child    explanations
+## 1 Coll0526 Coll0756 gen1_Coll0526xColl0756 allofecundation
+## 2 Coll0773 Coll0756 gen1_Coll0773xColl0756 allofecundation
+## 3 Coll0526 Coll0349 gen1_Coll0526xColl0349 allofecundation
+## 4 Coll0773 Coll0349 gen1_Coll0773xColl0349 allofecundation
+## 5 Coll0526 Coll0790 gen1_Coll0526xColl0790 allofecundation
+## 6 Coll0773 Coll0790 gen1_Coll0773xColl0790 allofecundation</code></pre>
+<pre class="r"><code># écrire le fichier de requête
+write.table(crosses, file=&quot;request_plant_material_allofecund_v2.txt&quot;,
+            sep=&quot;\t&quot;, col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding=&quot;UTF-8&quot;)</code></pre>
+</div>
+<div id="hd" class="section level3" number="4.1.2">
+<h3><span class="header-section-number">4.1.2</span> HD</h3>
+<p>Ici on veut par exemple 3 haploïdes doublés pour chaque individu.</p>
+<pre class="r"><code>crossesHD &lt;- data.frame(parent1=rep(crosses$child, each=3), parent2=&quot;&quot;,
+                      child=NA, explanations=&quot;haplodiploidization&quot;)
+crossesHD$child=paste0(&quot;HD_&quot;,crossesHD$parent1,&quot;_&quot;,seq(3))
+crossesHD</code></pre>
+<pre><code>##                   parent1 parent2                       child
+## 1  gen1_Coll0526xColl0756         HD_gen1_Coll0526xColl0756_1
+## 2  gen1_Coll0526xColl0756         HD_gen1_Coll0526xColl0756_2
+## 3  gen1_Coll0526xColl0756         HD_gen1_Coll0526xColl0756_3
+## 4  gen1_Coll0773xColl0756         HD_gen1_Coll0773xColl0756_1
+## 5  gen1_Coll0773xColl0756         HD_gen1_Coll0773xColl0756_2
+## 6  gen1_Coll0773xColl0756         HD_gen1_Coll0773xColl0756_3
+## 7  gen1_Coll0526xColl0349         HD_gen1_Coll0526xColl0349_1
+## 8  gen1_Coll0526xColl0349         HD_gen1_Coll0526xColl0349_2
+## 9  gen1_Coll0526xColl0349         HD_gen1_Coll0526xColl0349_3
+## 10 gen1_Coll0773xColl0349         HD_gen1_Coll0773xColl0349_1
+## 11 gen1_Coll0773xColl0349         HD_gen1_Coll0773xColl0349_2
+## 12 gen1_Coll0773xColl0349         HD_gen1_Coll0773xColl0349_3
+## 13 gen1_Coll0526xColl0790         HD_gen1_Coll0526xColl0790_1
+## 14 gen1_Coll0526xColl0790         HD_gen1_Coll0526xColl0790_2
+## 15 gen1_Coll0526xColl0790         HD_gen1_Coll0526xColl0790_3
+## 16 gen1_Coll0773xColl0790         HD_gen1_Coll0773xColl0790_1
+## 17 gen1_Coll0773xColl0790         HD_gen1_Coll0773xColl0790_2
+## 18 gen1_Coll0773xColl0790         HD_gen1_Coll0773xColl0790_3
+## 19 gen1_Coll0526xColl0479         HD_gen1_Coll0526xColl0479_1
+## 20 gen1_Coll0526xColl0479         HD_gen1_Coll0526xColl0479_2
+## 21 gen1_Coll0526xColl0479         HD_gen1_Coll0526xColl0479_3
+## 22 gen1_Coll0773xColl0479         HD_gen1_Coll0773xColl0479_1
+## 23 gen1_Coll0773xColl0479         HD_gen1_Coll0773xColl0479_2
+## 24 gen1_Coll0773xColl0479         HD_gen1_Coll0773xColl0479_3
+## 25 gen1_Coll0526xColl0435         HD_gen1_Coll0526xColl0435_1
+## 26 gen1_Coll0526xColl0435         HD_gen1_Coll0526xColl0435_2
+## 27 gen1_Coll0526xColl0435         HD_gen1_Coll0526xColl0435_3
+## 28 gen1_Coll0773xColl0435         HD_gen1_Coll0773xColl0435_1
+## 29 gen1_Coll0773xColl0435         HD_gen1_Coll0773xColl0435_2
+## 30 gen1_Coll0773xColl0435         HD_gen1_Coll0773xColl0435_3
+## 31 gen1_Coll0526xColl0691         HD_gen1_Coll0526xColl0691_1
+## 32 gen1_Coll0526xColl0691         HD_gen1_Coll0526xColl0691_2
+## 33 gen1_Coll0526xColl0691         HD_gen1_Coll0526xColl0691_3
+## 34 gen1_Coll0773xColl0691         HD_gen1_Coll0773xColl0691_1
+## 35 gen1_Coll0773xColl0691         HD_gen1_Coll0773xColl0691_2
+## 36 gen1_Coll0773xColl0691         HD_gen1_Coll0773xColl0691_3
+## 37 gen1_Coll0526xColl0675         HD_gen1_Coll0526xColl0675_1
+## 38 gen1_Coll0526xColl0675         HD_gen1_Coll0526xColl0675_2
+## 39 gen1_Coll0526xColl0675         HD_gen1_Coll0526xColl0675_3
+## 40 gen1_Coll0773xColl0675         HD_gen1_Coll0773xColl0675_1
+## 41 gen1_Coll0773xColl0675         HD_gen1_Coll0773xColl0675_2
+## 42 gen1_Coll0773xColl0675         HD_gen1_Coll0773xColl0675_3
+## 43 gen1_Coll0526xColl0762         HD_gen1_Coll0526xColl0762_1
+## 44 gen1_Coll0526xColl0762         HD_gen1_Coll0526xColl0762_2
+## 45 gen1_Coll0526xColl0762         HD_gen1_Coll0526xColl0762_3
+## 46 gen1_Coll0773xColl0762         HD_gen1_Coll0773xColl0762_1
+## 47 gen1_Coll0773xColl0762         HD_gen1_Coll0773xColl0762_2
+## 48 gen1_Coll0773xColl0762         HD_gen1_Coll0773xColl0762_3
+##           explanations
+## 1  haplodiploidization
+## 2  haplodiploidization
+## 3  haplodiploidization
+## 4  haplodiploidization
+## 5  haplodiploidization
+## 6  haplodiploidization
+## 7  haplodiploidization
+## 8  haplodiploidization
+## 9  haplodiploidization
+## 10 haplodiploidization
+## 11 haplodiploidization
+## 12 haplodiploidization
+## 13 haplodiploidization
+## 14 haplodiploidization
+## 15 haplodiploidization
+## 16 haplodiploidization
+## 17 haplodiploidization
+## 18 haplodiploidization
+## 19 haplodiploidization
+## 20 haplodiploidization
+## 21 haplodiploidization
+## 22 haplodiploidization
+## 23 haplodiploidization
+## 24 haplodiploidization
+## 25 haplodiploidization
+## 26 haplodiploidization
+## 27 haplodiploidization
+## 28 haplodiploidization
+## 29 haplodiploidization
+## 30 haplodiploidization
+## 31 haplodiploidization
+## 32 haplodiploidization
+## 33 haplodiploidization
+## 34 haplodiploidization
+## 35 haplodiploidization
+## 36 haplodiploidization
+## 37 haplodiploidization
+## 38 haplodiploidization
+## 39 haplodiploidization
+## 40 haplodiploidization
+## 41 haplodiploidization
+## 42 haplodiploidization
+## 43 haplodiploidization
+## 44 haplodiploidization
+## 45 haplodiploidization
+## 46 haplodiploidization
+## 47 haplodiploidization
+## 48 haplodiploidization</code></pre>
+<pre class="r"><code>dim(crossesHD)</code></pre>
+<pre><code>## [1] 48  4</code></pre>
+<pre class="r"><code>stopifnot(!any(duplicated(crossesHD$child)))
+# écrire le fichier de requête
+write.table(crossesHD, file=&quot;request_plant_material_HD.txt&quot;,
             sep=&quot;\t&quot;, col.names=TRUE, 
             row.names=FALSE, quote=FALSE, fileEncoding=&quot;UTF-8&quot;)</code></pre>
 <p>A vous de voir ce que vous voulez faire avec ces individus F1, issus
 d’un croisement entre lignées. Phénotypage ? Génotypage ? Nouveau
 croisement (ex : F2) ? Fixation (ex : SSD, HD) ?</p>
+</div>
 </div>
 <div id="request-phenotyping" class="section level2" number="4.2">
 <h2><span class="header-section-number">4.2</span> Request
@@ -1643,40 +1821,40 @@ plots, soit 5 répétitions par génotype.</p>
                   task=&quot;pheno-field&quot;,
                   details=5)
 dat</code></pre>
-<pre><code>##         ind        task details
-## 1    gen1_1 pheno-field       5
-## 2    gen1_2 pheno-field       5
-## 3    gen1_3 pheno-field       5
-## 4    gen1_4 pheno-field       5
-## 5    gen1_5 pheno-field       5
-## 6    gen1_6 pheno-field       5
-## 7    gen1_7 pheno-field       5
-## 8    gen1_8 pheno-field       5
-## 9    gen1_9 pheno-field       5
-## 10  gen1_10 pheno-field       5
-## 11  gen1_11 pheno-field       5
-## 12  gen1_12 pheno-field       5
-## 13  gen1_13 pheno-field       5
-## 14  gen1_14 pheno-field       5
-## 15  gen1_15 pheno-field       5
-## 16  gen1_16 pheno-field       5
-## 17  gen1_17 pheno-field       5
-## 18  gen1_18 pheno-field       5
-## 19  gen1_19 pheno-field       5
-## 20  gen1_20 pheno-field       5
-## 21 Coll0598 pheno-field       5
-## 22 Coll0389 pheno-field       5
-## 23 Coll0611 pheno-field       5
-## 24 Coll0758 pheno-field       5
-## 25 Coll0163 pheno-field       5</code></pre>
+<pre><code>##                       ind        task details
+## 1  gen1_Coll0526xColl0756 pheno-field       5
+## 2  gen1_Coll0773xColl0756 pheno-field       5
+## 3  gen1_Coll0526xColl0349 pheno-field       5
+## 4  gen1_Coll0773xColl0349 pheno-field       5
+## 5  gen1_Coll0526xColl0790 pheno-field       5
+## 6  gen1_Coll0773xColl0790 pheno-field       5
+## 7  gen1_Coll0526xColl0479 pheno-field       5
+## 8  gen1_Coll0773xColl0479 pheno-field       5
+## 9  gen1_Coll0526xColl0435 pheno-field       5
+## 10 gen1_Coll0773xColl0435 pheno-field       5
+## 11 gen1_Coll0526xColl0691 pheno-field       5
+## 12 gen1_Coll0773xColl0691 pheno-field       5
+## 13 gen1_Coll0526xColl0675 pheno-field       5
+## 14 gen1_Coll0773xColl0675 pheno-field       5
+## 15 gen1_Coll0526xColl0762 pheno-field       5
+## 16 gen1_Coll0773xColl0762 pheno-field       5
+## 17               Coll0598 pheno-field       5
+## 18               Coll0389 pheno-field       5
+## 19               Coll0611 pheno-field       5
+## 20               Coll0758 pheno-field       5
+## 21               Coll0163 pheno-field       5</code></pre>
 <pre class="r"><code>dim(dat)</code></pre>
-<pre><code>## [1] 25  3</code></pre>
+<pre><code>## [1] 21  3</code></pre>
 <pre class="r"><code>str(dat)</code></pre>
-<pre><code>## &#39;data.frame&#39;:    25 obs. of  3 variables:
-##  $ ind    : chr  &quot;gen1_1&quot; &quot;gen1_2&quot; &quot;gen1_3&quot; &quot;gen1_4&quot; ...
+<pre><code>## &#39;data.frame&#39;:    21 obs. of  3 variables:
+##  $ ind    : chr  &quot;gen1_Coll0526xColl0756&quot; &quot;gen1_Coll0773xColl0756&quot; &quot;gen1_Coll0526xColl0349&quot; &quot;gen1_Coll0773xColl0349&quot; ...
 ##  $ task   : chr  &quot;pheno-field&quot; &quot;pheno-field&quot; &quot;pheno-field&quot; &quot;pheno-field&quot; ...
 ##  $ details: num  5 5 5 5 5 5 5 5 5 5 ...</code></pre>
-<pre class="r"><code># écrire le fichier de requête
+<pre class="r"><code>## vérification de l&#39;unicité des individus
+stopifnot(!any(duplicated(dat$ind)))
+
+
+# écrire le fichier de requête
 write.table(dat, file=&quot;request_phenotyping_controls-gen1.txt&quot;,
             sep=&quot;\t&quot;, col.names=TRUE, 
             row.names=FALSE, quote=FALSE, fileEncoding=&quot;UTF-8&quot;)</code></pre>
@@ -1685,39 +1863,35 @@ write.table(dat, file=&quot;request_phenotyping_controls-gen1.txt&quot;,
 <h2><span class="header-section-number">4.3</span> Request
 genotyping</h2>
 <p>Par exemple, nous voulons génotyper les nouveaux génotypes créés à la
-génération 1. Les 5 premiers individus auront un génotypage avec grande
-densité (“hd”), les 5 autres auront un génotypage à faible densité
+génération 1. Les 8 premiers individus auront un génotypage avec grande
+densité (“hd”), les 8 autres auront un génotypage à faible densité
 (“ld”).</p>
 <pre class="r"><code>dat &lt;- data.frame(ind=crosses$child,
                   task=&quot;geno&quot;,
-                  details=c(rep(&quot;hd&quot;,5),rep(&quot;ld&quot;,5)))
+                  details=c(rep(&quot;hd&quot;,8),rep(&quot;ld&quot;,8)))
 dat</code></pre>
-<pre><code>##        ind task details
-## 1   gen1_1 geno      hd
-## 2   gen1_2 geno      hd
-## 3   gen1_3 geno      hd
-## 4   gen1_4 geno      hd
-## 5   gen1_5 geno      hd
-## 6   gen1_6 geno      ld
-## 7   gen1_7 geno      ld
-## 8   gen1_8 geno      ld
-## 9   gen1_9 geno      ld
-## 10 gen1_10 geno      ld
-## 11 gen1_11 geno      hd
-## 12 gen1_12 geno      hd
-## 13 gen1_13 geno      hd
-## 14 gen1_14 geno      hd
-## 15 gen1_15 geno      hd
-## 16 gen1_16 geno      ld
-## 17 gen1_17 geno      ld
-## 18 gen1_18 geno      ld
-## 19 gen1_19 geno      ld
-## 20 gen1_20 geno      ld</code></pre>
+<pre><code>##                       ind task details
+## 1  gen1_Coll0526xColl0756 geno      hd
+## 2  gen1_Coll0773xColl0756 geno      hd
+## 3  gen1_Coll0526xColl0349 geno      hd
+## 4  gen1_Coll0773xColl0349 geno      hd
+## 5  gen1_Coll0526xColl0790 geno      hd
+## 6  gen1_Coll0773xColl0790 geno      hd
+## 7  gen1_Coll0526xColl0479 geno      hd
+## 8  gen1_Coll0773xColl0479 geno      hd
+## 9  gen1_Coll0526xColl0435 geno      ld
+## 10 gen1_Coll0773xColl0435 geno      ld
+## 11 gen1_Coll0526xColl0691 geno      ld
+## 12 gen1_Coll0773xColl0691 geno      ld
+## 13 gen1_Coll0526xColl0675 geno      ld
+## 14 gen1_Coll0773xColl0675 geno      ld
+## 15 gen1_Coll0526xColl0762 geno      ld
+## 16 gen1_Coll0773xColl0762 geno      ld</code></pre>
 <pre class="r"><code>dim(dat)</code></pre>
-<pre><code>## [1] 20  3</code></pre>
+<pre><code>## [1] 16  3</code></pre>
 <pre class="r"><code>str(dat)</code></pre>
-<pre><code>## &#39;data.frame&#39;:    20 obs. of  3 variables:
-##  $ ind    : chr  &quot;gen1_1&quot; &quot;gen1_2&quot; &quot;gen1_3&quot; &quot;gen1_4&quot; ...
+<pre><code>## &#39;data.frame&#39;:    16 obs. of  3 variables:
+##  $ ind    : chr  &quot;gen1_Coll0526xColl0756&quot; &quot;gen1_Coll0773xColl0756&quot; &quot;gen1_Coll0526xColl0349&quot; &quot;gen1_Coll0773xColl0349&quot; ...
 ##  $ task   : chr  &quot;geno&quot; &quot;geno&quot; &quot;geno&quot; &quot;geno&quot; ...
 ##  $ details: chr  &quot;hd&quot; &quot;hd&quot; &quot;hd&quot; &quot;hd&quot; ...</code></pre>
 <pre class="r"><code># écrire le fichier de requête
@@ -1731,7 +1905,7 @@ write.table(dat, file=&quot;request_genotyping_gen1.txt&quot;,
 <pre class="r"><code>print(sessionInfo(), locale=FALSE)</code></pre>
 <pre><code>## R version 4.2.2 (2022-10-31 ucrt)
 ## Platform: x86_64-w64-mingw32/x64 (64-bit)
-## Running under: Windows 10 x64 (build 22000)
+## Running under: Windows 10 x64 (build 19045)
 ## 
 ## Matrix products: default
 ## 
@@ -1739,11 +1913,13 @@ write.table(dat, file=&quot;request_genotyping_gen1.txt&quot;,
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] digest_0.6.31   R6_2.5.1        jsonlite_1.8.4  evaluate_0.20  
-##  [5] cachem_1.0.6    rlang_1.0.6     cli_3.6.0       rstudioapi_0.14
-##  [9] jquerylib_0.1.4 bslib_0.4.2     rmarkdown_2.20  tools_4.2.2    
-## [13] xfun_0.36       yaml_2.3.6      fastmap_1.1.0   compiler_4.2.2 
-## [17] htmltools_0.5.4 knitr_1.42      sass_0.4.5</code></pre>
+##  [1] digest_0.6.30   R6_2.5.1        lifecycle_1.0.3 jsonlite_1.8.7 
+##  [5] magrittr_2.0.3  evaluate_0.18   stringi_1.7.8   cachem_1.0.6   
+##  [9] rlang_1.1.2     cli_3.6.1       rstudioapi_0.14 jquerylib_0.1.4
+## [13] bslib_0.4.1     vctrs_0.6.4     rmarkdown_2.18  tools_4.2.2    
+## [17] stringr_1.5.0   glue_1.6.2      xfun_0.35       yaml_2.3.6     
+## [21] fastmap_1.1.0   compiler_4.2.2  htmltools_0.5.3 knitr_1.41     
+## [25] sass_0.4.2</code></pre>
 </div>
 
 
