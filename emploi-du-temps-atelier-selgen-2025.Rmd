@@ -15,31 +15,29 @@ output:
 mode: selfcontained
 abstract: |
   Ce document présente les objectifs, les pré-requis et le programme de l'atelier de prédiction et sélection génomique. Cet atelier est destiné aux étudiants en spécialisation APIMET et SEPMET de l'institut Agro Montpellier, PIST d'AgroParisTech et l'option Amélioration des plantes de l'institut Agro Rennes-Angers.  
-  L'équipe pédagogique de 2024 : Renaud Rincent, Marianne Laurençon, Marion Gauthier, Mathieu Tiret, Sarah Bensadoun, Nicolas Salas, Christopher Sauvage, Anne Laperche et Jacques David.  
-  Un peu d'histoire : En 2024, ce sera la 9 ème édition de cet atelier construit au départ par Timothée Flûtre, Jacques David, Friedrich Longin et Philippe Brabant, fortement amélioré par Julien Diot pour le jeu sérieux. Cette année encore, nous aurons les étudiants des 3 écoles, AgroParisTech, l'institut Agro de Montpellier et de Rennes. 
+  L'équipe pédagogique de 2024 : Simon Rio, Sarah Bensadoun, Nicolas Salas, Clement Bienvenu, Christopher Sauvage, Anne Laperche et Jacques David.  
+  Un peu d'histoire : En 2025, ce sera la 10 ème édition de cet atelier construit au départ par Timothée Flûtre, Jacques David, Friedrich Longin et Philippe Brabant, fortement amélioré par Julien Diot pour le jeu sérieux. Cette année encore, nous aurons les étudiants des 3 écoles, AgroParisTech, l'institut Agro de Montpellier et de Rennes. 
 ---
 
 
 # Date, lieu et contacts
 
-* Du lundi 12 au vendredi 16 février 2024.
+* Du lundi 17 au vendredi 21 février 2024.
 
-* Ca se passe là :  Institut Agro Rennes-Angers, bat 8 Oryza, (https://www.institut-agro-rennes-angers.fr/campus/environnement-et-acces/plans-dacces-et-des-campus)
+* Ca se passe là :  Institut Agro Montpellier , bat 1 salle A
+(https://www.institut-agro-montpellier.fr/sites/supagro/files/documents/2020/10/08/Plan%20du%20Campus%20de%20La%20Gaillarde%20Montpellier%20SupAgro%202020.pdf)
 
 * Contact
 [Jacques David](mailto:jacques.david@supagro.fr) ([Institut Agro Montpellier](https://www.institut-agro-montpellier.fr/), équipe [GE2POP](http://umr-agap.cirad.fr/equipes-scientifiques/genomique-evolutive-et-gestion-des-populations/contexte)),
 
-Equipe pédagogique 2024 :
+Equipe pédagogique 2025 :
 
-Renaud Rincent : renaud.rincent@inrae.fr ([INRAE](https://www.inrae.fr/), [UMR GQE](http://moulon.inra.fr/)),
-Julie Fiévet ([INRAE](https://www.inrae.fr/), [UMR GQE](http://moulon.inra.fr/)),
-Marianne Larençon : marianne.laurencon@inrae.fr ([INRAE](https://www.inrae.fr/), [UMR IGEPP](https://www6.rennes.inrae.fr/igepp)),
-Marion Gauthier : marion.gauthier@agrocampus-ouest.fr ([Institut Agro Rennes-Angers](https://www.institut-agro-rennes-angers.fr/),
-Mathieu Tiret : mathieu.tiret@inrae.fr ([INRAE](https://www.inrae.fr/), [UMR IGEPP](https://www6.rennes.inrae.fr/igepp)),
 Nicolas SALAS : nicolas.salas@supagro.fr ([Institut Agro Montpellier](https://www.institut-agro-montpellier.fr/)),
+Clement Bienvenu : clement.bienvenu@cirad.fr (([Cirad](https://cirad.fr/)),
 Sarah Ben-sadoun : sarah.ben-sadoun@agroparistech.fr ([AgroParisTech](https://www.agroparistech.fr/),[UMR GQE](http://moulon.inra.fr/)),
 Anne Laperche : anne.laperche@agrocampus-ouest.fr ([Institut Agro Rennes-Angers](https://www.institut-agro-rennes-angers.fr/), [UMR IGEPP](https://www6.rennes.inrae.fr/igepp)),
-Christopher Sauvage : Christopher.Sauvage@syngenta.com ([Syngenta](https://www.syngenta.fr/))
+Christopher Sauvage : Christopher.Sauvage@syngenta.com ([Syngenta](https://www.syngenta.fr/)),
+Simon Rio : simon.rio@cirad.fr (([Cirad](https://cirad.fr/))
 
 Crédits
 
@@ -53,7 +51,7 @@ Il vise à familiariser les étudiants avec la prédiction génomique de caract�
 Il se déroule en trois étapes. 
 
 
-1. Les bases de la prédiction génomique, par Renaud Rincent (INRAE, GQE).
+1. Les bases de la prédiction génomique, par Simon Rio (CIRAD, AGAP).
 + Simulation de données phénotypiques selon différentes architectures génétiques
 + Présentation des principales méthodes d'inférence des effets génétiques
 + Exploration de la qualité des prédictions en fonction de paramètres tels que la structure du matériel végétal, la densité de génotypage, etc.
@@ -67,10 +65,6 @@ Il se déroule en trois étapes.
 3. "Utilisation de la sélection génomique par les sélectionneurs", par Christopher Sauvage (Syngenta) 
 + Présentation des méthodes d'utilisation de la sélection génomique par les sélectionneurs
 + Les avantages et les limites en pratique de la sélection génomique
-
-4. "Optimization of breeding schemes with genomic selection in R", par Jacques David (Institut Agro Montpellier)
-+ Présentation de la théorie
-+ Mise en pratique via des simulations de schémas de sélection
 
 
 # Pré-requis
@@ -129,15 +123,15 @@ Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en c
 
 ## Lundi
 
-* 9h30 - 12h: introduction à la modélisation statistique via la simulation en prenant la régression linéaire simple comme exemple, par R. Rincent (document "premiers-pas.pdf")
+* 9h30 - 12h: introduction à la modélisation statistique via la simulation en prenant la régression linéaire simple comme exemple, par S. Rio (document "premiers-pas.pdf")
 
-* 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique, par R.Rincent (document "prediction-genomique.pdf")
+* 14h - 17h: extension au modèle linéaire mixte, puis exploration par simulation de la prédiction génomique, par S. Rio (document "prediction-genomique.pdf")
 Cette année, pour la première fois, introduction à la prédiction phénomique. 
 
 ## Mardi
 * 9h - 12h: investigation par simulation, en groupes, des aspects influençant la précision de prédiction
 
-* 14h - 15h30: présentation des résultats et discussion (Sarah BenSadoun & Mathieu Tiret)
+* 14h - 15h30: présentation des résultats et discussion (Sarah BenSadoun)
 
 * 15h30 - 17h: présentation du jeu sérieux sur la sélection, constitution des équipes et réflexions stratégiques
 
@@ -160,10 +154,3 @@ Cette année, pour la première fois, introduction à la prédiction phénomique
 
 * 9h - 12h: « De la théorie à la routine, comment la sélection génomique est devenue essentielle en sélection variétale – exemples de succès et de limites ». Christopher Sauvage (PhD) – Scientifique en Génétique Appliquée - Syngenta SA France
 
-* 14h - 17h: 
-
-  * Cours "Optimization of breeding schemes with GS in R", par J. David (document "Selgain_Montpellier_2022.pdf")
-  
-  * Travaux pratiques via des simulations de schémas de sélection (document "Example_selgain_students_Supagro.R").
-  
-  * Discussion sur les acquis réalisés durant l'atelier et les améliorations à apporter
