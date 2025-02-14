@@ -22,7 +22,7 @@ abstract: |
 
 # Date, lieu et contacts
 
-* Du lundi 17 au vendredi 21 février 2024.
+* Du lundi 17 au vendredi 21 février 2025.
 
 * Ca se passe là :  Institut Agro Montpellier , bat 1 salle A
 (https://www.institut-agro-montpellier.fr/sites/supagro/files/documents/2020/10/08/Plan%20du%20Campus%20de%20La%20Gaillarde%20Montpellier%20SupAgro%202020.pdf)
