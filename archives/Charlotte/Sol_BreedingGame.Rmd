@@ -1,0 +1,488 @@
+---
+title: "Solutions analyse Plant Breed Game"
+author: "Charlotte Brault"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
+linkcolor: blue
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: TRUE
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+mode: selfcontained
+abstract: |
+  Ce document a pour but de montrer comment charger et analyser les données du jeu sérieux Breeding Game.
+editor_options: 
+  markdown: 
+    wrap: sentence
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chargement des packages
+
+```{r}
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(lme4))
+suppressPackageStartupMessages(library(rrBLUP))
+suppressPackageStartupMessages(library(MM4LMM))
+suppressPackageStartupMessages(library(GGally))
+suppressPackageStartupMessages(library(ggpubr))
+suppressPackageStartupMessages(library(apercu))
+```
+
+
+# Définition du chemin vers les données
+
+Donner le lien vers le répertoire où sont enregistrés les fichiers du jeu Breeding Game.
+Attention, sous Windows, remplacer les slash ("/") par des anti slash ("\").
+```{r p2f}
+folder <- paste0("~/Cours-TD/SelGen_2022/BreedingGame/")
+stopifnot(file.exists(folder))
+data.dir <- paste0(folder,"data/")
+```
+
+
+# Chargement des données
+
+## Données phénotypiques
+
+```{r load}
+p2f <- paste0(data.dir,"Result_phenos_initialColl.txt") # path to file
+pheno <- read.table(file=p2f,sep="\t", 
+                    header=TRUE, fileEncoding = "UTF-8")
+head(pheno)
+dim(pheno)
+```
+
+## Données génotypiques
+
+```{r load geno data}
+p2f <- paste0(data.dir,"Result_genos_subset-initialColl-hd.txt")
+geno <- read.table(file=p2f,sep="\t", header=TRUE,
+                   fileEncoding = "UTF-8")
+geno[1:5,1:5]
+dim(geno)
+```
+
+## Coordonnées marqueurs
+
+```{r load marker coordinates, echo=TRUE}
+p2f <- paste0(data.dir,"snp_coords_hd.txt")
+snp_map <- read.table(file=p2f, sep="\t", header=TRUE)
+head(snp_map)
+dim(snp_map)
+snp_map <- snp_map[order(snp_map$chr, snp_map$pos),]
+```
+
+## Génotypes témoins
+
+```{r}
+p2f <- paste0(data.dir,"Result_phenos_controls.txt")
+pheno_controls <- read.table(file=p2f, sep="\t", header=TRUE)
+head(pheno_controls)
+ctl <- unique(pheno_controls$ind)
+geno[ctl,1:5]
+```
+
+
+# Exploration des données phénotypiques
+
+## Moyenne entre années
+
+```{r}
+summary(pheno)
+cor(pheno$trait1, pheno$trait2)
+all_years <- unique(pheno$year)
+pheno %>%
+  dplyr::group_by(year) %>% 
+  dplyr::summarise(mean1=mean(trait1),mean2=mean(trait2),
+                   sd1=sd(trait1),sd2=sd(trait2))
+```
+
+Fortes variations inter-annuelles !
+
+## Graphiques
+
+### Effet de la maladie
+
+Années avec et sans pathogène
+```{r}
+tapply(pheno$pathogen, pheno$year, unique)
+```
+
+```{r}
+str(pheno)
+pheno$year <- factor(pheno$year)
+
+# trait 1
+ggplot(pheno, aes(x=year, y=trait1, fill=pathogen)) +
+  geom_boxplot() + theme_bw() +
+  ggtitle("Distribution des phénotypes par année pour le trait 1")
+
+# trait 2
+ggplot(pheno, aes(x=year, y=trait2, fill=pathogen)) +
+  geom_boxplot() + theme_bw() +
+  ggtitle("Distribution des phénotypes par année pour le trait 2")
+
+ggplot(pheno[pheno$pathogen,], aes(x=trait1,color=as.factor(trait3)))+
+  facet_wrap(~year) + theme_bw() +
+  geom_density(alpha=0.8)
+```
+Fort effet de la maladie sur le trait 1
+
+
+
+### Effet de l'année
+
+```{r}
+ggplot(pheno, aes(x=trait1, fill=as.factor(year)))+
+  theme_bw() +
+  scale_fill_manual(values=pals::kelly(n=22)[-1]) +
+  geom_density(alpha=0.8)
+
+ggplot(pheno, aes(x=trait1, y=trait2, color=as.factor(year)))+
+  theme_bw() +
+  scale_color_manual(values=pals::kelly(n=22)[-1]) +
+  geom_smooth()+
+  geom_point(size=1.2, alpha=0.8)
+
+```
+
+
+### Corrélations entre trait1 et trait2
+
+```{r}
+cor(pheno$trait1, pheno$trait2) # corrélation nulle
+ggpairs(pheno[,c("trait1","trait2")])
+```
+
+
+# Application d'un modèle mixte pour extraire les valeurs génotypiques
+
+## Pour le caractère 1
+
+```{r}
+fit <- lmer(trait1 ~ (1|ind) + year + trait3, data=pheno)
+fixef(fit)
+summary(fit)
+randEf <- ranef(fit)
+
+(vc <- as.data.frame(VarCorr(fit)))
+(H2_1 <- vc$vcov[vc$grp == "ind"] / (vc$vcov[vc$grp == "ind"] + vc$vcov[vc$grp == "Residual"]))
+BLUP1 <- randEf$ind
+BLUP1[order(BLUP1$`(Intercept)`),][1:25]
+best_tr1 <- rownames(BLUP1)[order(BLUP1$`(Intercept)`, decreasing=TRUE)[1:25]]
+```
+
+## Pour le caractère 2
+
+```{r}
+fit <- lmer(trait2 ~ (1|ind) + year + trait3, data=pheno)
+fixef(fit)
+randEf <- ranef(fit)
+(vc <- as.data.frame(VarCorr(fit)))
+(H2_2 <- vc$vcov[vc$grp == "ind"] / (vc$vcov[vc$grp == "ind"] + vc$vcov[vc$grp == "Residual"]))
+BLUP2 <- randEf$ind
+best_tr2 <- rownames(BLUP2)[order(BLUP2$`(Intercept)`, decreasing=TRUE)[1:25]]
+```
+
+## Corrélation entre trait1 et trait2
+
+```{r}
+BLUP_all <- merge(BLUP1, BLUP2, by="row.names")
+head(BLUP_all)
+colnames(BLUP_all) <- c("id_geno","trait1","trait2")
+ggplot(BLUP_all, aes(x=trait1, y=trait2)) +
+  geom_point() +
+  geom_smooth() + theme_bw() +
+  stat_cor(label.x = 3, label.y = 3.5) 
+
+write.table(BLUP_all,file=paste0(folder,"/results/BLUP_tr12_historical-data.tsv"),
+            col.names=TRUE, row.names=FALSE, sep="\t")
+```
+
+# Estimer la précision de prédiction par validation croisée
+
+Situation où les phénotypes et les génotypes sont disponibles pour un ensemble de variétés. L'objectif ici est de mesurer la capacité prédictive de la sélection génomique. Selon cette capacité prédictive, vous pouvez décider d'appliquer ou non la prédiction génomique, ou de sélectionner plus ou moins d'individus à croiser ou à phénotyper.
+
+## Pour le caractère 1
+
+```{r CV trait 1}
+BLUP <- BLUP1[match(rownames(geno), rownames(BLUP1)),,drop=FALSE]
+
+# vérifier que les individus se correspondent bien entre les phénotypes et les génotypes !
+BLUP <- BLUP[match(rownames(geno), rownames(BLUP)),,drop=FALSE]
+geno <- geno[rownames(BLUP),]
+dim(geno)
+K = 5 # le jeu d'entraînement est constitué de 4/5e des individus
+R = 2 # cette partition en 5 est répétée 10 fois
+# On divise le jeu de données
+Folds <- list()
+for(r in 1:R){
+  Folds[[r]] <- split(sample(1:nrow(BLUP)), rep(1:K, length=nrow(BLUP)))
+  names(Folds[[r]]) <- paste0("Fold", seq(1:K))
+}
+# on applique l'estimation des effets des marqueurs et la prédiction sur chaque partition
+out.corr <- numeric(0)
+for(r in 1:R){
+  for(k in 1:K){
+    in.test <- Folds[[r]][[k]]
+    out <- mixed.solve(y=BLUP[-in.test,], Z=geno[-in.test,]) 
+    pred <- as.matrix(geno[in.test,]) %*% out$u 
+    out.corr <- c(out.corr,cor(BLUP[in.test,],pred))
+  }
+}
+length(out.corr)
+# moyenne et écart-type des résultats
+mean(out.corr) # 
+sd(out.corr)
+```
+
+
+## Pour le caractère 2
+
+```{r CV trait 2}
+BLUP <- BLUP2[match(rownames(geno), rownames(BLUP2)),,drop=FALSE]
+
+# vérifier que les individus se correspondent bien entre les phénotypes et les génotypes !
+BLUP <- BLUP[match(rownames(geno), rownames(BLUP)),,drop=FALSE]
+geno <- geno[rownames(BLUP),]
+dim(geno)
+K = 5 # le jeu d'entraînement est constitué de 4/5e des individus
+R = 2 # cette partition en 5 est répétée 2 fois, il faudrait répéter 10 fois
+# On divise le jeu de données
+Folds <- list()
+for(r in 1:R){
+  Folds[[r]] <- split(sample(1:nrow(BLUP)), rep(1:K, length=nrow(BLUP)))
+  names(Folds[[r]]) <- paste0("Fold", seq(1:K))
+}
+# on applique l'estimation des effets des marqueurs et la prédiction sur chaque partition
+out.corr <- numeric(0)
+for(r in 1:R){
+  for(k in 1:K){
+    in.test <- Folds[[r]][[k]]
+    out <- mixed.solve(y=BLUP[-in.test,], Z=geno[-in.test,]) 
+    pred <- as.matrix(geno[in.test,]) %*% out$u 
+    out.corr <- c(out.corr,cor(BLUP[in.test,],pred))
+  }
+}
+length(out.corr)
+# moyenne et écart-type des résultats
+mean(out.corr) # 
+sd(out.corr)
+```
+
+## Estimation des effets des marqueurs pour trait 1 et trait 2
+
+```{r}
+# trait 1
+int <- intersect(rownames(geno), rownames(BLUP1))
+fit.MM_tr1 <- mixed.solve(y=BLUP1[int,], Z=geno[int,]) 
+beta_tr1 <- fit.MM_tr1$u 
+dim(beta_tr1)
+head(beta_tr1)
+beta_tr1 <- as.data.frame(beta_tr1)
+
+# trait 2
+int <- intersect(rownames(geno), rownames(BLUP2))
+fit.MM_tr2 <- mixed.solve(y=BLUP2[int,], Z=geno[int,]) 
+beta_tr2 <- fit.MM_tr2$u 
+dim(beta_tr2)
+head(beta_tr2)
+beta_tr2 <- as.data.frame(beta_tr2)
+
+# combine marker effects for both traits
+beta_all <- merge(beta_tr1, beta_tr2, by="row.names")
+head(beta_all)
+colnames(beta_all) <- c("locus","beta_tr1","beta_tr2")
+write.table(beta_all, file=paste0(folder,"/results/marker-effects_tr12_historical-data.tsv"),
+            sep="\t",col.names=TRUE, row.names=FALSE)
+```
+
+
+
+# GWAS  pour le caractère 3
+
+## Formattage des phénotypes
+
+```{r format pheno gwas}
+patho_trait3 <- pheno[pheno$pathogen, c("ind","trait3")]
+dim(patho_trait3)
+
+patho_trait3 <- patho_trait3[!duplicated(patho_trait3$ind),]
+dim(patho_trait3)
+common.geno <- intersect(patho_trait3$ind, rownames(geno))
+length(common.geno)
+X <- geno[common.geno,] ; N <- length(common.geno)
+afs <- colMeans(X) / 2
+tmp <- matrix(rep(1, N)) %*% (2 * afs)
+X.center <- as.matrix(X - tmp)
+A.mark.vanraden <- (X.center %*% t(X.center)) / (2 * sum(afs * (1 - afs)))
+rownames(patho_trait3) <- patho_trait3$ind
+y <- patho_trait3[common.geno, "trait3"]
+```
+
+## Application de la GWAS
+
+```{r apply GWAS}
+out.mmest <- MMEst(Y=y, X=X.center,
+                   VarList=list(Additive=A.mark.vanraden, Error=diag(N)))
+out.anovatest <- AnovaTest(out.mmest, Type="TypeI")
+#load("out.anovatest.Rdata")
+out.anovatest <- lapply(out.anovatest, as.data.frame)
+res.mono.gwas <- sapply(out.anovatest, function(x){x["Xeffect", "pval"]})
+res.mono.gwas[1:10]
+summary(res.mono.gwas)
+res.mono.gwas <- res.mono.gwas[rownames(snp_map)]
+```
+
+
+
+## Graph résultat GWAS
+
+```{r plot GWAS}
+plot(x=1:length(res.mono.gwas), y=-log10(res.mono.gwas),
+     main="Caractère monogénique", las=1, type="n",
+     xlab="SNPs", ylab=expression(-log[10](italic(p)~values)))
+points(x=1:length(res.mono.gwas),
+       y=-log10(res.mono.gwas), col="grey35", pch=19)
+res.mono.gwas[-log10(res.mono.gwas) > 40]
+mrk.res <- res.mono.gwas[-log10(res.mono.gwas) > 50][1]
+names(mrk.res)
+```
+
+## Allèle de résistance
+
+```{r}
+tmp <- data.frame(ind=rownames(geno),snp=geno[[names(mrk.res)]])
+dat_snp <- merge(pheno, tmp, by="ind",all=FALSE)
+head(dat_snp)
+dat_snp <- dat_snp[dat_snp$pathogen,]
+table(dat_snp[,c("trait3","snp")])
+ggplot(dat_snp, aes(x=snp, y=trait3)) +
+  geom_point() + theme_bw()
+```
+
+Allèle 2 = résistance !
+
+
+# Concevoir de nouveaux croisements
+
+Nous avons croisé les génotypes contrôles.
+Autres stratégies possibles !
+
+```{r new crosses}
+# parents <- c(best_tr1, best_tr2)
+crosses <- t(combn(x=ctl, m=2, simplify = TRUE))
+dim(crosses)
+head(crosses)
+colnames(crosses) <- c("parent1", "parent2")
+crosses <- as.data.frame(crosses)
+crosses$child <- paste0("ctl1_", seq(nrow(crosses)))
+crosses$explanations <- "allofecundation"
+head(crosses)
+
+# écrire le fichier de requête
+p2f <- paste0(folder,"/request/request_plant_material_comb-controls.txt")
+write.table(crosses, file=p2f, sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+Faire des haplo-diploidisations
+
+```{r}
+nb.HD <- 30
+HD <- data.frame(parent1=rep(crosses$child, each=nb.HD), parent2="",
+                 child=NA,
+                 explanations="haplodiploidization")
+HD$child <- paste0(HD$parent1,".",seq(nb.HD))
+stopifnot(all(HD$parent1 %in% crosses$child))
+head(HD)
+dim(HD)
+
+p2f <- paste0(folder,"/request/request_plant_material_HD_comb-controls.txt")
+
+write.table(HD, file=p2f, sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+# Paramètres données simulées
+
+
+```{r}
+p2f <- paste0(folder,"truth/p0.Rdata")
+#if(file.exists(p2f)){
+load(file=p2f)
+# str(p0)
+ap(p0)
+# moyenne des traits1 et traits2
+p0$mu
+# variance génétique pour les deux caractères
+p0$sigma.alpha2
+# effet année
+p0$Alpha
+dat2plot <- as.data.frame(p0$Alpha)
+dat2plot <- tibble::rownames_to_column(dat2plot, var="year")
+ggplot(dat2plot, aes(x=year,y=trait1))+
+  geom_point() + theme_bw() + 
+  ggtitle("trait1")
+ggplot(dat2plot, aes(x=year,y=trait2))+
+  geom_point() + theme_bw() + 
+  ggtitle("trait2")
+
+# effets des marqueurs
+head(p0$Beta)
+cor(p0$Beta[,1], p0$Beta[,2]) # -0.28 => corrélation négative entre trait1 et trait2
+# vraies valeurs génétiques
+head(p0$G.A)
+cor(p0$G.A[,1], p0$G.A[,2]) # -0.27 => corrélation négative
+colMeans(p0$G.A)
+var(p0$G.A[,1])
+var(p0$G.A[,2])
+ggplot(as.data.frame(p0$G.A), aes(x=trait1, y=trait2)) +
+  geom_point() +
+  geom_smooth() +
+  theme_bw()+
+  stat_cor(label.x = 3, label.y = 3.5) 
+# 10 meilleures variétés pour le trait 1 et le trait 2
+rownames(p0$G.A)[order(p0$G.A[,1], decreasing=T)[1:10]]
+rownames(p0$G.A)[order(p0$G.A[,2], decreasing=T)[1:10]]
+
+
+# variance d'erreur des traits 1 et 2
+p0$sigma2
+# héritabilité sens strict trait 1
+p0$sigma.alpha2[1]/(p0$sigma.alpha2[1]+p0$sigma2[1])
+# héritabilité sens strict trait 2
+p0$sigma.alpha2[2]/(p0$sigma.alpha2[2]+p0$sigma2[2])
+
+# corrélation d'erreur entre trait 1 et trait 2
+p0$cor.E.inter.trait
+
+# QTL de résistance
+p0$trait3$qtn.id
+
+# proba qu'un indiv sensible soit résistant
+p0$trait3$prob.resist.no.qtl
+# perte de rendement lié à la sensibilité
+p0$prop.yield.loss
+
+```
+
+
+
+# Appendix
+
+```{r info}
+print(sessionInfo(), locale=FALSE)
+```

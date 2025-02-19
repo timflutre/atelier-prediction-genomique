@@ -1,0 +1,319 @@
+---
+title: "Exemple de simulation pour explorer la prédiction génomique"
+author: "Timothée Flutre (INRA)"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
+linkcolor: blue
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: TRUE
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+mode: selfcontained
+abstract: |
+  Ce document a pour but de montrer un exemple de prédiction génomique à partir de données simulées.
+---
+
+<!--
+Ce morceau de code R est utilisé pour vérifier que tout ce dont on a besoin est disponible.
+-->
+```{r setup, include=FALSE}
+R.v.maj <- as.numeric(R.version$major)
+R.v.min.1 <- as.numeric(strsplit(R.version$minor, "\\.")[[1]][1])
+if(R.v.maj < 2 || (R.v.maj == 2 && R.v.min.1 < 15))
+  stop("requires R >= 2.15", call.=FALSE)
+
+suppressPackageStartupMessages(library(knitr))
+opts_chunk$set(echo=TRUE, warning=TRUE, message=TRUE, cache=FALSE)
+
+options(digits=3)
+```
+
+
+# Contexte
+
+Ce document fait partie de l'atelier "Prédiction Génomique" organisé et animé par Jacques David et Timothée Flutre depuis 2015, avec l'aide de Julie Fiévet et Philippe Brabant, à [Montpellier SupAgro](http://www.supagro.fr) dans le cadre de l'option [APIMET](http://www.agro-montpellier.fr/web/pages/?idl=19&page=216&id_page=630) (Amélioration des Plantes et Ingénierie végétale Méditerranéennes et Tropicales) couplée à la spécialité SEPMET (Semences Et Plants Méditerranéens Et Tropicaux) du [Master 3A](http://www.supagro.fr/web/pages/?idl=19&page=1689) (Agronomie et Agroalimentaire), et de la spécialisation [PIST](http://www.agroparistech.fr/Production-et-innovation-dans-les,1633.html) du [Cursus Ingénieur](http://www.agroparistech.fr/Cursus-ingenieurs.html) d'[AgroparisTech](http://www.agroparistech.fr/).
+
+Le copyright appartient à Montpellier SupAgro et à l'Institut National de la Recherche Agronomique.
+Le contenu du répertoire est sous license [Creative Commons Attribution-ShareAlike 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
+Veuillez en prendre connaissance et vous y conformer (contactez les auteurs en cas de doute).
+
+Les versions du contenu sont gérées avec le logiciel git, et le dépôt central est hébergé sur [GitHub](https://github.com/timflutre/atelier-prediction-genomique).
+
+Il est recommandé d'avoir déjà lu attentivement les documents "Premiers pas" et "Prédiction génomique" de l'atelier.
+
+De plus, ce document nécessite de charger des paquets additionnels (ceux-ci doivent être installés au préalable sur votre machine, via \verb+install.packages("pkg")+):
+
+```{r load_pkg}
+suppressPackageStartupMessages(library(rrBLUP))
+suppressPackageStartupMessages(library(cvTools))
+```
+
+Un certain niveau de déséquilibre de liaison entre génotypes aux SNP est indispensable pour obtenir une précision de prédiction suffisamment élevée en validation croisée.
+Pour cela, on peut utiliser le processus du coalescent avec recombinaison.
+Une bonne approximation de celui-ci est implémenté dans le paquet [scrm](https://cran.r-project.org/package=scrm).
+Par ailleurs, afin de tracer le déséquilibre de liaison en fonction de la distance physique, il vous faut aussi le paquet [GenomicRanges](https://doi.org/doi:10.18129/B9.bioc.GenomicRanges) de Bioconductor.
+Afin de faciliter l'utilisation de ces paquets dans ce document, il vous faut aussi avoir mon paquet de travail, [rutilstimflutre](https://github.com/timflutre/rutilstimflutre), disponible sur GitHub.
+```{r}
+suppressPackageStartupMessages(library(scrm))
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(rutilstimflutre))
+```
+
+Il est également utile de savoir combien de temps est nécessaire pour exécuter tout le code R de ce document (voir l'annexe):
+```{r time_0}
+t0 <- proc.time()
+```
+
+
+# Modèle
+
+En se limitant à une architecture additive infinitésimale:
+
+\begin{align*}
+\boldsymbol{y} &= \boldsymbol{1} \, \mu + X \, \boldsymbol{\beta} + \boldsymbol{\epsilon} \\
+ &= \boldsymbol{1} \, \mu + \boldsymbol{a} + \boldsymbol{\epsilon}
+\end{align*}
+
+avec:
+
+* $\boldsymbol{\epsilon} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma^2 \, \text{Id})$;
+
+* $\boldsymbol{\beta} \sim \mathcal{N}_P(\boldsymbol{0}, \sigma_\beta^2 \, \text{Id})$;
+
+* $\boldsymbol{a} \sim \mathcal{N}_N(\boldsymbol{0}, \sigma_a^2 \, A_{\text{mark}})$ avec $A_{\text{mark}} = \frac{X X^T}{2 \sum_{p} f_p (1 - f_p)}$.
+
+Cet estimateur de $A_{\text{mark}}$ est décrit dans [Habier et coll. (2007)](http://dx.doi.org/10.1534/genetics.107.081190), mais un meilleur estimateur, centré, est proposé dans [VanRaden (2008)](http://dx.doi.org/10.3168/jds.2007-0980): pour plus de détails, lire [Toro et coll. (2011)](http://www.gsejournal.org/content/43/1/27) et [Vitezica et coll. (2013)](http://dx.doi.org/10.1534/genetics.113.155176).
+
+
+# Simulation des données
+
+```{r}
+set.seed(111)
+```
+
+## Effets additifs des SNP
+
+```{r}
+P <- 5000         # number of SNPs
+sigma.beta2 <- 10^(-3) # chosen arbitrarily
+beta <- rnorm(n=P, mean=0, sd=sqrt(sigma.beta2))
+```
+
+
+## Génotypes aux SNP
+
+### Coalescent séquentiel avec recombinaison
+
+```{r coalescent}
+N <- 500          # number of individuals
+nb.chroms <- 10
+L <- 10^6         # chromosome length, in base pairs
+mu <- 10^(-8)     # neutral mutation rate in events / base / generation
+u <- mu * L       # neutral mutation rate in events / chrom / gen
+c.rec <- 10^(-8)  # recomb rate in events / base / gen
+r <- c.rec * L    # recomb rate in events / chrom / gen
+Ne <- 10^4        # effective population size
+(theta <- 4 * Ne * u)  # scaled neutral mutation rate in events / chrom
+(rho <- 4 * Ne * r)    # scaled recomb rate in events / chrom
+genomes <- simulCoalescent(nb.inds=N, nb.reps=nb.chroms,
+                           pop.mut.rate=theta, pop.recomb.rate=rho,
+                           chrom.len=L, nb.pops=1, permute.alleles=TRUE)
+stopifnot(ncol(genomes$genos) >= P)
+idx.snps.tokeep <- sample.int(n=ncol(genomes$genos), size=P, replace=FALSE)
+X <- genomes$genos[, idx.snps.tokeep]
+dim(X)
+X[1:3, 1:5]
+```
+
+### Fréquences alléliques
+
+```{r}
+afs <- colMeans(X) / 2
+hist(afs, xlim=c(0, 1), main="Allele frequencies", col="grey", border="white")
+```
+
+### Déséquilibre de liaison
+
+Sur un seul chromosome, entre un sous-ensemble de SNP, pour aller plus vite:
+```{r ld}
+chr <- "chr1"
+min.maf <- 0.15
+mafs <- apply(rbind(afs, 1 - afs), 2, min)
+tmp <- genomes$snp.coords[colnames(X),]
+(length(snps.tokeep <- rownames(tmp[tmp$chr == chr &
+                                    mafs >= min.maf,])))
+ld <- estimLd(X=X[,snps.tokeep],
+              snp.coords=genomes$snp.coords[snps.tokeep,],
+              use.ldcorsv=FALSE)
+nrow(ld)
+summary(ld$cor2)
+snp.dist <- distSnpPairs(snp.pairs=ld[, c("loc1","loc2")],
+                         snp.coords=genomes$snp.coords[snps.tokeep,])
+plotLd(snp.dist,
+       sqrt(ld$cor2), estim="r",
+       main=paste0(length(snps.tokeep), " SNPs with MAF >= ", min.maf,
+                   " on ", chr),
+       use.density=TRUE,
+       span=1/20,
+       sample.size=2*N,
+       Ne=Ne, c=c.rec,
+       add.ohta.kimura=TRUE)
+```
+
+### Relations génétiques additives
+
+Estimateur de Habier et coll. (2007):
+```{r}
+A.mark.habier <- (X %*% t(X)) / (2 * sum(afs * (1 - afs)))
+hist(diag(A.mark.habier), breaks="FD")
+hist(A.mark.habier[upper.tri(A.mark.habier)])
+```
+
+Estimateur de VanRaden (2008):
+```{r}
+tmp <- matrix(rep(1, N)) %*% (2 * afs)
+X.center <- X - tmp
+A.mark.vanraden <- (X.center %*% t(X.center)) / (2 * sum(afs * (1 - afs)))
+hist(diag(A.mark.vanraden), breaks="FD")
+hist(A.mark.vanraden[upper.tri(A.mark.vanraden)])
+```
+
+### Valeurs génotypiques additives et variance génétique additive
+
+Notez que $X$ est initialement codé en $\{0,1,2\}$, mais que dans la suite on peut le centrer à l'aide des fréquences alléliques comme dans l'estimateur de VanRaden:
+```{r}
+X <- X.center
+```
+
+```{r}
+a <- X %*% beta
+(sigma.a2 <- sigma.beta2 * 2 * sum(afs * (1 - afs)))
+```
+
+## Erreurs
+
+```{r}
+h2 <- 0.7 # chosen arbitrarily
+(sigma2 <- ((1 - h2) / h2) * sigma.a2)
+epsilon <- rnorm(n=N, mean=0, sd=sqrt(sigma2))
+```
+
+## Phénotypes
+
+```{r}
+mu <- 36 # chosen arbitrarily
+y <- mu + X %*% beta + epsilon
+summary(y)
+hist(y, breaks="FD", main="Phenotypes", col="grey", border="white")
+```
+
+
+# Evaluation de la précision de prédiction
+
+## 80/20
+
+### Définition des ensembles d'entraînement et de test
+
+```{r}
+prop <- 0.8
+in.train <- sample(c(TRUE,FALSE), size=N, replace=TRUE, prob=c(prop, 1-prop))
+sum(in.train)
+in.test <- (! in.train)
+sum(in.test)
+stopifnot(xor(in.train, in.test))
+```
+
+### Entraînement
+
+Ajuster le modèle:
+```{r fit_ridge_regression}
+fit <- mixed.solve(y=y[in.train], Z=X[in.train,])
+```
+
+Comparer les estimations des paramètres avec les valeurs utilisées pour simuler les données:
+```{r}
+mu.hat <- fit$beta
+c(mu, mu.hat)
+sigma.beta2.hat <- fit$Vu
+c(sigma.beta2, sigma.beta2.hat)
+sigma2.hat <- fit$Ve
+c(sigma2, sigma2.hat)
+sigma.a2.hat <- sigma.beta2.hat * 2 * sum(afs * (1 - afs))
+c(sigma.a2, sigma.a2.hat)
+h2.hat <- sigma.a2.hat / (sigma.a2.hat + sigma2)
+c(h2, h2.hat)
+beta.hat <- fit$u
+(tmp <- cor(beta, beta.hat))
+plot(beta, beta.hat, main=paste0("cor = ", round(tmp, 3)))
+abline(lm(beta.hat ~ beta), col="red")
+a.pred.train <- X[in.train,] %*% beta.hat
+(tmp <- cor(a[in.train], a.pred.train))
+plot(a[in.train], a.pred.train, main=paste0("cor = ", round(tmp, 3)))
+abline(lm(a.pred.train ~ a[in.train]), col="red")
+```
+
+### Test
+
+Prédire les valeurs génotypiques sur l'ensemble de test à partir des effets alléliques estimés sur l'ensemble d'entraînement:
+```{r}
+a.pred.test <- X[in.test,] %*% beta.hat
+(tmp <- cor(a[in.test], a.pred.test))
+plot(a[in.test], a.pred.test, main=paste0("cor = ", round(tmp, 3)))
+abline(lm(a.pred.test ~ a[in.test]), col="red")
+```
+
+## Validation croisée
+
+### Fonctions
+
+Définir des fonctions supplémentaires est nécessaire pour utiliser le paquet `cvTools` avec la fonction `mixed.solve` du paquet `rrBLUP`:
+```{r}
+rr <- function(y, Z, K=NULL, X=NULL, method="REML"){
+  stopifnot(is.matrix(Z))
+  out <- rrBLUP::mixed.solve(y=y, Z=Z, K=K, X=X, method=method)
+  return(structure(out, class="rr"))
+}
+predict.rr <- function(object, newZ){
+  stopifnot(is.matrix(newZ))
+  out <- as.vector(newZ %*% object$u)
+  if(! is.null(rownames(newZ)))
+    names(out) <- rownames(newZ)
+  return(out)
+}
+```
+
+### Partitions
+
+```{r}
+folds <- cvFolds(n=nrow(X), K=5, R=10)
+```
+
+### Validation
+
+```{r cross_val}
+callRR <- call("rr", y=y, Z=X)
+system.time(
+    out.cv <- cvTool(call=callRR, x=X, y=y, names=c("Z", "y"),
+                     cost=cor, folds=folds))
+out.cv # one row per replicate
+mean(out.cv[,"CV"])
+sd(out.cv[,"CV"])
+```
+
+## Formule analytique
+
+TODO: voir [Rabier et coll. (2016)](http://dx.plos.org/10.1371/journal.pone.0156086)
+
+
+# Annexe
+
+```{r info}
+t1 <- proc.time(); t1 - t0
+print(sessionInfo(), locale=FALSE)
+```
