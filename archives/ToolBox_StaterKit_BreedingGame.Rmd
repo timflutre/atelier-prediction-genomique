@@ -1,0 +1,230 @@
+---
+title: "Boîte à outils sélection génomique pour Plant Breed game"
+author: "Charlotte Brault"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
+linkcolor: blue
+output:
+  html_document:
+    theme: united
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    number_sections: TRUE
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+mode: selfcontained
+editor_options: 
+  markdown: 
+    wrap: sentence
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Télécharger les données initiales
+
+1. Se rendre sur le site [PlantBreedGame](https://195.221.108.57/team/apimet/PlantBreedGame/)
+
+2. Cliquer sur l'onglet **How to play?**
+
+3. Télécharger les différents fichiers de données dans un répertoire spécifique
+
+# Définition du chemin vers les données
+
+Donner le lien vers le répertoire où sont enregistrés les fichiers du jeu Plant Breed Game.
+Pour cela, naviguer vers votre répertoire dans l'onglet "Files", quand vous êtes au bon endroit, cliquer sur la roue crantée, puis sur "Set as working directory". Coller la ligne dans votre code. Tous les fichiers à charger doivent se situer dans ce répertoire.
+
+```{r p2f}
+setwd("~/Cours-TD/SelGen_2023/NotesScriptsPlantBreedGame/BreedingGame/data")
+stopifnot(file.exists(getwd()))
+knitr::opts_knit$set(root.dir = getwd())
+```
+
+
+# Chargement des données
+
+## Données phénotypiques
+Si le fichier a une extension **.gz**, il pourra être lu dans la fonction `read.table` avec la fonction *gzfile* : `file=gzfile(p2f)`.
+
+### Collection de génotypes disponibles initialement
+Chaque génotype est phénotypé pendant 2 années successives.
+
+```{r load}
+pheno <- read.table(file=gzfile("Result_phenos_initialColl.txt.gz"),sep="\t", 
+                    header=TRUE, fileEncoding = "UTF-8")
+head(pheno)
+dim(pheno)
+```
+
+### Génotypes contrôles 
+
+Nom des génotypes contrôles
+
+```{r}
+Controls <- read.table(file="controls.txt", sep="\t",header=FALSE)
+(Controls <- c(Controls$V1))
+```
+
+Tous les génotypes contrôles ont été phénotypés pendant 4 années.
+
+```{r load pheno control}
+pheno_ctl <- read.table(file=gzfile("Result_phenos_controls.txt.gz"),sep="\t", 
+                    header=TRUE, fileEncoding = "UTF-8")
+head(pheno_ctl)
+```
+
+## Données génotypiques
+
+```{r load geno data}
+geno <- read.table(file="Result_genos_subset-initialColl-hd.txt.gz",
+                   sep="\t", header=TRUE,fileEncoding = "UTF-8")
+
+geno[1:5,1:5]
+dim(geno)
+```
+
+## Coordonnées des marqueurs
+
+```{r load marker coordinates}
+snp_map <- read.table(file="snp_coords_hd.txt.gz", sep="\t", header=TRUE)
+head(snp_map)
+dim(snp_map)
+snp_map <- snp_map[order(snp_map$chr, snp_map$pos),]
+```
+
+
+# Exemple de requêtes
+
+## Request plant material
+
+### Allofecundation
+
+Vous avez sélectionné les variétés les plus prometteuses, par exemple **Coll0001**, **Coll0002**, **Coll0003**, **Coll0004** et **Coll0005**.
+Vous voulez (par exemple) faire tous les croisements possibles entre ces 5 variétés.
+Ce morceau de code vous permet de concevoir ces croisements et de réaliser le fichier de requête.
+
+
+```{r request plant material allofecund}
+parents <- c("Coll0001","Coll0002","Coll0003","Coll0004","Coll0005") # => votre sélection de génotypes
+setdiff(parents, pheno$ind) # => bien vérifier que les parents sont dans la collection (ici le tableau de phénotypes s’appelle pheno)
+
+# crée toutes les combinaisons entre les parents = tous les croisements possibles parmi les parents 
+crosses <- expand.grid(parent1=parents, parent2=parents)
+
+## enlever les lignes correspondant aux autofécondations
+if(length(intersect(crosses$parent1, crosses$parent2)) > 0){
+  crosses <- crosses[-which(crosses$parent1 == crosses$parent2, arr.ind=TRUE),]
+}
+head(crosses)
+dim(crosses) # nombre de croisements à réaliser
+# nom des descendants (peut être changé !)
+crosses$child <- paste0("gen1_", crosses$parent1, "x", crosses$parent2) 
+## vérification de l'unicité des noms des descendants
+stopifnot(!any(duplicated(crosses$child)))
+crosses$explanations <- "allofecundation"
+head(crosses)
+
+# écrire le fichier de requête
+write.table(crosses, file="request_plant_material_allofecund_Coll0001-5.txt",
+            sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+
+NB : si vous voulez croiser deux listes de variétés de taille variée, vous pouvez toujours utiliser la fonction `expand.grid` en donnant les deux listes au lieu de deux fois la même liste.
+
+```{r}
+## on échantillonne 10 individus (au hasard ici)
+parents <- sample(rownames(geno), 10)
+## on détermine tous les croisements entre une liste de 2 parents et une liste de 8 parents
+crosses <- expand.grid(parent1=parents[1:2], parent2=parents[3:10])
+head(crosses)
+dim(crosses) # nombre de croisements à réaliser
+# nom des descendants (peut être changé !)
+crosses$child <- paste0("gen1_", crosses$parent1, "x", crosses$parent2) 
+stopifnot(!any(duplicated(crosses$child)))
+crosses$explanations <- "allofecundation"
+head(crosses)
+
+# écrire le fichier de requête
+write.table(crosses, file="request_plant_material_allofecund_v2.txt",
+            sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+### HD
+
+Ici on veut par exemple 3 haploïdes doublés pour chaque individu. 
+
+```{r}
+crossesHD <- data.frame(parent1=rep(crosses$child, each=3), parent2="",
+                      child=NA, explanations="haplodiploidization")
+crossesHD$child=paste0("HD_",crossesHD$parent1,"_",seq(3))
+crossesHD
+dim(crossesHD)
+stopifnot(!any(duplicated(crossesHD$child)))
+# écrire le fichier de requête
+write.table(crossesHD, file="request_plant_material_HD.txt",
+            sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+
+A vous de voir ce que vous voulez faire avec ces individus F1, issus d'un croisement entre lignées. Phénotypage ? Génotypage ? Nouveau croisement (ex : F2) ? Fixation (ex : SSD, HD) ? 
+
+## Request phenotyping
+
+Par exemple, on veut phénotyper 10 individus (je prendrai les noms précédemment créés), avec les génotypes contrôles.
+Je demande ici 5 plots, soit 5 répétitions par génotype.
+
+```{r request phenotyping}
+dat <- data.frame(ind=c(crosses$child, Controls),
+                  task="pheno-field",
+                  details=5)
+dat
+dim(dat)
+str(dat)
+## vérification de l'unicité des individus
+stopifnot(!any(duplicated(dat$ind)))
+
+
+# écrire le fichier de requête
+write.table(dat, file="request_phenotyping_controls-gen1.txt",
+            sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+
+
+## Request genotyping
+
+Par exemple, nous voulons génotyper les nouveaux génotypes créés à la génération 1. Les 8 premiers individus auront un génotypage avec grande densité ("hd"), les 8 autres auront un génotypage à faible densité ("ld").
+
+```{r request genotyping}
+dat <- data.frame(ind=crosses$child,
+                  task="geno",
+                  details=c(rep("hd",8),rep("ld",8)))
+dat
+dim(dat)
+str(dat)
+# écrire le fichier de requête
+write.table(dat, file="request_genotyping_gen1.txt", 
+            sep="\t", col.names=TRUE, 
+            row.names=FALSE, quote=FALSE, fileEncoding="UTF-8")
+```
+
+
+
+# Appendix
+
+```{r info}
+print(sessionInfo(), locale=FALSE)
+```

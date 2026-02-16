@@ -1,0 +1,231 @@
+---
+title: "Boîte à outils sélection génomique pour Breeding game"
+author: "Charlotte Brault"
+date: '`r as.character(format(Sys.Date(), format="%d/%m/%Y"))`'
+colorlinks: true
+linkcolor: blue
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: TRUE
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: TRUE
+mode: selfcontained
+abstract: |
+  Ce document a pour but de montrer comment analyser les données du jeu sérieux Breeding Game.
+editor_options: 
+  markdown: 
+    wrap: sentence
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chargement des packages
+
+```{r}
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(lme4))
+suppressPackageStartupMessages(library(rrBLUP))
+suppressPackageStartupMessages(library(MM4LMM))
+```
+
+
+# Définition du chemin vers les données
+
+Donner le lien vers le répertoire où sont enregistrés les fichiers du jeu Breeding Game.
+
+```{r p2f}
+# setwd("~/Cours-TD/SelGen_2023/NotesScriptsPlantBreedGame/BreedingGame/data")
+setwd("~/Bureau/atelier-prediction-genomique/jeu_sérieux/data/")
+stopifnot(file.exists(getwd()))
+knitr::opts_knit$set(root.dir = getwd())
+```
+
+
+# Chargement des données
+
+## Données phénotypiques
+
+```{r load}
+pheno <- read.table(file="phenotypes.tsv",sep="\t", 
+                    header=TRUE, fileEncoding = "UTF-8")
+head(pheno)
+dim(pheno)
+```
+
+## Données génotypiques
+
+```{r load geno data}
+geno <- read.table(file=gzfile("Result_genos_subset-initialColl-hd.txt.gz"),
+                   sep="\t", header=TRUE,
+                   fileEncoding = "UTF-8")
+geno[1:5,1:5]
+dim(geno)
+```
+
+## Coordonnées des marqueurs
+
+```{r load marker coordinates}
+snp_map <- read.table(file=gzfile("snp_coords_hd.txt.gz"),
+                      sep="\t", header=TRUE)
+head(snp_map)
+dim(snp_map)
+snp_map <- snp_map[order(snp_map$chr, snp_map$pos),]
+```
+
+
+
+# Exploration des données phénotypiques
+
+## Moyenne entre années
+
+```{r}
+summary(pheno)
+cor(pheno$trait1, pheno$trait2)
+all_years <- unique(pheno$year)
+pheno %>%
+  dplyr::group_by(year) %>% 
+  dplyr::summarise(mean1=mean(trait1),mean2=mean(trait2))
+```
+
+## Graphiques
+
+```{r}
+str(pheno)
+# trait 1
+ggplot(pheno, ...)
+# trait 2
+```
+
+
+
+# Application d'un modèle mixte pour extraire les valeurs génotypiques
+
+A faire : concevoir un modèle avec différents effets estimables pour prédire le plus précisément possible la valeur génétique de chaque individu pour chaque caractère.
+
+## Trait 1
+
+**A vous de déterminer les variables à intégrer dans le modèle mixte !**
+
+```{r}
+fit <- lmer(trait1 ~ (1|ind) + ..., data=pheno)
+fixef(fit)
+randEf <- ranef(fit)
+BLUP1 <- randEf$ind
+# sélection des 25 génotypes avec les valeurs génotypiques les plus élevées
+best_tr1 <- rownames(BLUP1)[order(BLUP1$`(Intercept)`, decreasing=TRUE)[1:25]]
+```
+
+## Trait 2
+
+Idem
+
+
+# Estimer la précision de prédiction par validation croisée
+
+Situation où les phénotypes et les génotypes sont disponibles pour un ensemble de variétés. L'objectif ici est de mesurer la capacité prédictive de la sélection génomique. Selon cette capacité prédictive, vous pouvez décider d'appliquer ou non la prédiction génomique, ou de sélectionner plus ou moins d'individus à croiser ou à phénotyper.
+
+```{r apply cross-validation}
+BLUP <- BLUP1[match(rownames(geno), rownames(BLUP1)),,drop=FALSE]
+
+# vérifier que les individus se correspondent bien entre les phénotypes et les génotypes !
+BLUP <- BLUP[match(rownames(geno), rownames(BLUP)),,drop=FALSE]
+geno <- geno[rownames(BLUP),]
+dim(geno)
+K = 5 # le jeu d'entraînement est constitué de 4/5e des individus
+R = 10 # cette partition en 5 est répétée 10 fois
+# On divise le jeu de données
+Folds <- list()
+for(r in 1:R){
+  Folds[[r]] <- split(sample(1:nrow(BLUP)), rep(1:K, length=nrow(BLUP)))
+  names(Folds[[r]]) <- paste0("Fold", seq(1:K))
+}
+# on applique l'estimation des effets des marqueurs et la prédiction sur chaque partition
+out.corr <- numeric(0)
+for(r in 1:R){
+  for(k in 1:K){
+    in.test <- Folds[[r]][[k]]
+    out <- mixed.solve(y=BLUP[-in.test,], Z=geno[-in.test,]) 
+    pred <- as.matrix(geno[in.test,]) %*% out$u 
+    out.corr <- c(out.corr,cor(BLUP[in.test,],pred))
+  }
+}
+length(out.corr)
+# moyenne et écart-type des résultats
+mean(out.corr)
+sd(out.corr)
+```
+
+
+# Appliquer la prédiction génomique pour de nouveaux individus
+
+## Avec RR-BLUP
+
+Contrairement à la situation précédente, ici l'objectif est de prédire des valeurs génétiques inconnues, à partir d'un modèle entraîné et de nouveaux génotypes.
+
+```{r apply genom pred}
+# charger ici la nouvelle matrice génotypique, sans donnée phénotypique associée
+newX <- read.table(file=paste0(folder,"..."))
+# entraîner le modèle de prédiction sur un jeu de données avec phénotype et génotype, sans validation croisée
+## pour le caractère 1
+int <- intersect(rownames(geno), rownames(BLUP1))
+fit.MM_tr1 <- mixed.solve(y=BLUP1[int,], Z=geno[int,]) 
+pred_tr1 <- as.matrix(newX) %*% fit.MM$u 
+dim(pred_tr1)
+head(pred_tr1)
+
+## pour le caractère 2
+int <- intersect(rownames(geno), rownames(BLUP2))
+fit.MM_tr2 <- mixed.solve(y=BLUP2[int,], Z=geno[int,]) 
+pred_tr2 <- as.matrix(newX) %*% fit.MM$u 
+dim(pred_tr2)
+head(pred_tr2)
+```
+
+
+## Avec BayesB
+
+Vous pouvez choisir de tester une autre méthode statistique de prédiction génomique, comme la méthode bayésienne **Bayes B**. Elle est implémentée dans le paquet *BGLR*, disponible sur le CRAN.
+
+Attention, comme toute méthode bayésienne, le modèle met un certain temps pour converger !
+Pour l'exemple ici, j'ai simplement masqué certains phénotypes (en remplaçant la valeur par `NA`). 
+Il faudra adapter le code pour faire de la validation croisée ou pour ajuster de nouvelles données.
+
+```{r fit BayesB}
+nTST <- 150 # nombre d'individu à prédire, échantillonnés au hasard
+int <- intersect(rownames(geno), rownames(BLUP1))
+tst <- int[sample(1:length(int),size=nTST)] # nom des génotypes à prédire
+# Formatage des données
+X <- geno[int,]
+# je masque les valeurs génotypiques pour 150 génotypes
+y_NA <- BLUP1[int,,drop=FALSE]
+y_NA[tst,] <- NA
+# ajustement du modèle
+fit.BayesB <- BGLR(y=c(y_NA$`(Intercept)`), 
+                   ETA=list(list(X=as.matrix(X),model='BayesB')),
+                   nIter=6000,burnIn=1000) # nIter et burnIn à diminuer pour plus de rapidité
+head(fit.BayesB$yHat)
+# extraction des valeurs génotypiques prédites
+yHat <- as.data.frame(fit.BayesB$yHat)
+rownames(yHat) <- rownames(y_NA)
+# mesure de la corrélation possible seulement si on a masqué le phénotype
+# => seulement en validation croisée !
+cor(yHat[tst,],BLUP1[tst,])
+```
+
+
+
+
+# Appendix
+
+```{r info}
+print(sessionInfo(), locale=FALSE)
+```

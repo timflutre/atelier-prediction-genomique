@@ -1,0 +1,17 @@
+ind	task	details
+gen1_Coll0786xColl0447	geno	hd
+gen1_Coll0775xColl0447	geno	hd
+gen1_Coll0786xColl0373	geno	hd
+gen1_Coll0775xColl0373	geno	hd
+gen1_Coll0786xColl0772	geno	hd
+gen1_Coll0775xColl0772	geno	hd
+gen1_Coll0786xColl0605	geno	hd
+gen1_Coll0775xColl0605	geno	hd
+gen1_Coll0786xColl0316	geno	ld
+gen1_Coll0775xColl0316	geno	ld
+gen1_Coll0786xColl0365	geno	ld
+gen1_Coll0775xColl0365	geno	ld
+gen1_Coll0786xColl0396	geno	ld
+gen1_Coll0775xColl0396	geno	ld
+gen1_Coll0786xColl0450	geno	ld
+gen1_Coll0775xColl0450	geno	ld
